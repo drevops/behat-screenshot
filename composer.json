@@ -1,0 +1,23 @@
+{
+  "name": "integrantedexperts/behat-screenshot",
+  "description": "Pluggable context to capture screenshots from failed behat tests",
+  "type": "library",
+  "license": "M.I.T.",
+  "authors": [
+    {
+      "name": "Alexander Sharkov",
+      "email": "blade.didan@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "behat/mink": "~1.5",
+    "behat/behat": "~3.1.0-rc2",
+    "drupal/drupal-extension": "*"
+  },
+  "autoload": {
+    "psr-0": {
+      "IntegratedExperts\\BehatScreenshot": "src/"
+    }
+  }
+}

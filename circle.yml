@@ -1,0 +1,26 @@
+machine:
+  environment:
+    # Build configuration.
+    BUILD_DIR: $HOME/$CIRCLE_PROJECT_REPONAME
+    # Add composer bin to path.
+    PATH: "$HOME/.config/composer/vendor/bin:$PATH"
+    TESTS_BEHAT_DIR: $BUILD_DIR/tests/behat
+
+dependencies:
+  pre:
+    - rm /opt/circleci/php/$(phpenv global)/etc/conf.d/xdebug.ini
+  override:
+  # Remove all default packages.
+  - rm -rf ~/.composer
+  - composer global clear-cache
+  # Install DCR.
+  - composer global require --no-interaction alexdesignworks/dcr
+  # Install behat and all required dependencies.
+  - composer install
+
+test:
+  override:
+  # Lint code.
+  - source ~/.profile && dcr --no-js init && cd $BUILD_DIR && dcr
+  # Run behat tests.
+  - cd $TESTS_BEHAT_DIR && ../../vendor/bin/behat

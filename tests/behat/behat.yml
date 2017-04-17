@@ -1,0 +1,15 @@
+default:
+  suites:
+    default:
+      contexts:
+        - IntegratedExperts\BehatScreenshot\ScreenshotContext:
+          parameters:
+            dir: %paths.base%/screenshots
+            dateTimeZone: Australia/Melbourne
+            dateFormat: d-m-Y_H-i-s
+        - FeatureContext
+  extensions:
+    Behat\MinkExtension:
+      sessions:
+        default:
+          goutte: ~
