@@ -2,9 +2,14 @@ default:
   suites:
     default:
       contexts:
+        - IntegratedExperts\BehatPhpServer\PhpServerContext:
+          -
+            docroot: %paths.base%/features/fixtures
+            host: localhost
+            port: 8888
         - IntegratedExperts\BehatScreenshot\ScreenshotContext:
-          parameters:
-            dir: %paths.base%/screenshots
+          -
+            dir: %paths.base%/features/screenshots
             dateTimeZone: Australia/Melbourne
             dateFormat: d-m-Y_H-i-s
         - FeatureContext

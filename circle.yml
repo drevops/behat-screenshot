@@ -17,6 +17,18 @@ dependencies:
   - composer global require --no-interaction alexdesignworks/dcr
   # Install behat and all required dependencies.
   - composer install
+  # Make Chrome run with additional flags to resolve content scaling issues.
+  - "echo '#! /bin/bash' | sudo tee /opt/google/chrome/google-chrome-hack"
+  - "echo '/opt/google/chrome/google-chrome --high-dpi-support=1 --force-device-scale-factor=1' | sudo tee --append /opt/google/chrome/google-chrome-hack"
+  - "sudo chmod 755 /opt/google/chrome/google-chrome-hack"
+  - "sudo mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.backup"
+  - "cd /usr/bin && sudo ln -s /opt/google/chrome/google-chrome-hack google-chrome-stable"
+  # Install Selenium.
+  - curl http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar > selenium-server-standalone.jar
+  - curl http://chromedriver.storage.googleapis.com/2.25/chromedriver_linux64.zip | gzip -dc > chromedriver
+  - chmod +x chromedriver
+  - 'java -jar selenium-server-standalone.jar > /dev/null -Dwebdriver.chrome.driver=chromedriver 2>&1':
+    background: true
 
 test:
   override:

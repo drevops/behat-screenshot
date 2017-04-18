@@ -1,7 +1,7 @@
-Feature: Working with PHP server.
+Feature: Screenshot.
 
   Ensure that Behat is capable of starting PHP server and asserting the content
-  on the test page.
+  on the test page and make screenshot it.
 
   @phpserver
   Scenario: Visit test page served by PHP Server
