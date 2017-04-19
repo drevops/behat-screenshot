@@ -1,5 +1,5 @@
 {
-  "name": "integrantedexperts/behat-screenshot",
+  "name": "integratedexperts/behat-screenshot",
   "description": "Behat Context to capture screenshots from failed tests",
   "type": "library",
   "license": "GPL-2.0+",
