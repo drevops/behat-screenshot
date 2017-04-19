@@ -1,9 +1,8 @@
 <?php
 
 /**
- * This file is part of the IntegratedExperts Behat tests.
- *
- * @file Context Screenshot for Behat.
+ * @file
+ * Behat context to enable Screenshot support in tests.
  */
 
 namespace IntegratedExperts\BehatScreenshot;
@@ -12,7 +11,6 @@ use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Driver\Selenium2Driver;
-use Behat\Mink\Exception\Exception;
 use Behat\MinkExtension\Context\RawMinkContext;
 
 /**
@@ -84,8 +82,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
         date_default_timezone_set($this->dateTimeZone);
         $this->scenarioStartedTimestamp = date($this->dateFormat);
-
-    }//end __construct()
+    }
 
 
     /**
@@ -105,8 +102,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
         $this->scenarioName = $scope->getScenario()->getTitle();
         $this->number       = 0;
-
-    }//end beforeScenarioScreenshotInit()
+    }
 
 
     /**
@@ -130,8 +126,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             try {
                 $html = $this->getSession()->getDriver()->getContent();
                 $this->writeFile($filename, $html);
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
             }
         }
 
@@ -140,8 +135,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             $filename = $this->makeScreenshotFileName('png', $this->number++);
             $this->saveScreenshot($filename, $this->dir);
         }
-
-    }//end saveDebugScreenshot()
+    }
 
 
     /**
@@ -165,8 +159,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         $filename = $this->scenarioStartedTimestamp.'_'.$filename.'_'.sprintf('%02d', $index);
 
         return $filename.'.'.$ext;
-
-    }//end makeScreenshotFileName()
+    }
 
 
     /**
@@ -178,8 +171,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         // This is required to handle slow file systems, like the ones used in VMs.
         clearstatcache(true, $this->dir);
         @mkdir($this->dir);
-
-    }//end prepareDir()
+    }
 
 
     /**
@@ -191,8 +183,5 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected function writeFile($filename, $data)
     {
         file_put_contents($this->dir.DIRECTORY_SEPARATOR.$filename, $data);
-
-    }//end writeFile()
-
-
-}//end class
+    }
+}

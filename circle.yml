@@ -4,19 +4,14 @@ machine:
     BUILD_DIR: $HOME/$CIRCLE_PROJECT_REPONAME
     # Add composer bin to path.
     PATH: "$HOME/.config/composer/vendor/bin:$PATH"
-    TESTS_BEHAT_DIR: $BUILD_DIR/tests/behat
 
 dependencies:
+  cache_directories:
+    - ~/.composer/cache
   pre:
     - rm /opt/circleci/php/$(phpenv global)/etc/conf.d/xdebug.ini
   override:
-  # Remove all default packages.
-  - rm -rf ~/.composer
-  - composer global clear-cache
-  # Install DCR.
-  - composer global require --no-interaction alexdesignworks/dcr
-  # Install behat and all required dependencies.
-  - composer install
+  - cd $HOME/$CIRCLE_PROJECT_REPONAME && composer install --no-progress --no-interaction
   # Make Chrome run with additional flags to resolve content scaling issues.
   - "echo '#! /bin/bash' | sudo tee /opt/google/chrome/google-chrome-hack"
   - "echo '/opt/google/chrome/google-chrome --high-dpi-support=1 --force-device-scale-factor=1' | sudo tee --append /opt/google/chrome/google-chrome-hack"
@@ -32,7 +27,7 @@ dependencies:
 
 test:
   override:
-  # Lint code.
-  - source ~/.profile && dcr --no-js init && cd $BUILD_DIR && dcr
-  # Run behat tests.
-  - cd $TESTS_BEHAT_DIR && ../../vendor/bin/behat
+    # Lint code.
+    - composer cs
+    # Run tests.
+    - composer test

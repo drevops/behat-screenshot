@@ -2,56 +2,35 @@
 <ruleset name="behat-screenshot">
   <description>The coding standard for behat-screenshot.</description>
 
-  <file>src</file>
-  <file>tests</file>
+  <rule ref="Symfony2" />
 
-  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <file>src/</file>
+  <file>tests/</file>
 
-  <rule ref="PHPCS" />
+  <rule ref="PEAR.Commenting.FileComment">
+    <exclude name="PEAR.Commenting.FileComment.MissingAuthorTag"/>
+    <exclude name="PEAR.Commenting.FileComment.MissingLicenseTag"/>
+    <exclude name="PEAR.Commenting.FileComment.MissingVersion"/>
+    <exclude name="PEAR.Commenting.FileComment.MissingCategoryTag"/>
+    <exclude name="PEAR.Commenting.FileComment.MissingPackageTag"/>
+    <exclude name="PEAR.Commenting.FileComment.MissingLinkTag"/>
+  </rule>
 
-    <!-- The following sniffs are disabled because we don't want them -->
-    <rule ref="PEAR.Commenting.FileComment">
-      <exclude name="PEAR.Commenting.FileComment.MissingAuthorTag"/>
-      <exclude name="PEAR.Commenting.FileComment.MissingLicenseTag"/>
-      <exclude name="PEAR.Commenting.FileComment.MissingVersion"/>
-      <exclude name="PEAR.Commenting.FileComment.MissingCategoryTag"/>
-      <exclude name="PEAR.Commenting.FileComment.MissingPackageTag"/>
-      <exclude name="PEAR.Commenting.FileComment.MissingLinkTag"/>
-    </rule>
-    <rule ref="PEAR.Commenting.ClassComment">
-      <exclude name="PEAR.Commenting.ClassComment.CategoryTagOrder"/>
-      <exclude name="PEAR.Commenting.ClassComment.MissingAuthorTag"/>
-      <exclude name="PEAR.Commenting.ClassComment.MissingLicenseTag"/>
-      <exclude name="PEAR.Commenting.ClassComment.MissingLinkTag"/>
-      <exclude name="PEAR.Commenting.ClassComment.MissingCategoryTag"/>
-      <exclude name="PEAR.Commenting.ClassComment.MissingPackageTag"/>
-    </rule>
-    <rule ref="PEAR.NamingConventions.ValidFunctionName">
-      <exclude name="PEAR.NamingConventions.ValidFunctionName.PrivateNoUnderscore"/>
-    </rule>
-    <rule ref="Generic.Files.LineLength">
-      <exclude name="Generic.Files.LineLength.TooLong"/>
-    </rule>
-    <rule ref="Generic.Commenting.Todo">
-      <exclude name="Generic.Commenting.Todo.TaskFound"/>
-      <exclude name="Generic.Commenting.Todo.CommentFound"/>
-    </rule>
+  <rule ref="PEAR.Commenting.ClassComment">
+    <exclude name="PEAR.Commenting.ClassComment.CategoryTagOrder"/>
+    <exclude name="PEAR.Commenting.ClassComment.MissingAuthorTag"/>
+    <exclude name="PEAR.Commenting.ClassComment.MissingLicenseTag"/>
+    <exclude name="PEAR.Commenting.ClassComment.MissingLinkTag"/>
+    <exclude name="PEAR.Commenting.ClassComment.MissingCategoryTag"/>
+    <exclude name="PEAR.Commenting.ClassComment.MissingPackageTag"/>
+  </rule>
+  <rule ref="Generic.Commenting.Todo">
+    <exclude name="Generic.Commenting.Todo.TaskFound"/>
+    <exclude name="Generic.Commenting.Todo.CommentFound"/>
+  </rule>
 
-    <rule ref="PEAR.Commenting.FunctionComment">
-      <exclude name="PEAR.Commenting.FunctionComment.MissingReturn"/>
-    </rule>
-
-    <rule ref="Squiz.PHP.DisallowInlineIf">
-      <exclude name="Squiz.PHP.DisallowInlineIf.Found"/>
-    </rule>
-
-    <rule ref="Squiz.Operators.ComparisonOperatorUsage">
-      <exclude name="Squiz.Operators.ComparisonOperatorUsage.ImplicitTrue"/>
-      <exclude name="Squiz.Operators.ComparisonOperatorUsage.NotAllowed"/>
-    </rule>
-
-    <rule ref="Squiz.Commenting.EmptyCatchComment">
-      <exclude name="Squiz.Commenting.EmptyCatchComment.Missing"/>
-    </rule>
+  <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+    <exclude-pattern>./tests/*</exclude-pattern>
+  </rule>
 
 </ruleset>

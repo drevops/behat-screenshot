@@ -5,8 +5,6 @@ default:
         - IntegratedExperts\BehatPhpServer\PhpServerContext:
           -
             docroot: %paths.base%/features/fixtures
-            host: localhost
-            port: 8888
         - IntegratedExperts\BehatScreenshot\ScreenshotContext:
           -
             dir: %paths.base%/features/screenshots
@@ -15,6 +13,8 @@ default:
         - FeatureContext
   extensions:
     Behat\MinkExtension:
-      sessions:
-        default:
-          goutte: ~
+      goutte: ~
+      files_path: ./features/fixtures
+      base_url: http://localhost:8888/testpage.html
+      selenium2: ~
+      browser_name: chrome

@@ -1,6 +1,6 @@
 {
   "name": "integrantedexperts/behat-screenshot",
-  "description": "Pluggable context to capture screenshots from failed behat tests",
+  "description": "Behat Context to capture screenshots from failed tests",
   "type": "library",
   "license": "GPL-2.0+",
   "authors": [
@@ -13,34 +13,17 @@
       "email": "blade.didan@gmail.com"
     }
   ],
-  "minimum-stability": "dev",
-  "repositories": {
-    "behat-phpserver": {
-      "type": "package",
-      "package": {
-        "name": "alexdesignworks/behat-phpserver",
-        "version": "1.0",
-        "source": {
-          "url": "/Users/blade/sites/ie/behat-phpserver",
-          "type": "git",
-          "reference": "origin/master"
-        },
-        "autoload": {
-          "classmap": ["src/"]
-        }
-      }
-    }
-  },
   "require": {
     "behat/behat": "~3.1.0-rc2",
-    "behat/mink": "~1.5",
     "behat/mink-extension": "~v2.2",
     "behat/mink-goutte-driver": "*",
     "behat/mink-selenium2-driver": "*"
   },
   "require-dev": {
-    "alexdesignworks/behat-phpserver": "1.0",
-    "squizlabs/php_codesniffer": "2.*"
+    "behat/mink": "~1.5",
+    "integratedexperts/behat-phpserver": "^0.1.0",
+    "squizlabs/php_codesniffer": "2.*",
+    "escapestudios/symfony2-coding-standard": "~2.0"
   },
   "autoload": {
     "psr-0": {
@@ -48,8 +31,8 @@
     }
   },
   "scripts": {
-    "cs": "./vendor/bin/phpcs --colors -s",
-    "cbf": "./vendor/bin/phpcbf --colors",
-    "test": "cd ./tests/behat/ && ../../vendor/bin/behat"
+    "cs": "./vendor/bin/phpcs --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors -s -p",
+    "cbf": "./vendor/bin/phpcbf --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors",
+    "test": "cd ./tests/behat/ && ../../vendor/bin/behat --colors --format=progress"
   }
 }
