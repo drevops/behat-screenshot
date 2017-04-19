@@ -1,0 +1,38 @@
+{
+  "name": "integrantedexperts/behat-screenshot",
+  "description": "Behat Context to capture screenshots from failed tests",
+  "type": "library",
+  "license": "GPL-2.0+",
+  "authors": [
+    {
+      "name": "Alex Skrypnyk",
+      "email": "alex.designworks@gmail.com"
+    },
+    {
+      "name": "Alexander Sharkov",
+      "email": "blade.didan@gmail.com"
+    }
+  ],
+  "require": {
+    "behat/behat": "~3.1.0-rc2",
+    "behat/mink-extension": "~v2.2",
+    "behat/mink-goutte-driver": "*",
+    "behat/mink-selenium2-driver": "*"
+  },
+  "require-dev": {
+    "behat/mink": "~1.5",
+    "integratedexperts/behat-phpserver": "^0.1.0",
+    "squizlabs/php_codesniffer": "2.*",
+    "escapestudios/symfony2-coding-standard": "~2.0"
+  },
+  "autoload": {
+    "psr-0": {
+      "IntegratedExperts\\BehatScreenshot": "src/"
+    }
+  },
+  "scripts": {
+    "cs": "./vendor/bin/phpcs --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors -s -p",
+    "cbf": "./vendor/bin/phpcbf --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors",
+    "test": "cd ./tests/behat/ && ../../vendor/bin/behat --colors --format=progress"
+  }
+}

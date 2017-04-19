@@ -1,0 +1,33 @@
+machine:
+  environment:
+    # Build configuration.
+    BUILD_DIR: $HOME/$CIRCLE_PROJECT_REPONAME
+    # Add composer bin to path.
+    PATH: "$HOME/.config/composer/vendor/bin:$PATH"
+
+dependencies:
+  cache_directories:
+    - ~/.composer/cache
+  pre:
+    - rm /opt/circleci/php/$(phpenv global)/etc/conf.d/xdebug.ini
+  override:
+    - cd $HOME/$CIRCLE_PROJECT_REPONAME && composer install --no-progress --no-interaction
+    # Make Chrome run with additional flags to resolve content scaling issues.
+    - "echo '#! /bin/bash' | sudo tee /opt/google/chrome/google-chrome-hack"
+    - "echo '/opt/google/chrome/google-chrome --high-dpi-support=1 --force-device-scale-factor=1' | sudo tee --append /opt/google/chrome/google-chrome-hack"
+    - "sudo chmod 755 /opt/google/chrome/google-chrome-hack"
+    - "sudo mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.backup"
+    - "cd /usr/bin && sudo ln -s /opt/google/chrome/google-chrome-hack google-chrome-stable"
+    # Install Selenium.
+    - curl http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar > selenium-server-standalone.jar
+    - curl http://chromedriver.storage.googleapis.com/2.25/chromedriver_linux64.zip | gzip -dc > chromedriver
+    - chmod +x chromedriver
+    - 'java -jar selenium-server-standalone.jar -trustAllSSLCertificates -Dwebdriver.chrome.driver=chromedriver':
+          background: true
+
+test:
+  override:
+    # Lint code.
+    - composer cs
+    # Run tests.
+    - composer test

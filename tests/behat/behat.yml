@@ -1,0 +1,20 @@
+default:
+  suites:
+    default:
+      contexts:
+        - IntegratedExperts\BehatPhpServer\PhpServerContext:
+          -
+            docroot: %paths.base%/features/fixtures
+        - IntegratedExperts\BehatScreenshot\ScreenshotContext:
+          -
+            dir: %paths.base%/features/screenshots
+            dateTimeZone: Australia/Melbourne
+            dateFormat: d-m-Y_H-i-s
+        - FeatureContext
+  extensions:
+    Behat\MinkExtension:
+      goutte: ~
+      files_path: ./features/fixtures
+      base_url: http://localhost:8888/testpage.html
+      selenium2: ~
+      browser_name: chrome
