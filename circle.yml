@@ -22,8 +22,8 @@ dependencies:
     - curl http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar > selenium-server-standalone.jar
     - curl http://chromedriver.storage.googleapis.com/2.25/chromedriver_linux64.zip | gzip -dc > chromedriver
     - chmod +x chromedriver
-    - 'java -jar selenium-server-standalone.jar > /dev/null -Dwebdriver.chrome.driver=chromedriver 2>&1':
-      background: true
+    - 'java -jar selenium-server-standalone.jar -trustAllSSLCertificates -Dwebdriver.chrome.driver=chromedriver':
+          background: true
 
 test:
   override:
