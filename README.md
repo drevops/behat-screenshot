@@ -12,6 +12,30 @@ Behat context to make screenshots
 * Screnshot is saved as HTML page for Goutte driver.
 * Screnshot is saved as PNG image for Selenium driver.
 
+## Installation
+`composer require integratedexperts/behat-screenshot`
+
+## Usage
+Example `behat.yml`:
+```yaml
+default:
+  suites:
+    default:
+      contexts:
+        - IntegratedExperts\BehatScreenshot\ScreenshotContext:
+          -
+            dir: %paths.base%/screenshots
+            fail: true
+            date_format: Ymh_His
+        - FeatureContext            
+```
+
+In your feature:
+```
+  Given I am on "http://google.com"  
+  Then I save screenshot
+```
+
 ## Local development
 ### Preparing local environment
 1. Install [Vagrant](https://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Composer](https://getcomposer.org/).
