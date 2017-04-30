@@ -67,23 +67,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * Initializes context.
      *
      * Every scenario gets its own context instance.
-     * You can also pass arbitrary arguments to the
-     * context constructor through behat.yml.
+     * You can also pass arbitrary arguments to the context constructor through
+     * behat.yml.
      *
      * @param array $parameters Get parameters for construct test.
      */
     public function __construct($parameters = [])
     {
-        $this->parameters = $parameters;
-
         $this->dir = isset($parameters['dir']) ? $parameters['dir'] : __DIR__.'/screenshot';
-        $this->dateFormat = isset($parameters['dateFormat']) ? $parameters['dateFormat'] : 'd-m-Y_H-i-s';
-        $this->dateTimeZone = isset($parameters['dateTimeZone']) ? $parameters['dateTimeZone'] : 'UTC';
+        $this->dateFormat = isset($parameters['dateFormat']) ? $parameters['dateFormat'] : 'Ymh_His';
 
-        date_default_timezone_set($this->dateTimeZone);
         $this->scenarioStartedTimestamp = date($this->dateFormat);
     }
-
 
     /**
      * Init values required for snapshots.

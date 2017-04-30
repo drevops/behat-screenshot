@@ -5,8 +5,6 @@
  * Feature context Behat testing.
  */
 
-namespace IntegratedExperts;
-
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\MinkExtension\Context\MinkContext;
@@ -22,7 +20,7 @@ class FeatureContext extends MinkContext implements Context
     protected $screenshotDir;
 
     /**
-     * Init values required for snapshots.
+     * Init values required for screenshots.
      *
      * @param BeforeScenarioScope $scope Scenario scope.
      *
@@ -30,21 +28,8 @@ class FeatureContext extends MinkContext implements Context
      */
     public function beforeScenarioFeatureContextInit(BeforeScenarioScope $scope)
     {
-        $paths = $scope->getSuite()->getSetting('paths');
-        $this->screenshotDir = empty($this->screenshotDir)
-            ? reset($paths).'/screenshots'
-            : $this->screenshotDir;
-    }
-
-    /**
-     * Go to the phpserver test page.
-     *
-     * @Given /^(?:|I )am on (?:|the )phpserver test page$/
-     * @When /^(?:|I )go to (?:|the )phpserver test page$/
-     */
-    public function goToPhpServerTestPage()
-    {
-        $this->getSession()->visit('http://localhost:8888/testpage.html');
+        $contexts = $scope->getSuite()->getSetting('contexts');
+        $this->screenshotDir = $contexts[1]['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['dir'];
     }
 
     /**
@@ -56,15 +41,14 @@ class FeatureContext extends MinkContext implements Context
     public function goToScreenshotTestPage()
     {
         $this->getSession()->visit(
-            'http://localhost:8888/screenshot/screenshot.html'
+            'http://localhost:8888/screenshot.html'
         );
     }
 
     /**
      * Checks whether a file wildcard at provided path exists.
      *
-     * @param string $wildcard
-     *   File name with a wildcard.
+     * @param string $wildcard File name with a wildcard.
      *
      * @Given /^file wildcard "([^"]*)" should exist$/
      */
@@ -81,5 +65,18 @@ class FeatureContext extends MinkContext implements Context
                 )
             );
         }
+    }
+
+    /**
+     * Remove all files from screenshot directory.
+     *
+     * @Given I remove all files from screenshot directory
+     */
+    public function emptyScreenshotDirectory()
+    {
+        array_map(
+            'unlink',
+            glob($this->screenshotDir.DIRECTORY_SEPARATOR.'/*')
+        );
     }
 }

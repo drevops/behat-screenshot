@@ -2,20 +2,19 @@ default:
   autoload: [ %paths.base%/tests/behat/features/bootstrap ]
   suites:
     default:
+      paths: [ %paths.base%/tests/behat/features ]
       contexts:
         - IntegratedExperts\BehatPhpServer\PhpServerContext:
           -
-            docroot: %paths.base%/features/fixtures
+            docroot: %paths.base%/tests/behat/features/fixtures
         - IntegratedExperts\BehatScreenshot\ScreenshotContext:
           -
             dir: %paths.base%/screenshots
-            dateTimeZone: Australia/Melbourne
-            dateFormat: d-m-Y_H-i-s
+            date_format: Ymh_His
         - FeatureContext
   extensions:
     Behat\MinkExtension:
       goutte: ~
-      files_path: ./features/fixtures
-      base_url: http://localhost:8888/testpage.html
+      files_path: %paths.base%/tests/behat/features/fixtures
       selenium2: ~
       browser_name: chrome
