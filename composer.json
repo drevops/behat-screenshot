@@ -23,7 +23,8 @@
     "behat/mink": "~1.5",
     "integratedexperts/behat-phpserver": "^0.1.0",
     "squizlabs/php_codesniffer": "2.*",
-    "escapestudios/symfony2-coding-standard": "~2.0"
+    "escapestudios/symfony2-coding-standard": "~2.0",
+    "beet/box": "^0.5.1"
   },
   "autoload": {
     "psr-0": {
@@ -33,6 +34,7 @@
   "scripts": {
     "cs": "./vendor/bin/phpcs --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors -s -p",
     "cbf": "./vendor/bin/phpcbf --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors",
-    "test": "cd ./tests/behat/ && ../../vendor/bin/behat --colors --format=progress"
+    "test": "cd ./tests/behat/ && ../../vendor/bin/behat --colors --format=progress",
+    "cleanup": "vagrant -f destroy &>/dev/null || $(which true); rm -Rf $(pwd)/.vagrant; rm -Rf $(pwd)/.beetbox; rm -Rf $(pwd)/Vagrantfile; rm -Rf $(pwd)/vendor;"
   }
 }
