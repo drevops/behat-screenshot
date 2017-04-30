@@ -6,7 +6,6 @@
  */
 
 use Behat\Behat\Context\Context;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\MinkExtension\Context\MinkContext;
 
 /**
@@ -20,16 +19,11 @@ class FeatureContext extends MinkContext implements Context
     protected $screenshotDir;
 
     /**
-     * Init values required for screenshots.
-     *
-     * @param BeforeScenarioScope $scope Scenario scope.
-     *
-     * @BeforeScenario
+     * FeatureContext constructor.
      */
-    public function beforeScenarioFeatureContextInit(BeforeScenarioScope $scope)
+    public function __construct($parameters)
     {
-        $contexts = $scope->getSuite()->getSetting('contexts');
-        $this->screenshotDir = $contexts[1]['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['dir'];
+        $this->screenshotDir = isset($parameters['screenshot_dir']) ? $parameters['screenshot_dir'] : 'screenshots';
     }
 
     /**

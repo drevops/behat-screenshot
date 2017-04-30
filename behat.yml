@@ -11,7 +11,9 @@ default:
           -
             dir: %paths.base%/screenshots
             date_format: Ymh_His
-        - FeatureContext
+        - FeatureContext:
+          -
+            screenshot_dir: %paths.base%/screenshots
   extensions:
     Behat\MinkExtension:
       goutte: ~
