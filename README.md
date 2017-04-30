@@ -8,6 +8,8 @@ Behat context to make screenshots
 
 ## Features
 * Make screenshot using `I save screenshot` step definition.
+* Screnshots are saved as HTML page for Goute driver.
+* Screnshots are saved as PNG images for Selenium driver.
 
 ## Local development
 ### Preparing local environment
