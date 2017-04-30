@@ -67,23 +67,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * Initializes context.
      *
      * Every scenario gets its own context instance.
-     * You can also pass arbitrary arguments to the
-     * context constructor through behat.yml.
+     * You can also pass arbitrary arguments to the context constructor through
+     * behat.yml.
      *
      * @param array $parameters Get parameters for construct test.
      */
     public function __construct($parameters = [])
     {
-        $this->parameters = $parameters;
+        $this->dir = isset($parameters['dir']) ? $parameters['dir'] : __DIR__.'/screenshot';
+        $this->dateFormat = isset($parameters['dateFormat']) ? $parameters['dateFormat'] : 'Ymh_His';
 
-        $this->dir          = isset($parameters['dir']) ? $parameters['dir'] : __DIR__.'/screenshot';
-        $this->dateFormat   = isset($parameters['dateFormat']) ? $parameters['dateFormat'] : 'd-m-Y_H-i-s';
-        $this->dateTimeZone = isset($parameters['dateTimeZone']) ? $parameters['dateTimeZone'] : 'UTC';
-
-        date_default_timezone_set($this->dateTimeZone);
         $this->scenarioStartedTimestamp = date($this->dateFormat);
     }
-
 
     /**
      * Init values required for snapshots.
@@ -101,9 +96,8 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         }
 
         $this->scenarioName = $scope->getScenario()->getTitle();
-        $this->number       = 0;
+        $this->number = 0;
     }
-
 
     /**
      * Save debug screenshot.
@@ -143,8 +137,8 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * Format: micro.seconds_title_of_scenario_trimmed.ext.
      *
-     * @param string $ext   File extension without dot.
-     * @param int    $index File index to include.
+     * @param string $ext File extension without dot.
+     * @param int $index File index to include.
      *
      * @return string
      *   Unique file name.
@@ -152,11 +146,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected function makeScreenshotFileName($ext, $index)
     {
         $filename = wordwrap($this->scenarioName, 40);
-        $filename = strpos($filename, "\n") !== false ? substr($filename, 0, strpos($filename, "\n")) : $filename;
+        $filename = strpos($filename, "\n") !== false
+            ? substr($filename, 0, strpos($filename, "\n"))
+            : $filename;
         $filename = str_replace('/', 'SLASH', $filename);
         $filename = str_replace(' ', '_', $filename);
         $filename = strtolower($filename);
-        $filename = $this->scenarioStartedTimestamp.'_'.$filename.'_'.sprintf('%02d', $index);
+        $filename = sprintf(
+            '%s_%s_%02d',
+            $this->scenarioStartedTimestamp,
+            $filename,
+            $index
+        );
 
         return $filename.'.'.$ext;
     }
@@ -178,7 +179,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * Write data into file.
      *
      * @param string $filename Name for write file.
-     * @param string $data     Data for write ito file.
+     * @param string $data Data for write ito file.
      */
     protected function writeFile($filename, $data)
     {

@@ -1,2 +1,6 @@
-/vendor/
-/tests/behat/features/screenshots/
+vendor
+Vagrantfile
+.beetbox
+composer.lock
+.vagrant
+screenshots
