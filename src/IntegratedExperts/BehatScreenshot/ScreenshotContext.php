@@ -8,6 +8,7 @@
 namespace IntegratedExperts\BehatScreenshot;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
+use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Driver\Selenium2Driver;
@@ -62,6 +63,12 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected $dateTimeZone;
 
+    /**
+     * Flag to create a screenshot when test fails.
+     *
+     * @var bool
+     */
+    protected $onFail;
 
     /**
      * Initializes context.
@@ -76,6 +83,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     {
         $this->dir = isset($parameters['dir']) ? $parameters['dir'] : __DIR__.'/screenshot';
         $this->dateFormat = isset($parameters['dateFormat']) ? $parameters['dateFormat'] : 'Ymh_His';
+        $this->onFail = isset($parameters['fail']) ? $parameters['fail'] : true;
 
         $this->scenarioStartedTimestamp = date($this->dateFormat);
     }
@@ -97,6 +105,20 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
         $this->scenarioName = $scope->getScenario()->getTitle();
         $this->number = 0;
+    }
+
+    /**
+     * After scope event handler to print last response on error.
+     *
+     * @param AfterStepScope $event After scope event.
+     *
+     * @AfterStep
+     */
+    public function printLastResponseOnError(AfterStepScope $event)
+    {
+        if ($this->onFail && !$event->getTestResult()->isPassed()) {
+            $this->saveDebugScreenshot();
+        }
     }
 
     /**
