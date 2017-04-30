@@ -20,6 +20,8 @@ class FeatureContext extends MinkContext implements Context
 
     /**
      * FeatureContext constructor.
+     *
+     * @param array $parameters Array of parameters from config.
      */
     public function __construct($parameters)
     {
