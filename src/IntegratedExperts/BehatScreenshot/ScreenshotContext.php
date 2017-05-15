@@ -13,6 +13,7 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\MinkExtension\Context\RawMinkContext;
+use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
 
 /**
  * Class ScreenshotContext.
@@ -71,6 +72,13 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected $onFail;
 
     /**
+     * Flag to clear screenshot dir before scenario init.
+     *
+     * @var bool
+     */
+    protected static $purge = 0;
+
+    /**
      * Initializes context.
      *
      * Every scenario gets its own context instance.
@@ -86,6 +94,25 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         $this->onFail = isset($parameters['fail']) ? $parameters['fail'] : true;
 
         $this->scenarioStartedTimestamp = date($this->dateFormat);
+    }
+
+    /**
+     * Init function before tests run.
+     *
+     * @param BeforeSuiteScope $scope
+     *
+     * @BeforeSuite
+     */
+    public static function setup(BeforeSuiteScope $scope)
+    {
+        foreach ($scope->getSuite()->getSetting('contexts') as $context) {
+            self::$purge = (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['purge'])) ? $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['purge'] : self::$purge;
+            $dir = (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['dir'])) ? $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['dir'] : __DIR__.'/screenshot';
+        }
+
+        if ((self::$purge === 1 || intval(getenv('BEHAT_SCREENSHOT_PURGE')) === 1) && isset($dir)) {
+            self::clearDir($dir);
+        }
     }
 
     /**
@@ -194,6 +221,17 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         // This is required to handle slow file systems, like the ones used in VMs.
         clearstatcache(true, $this->dir);
         @mkdir($this->dir);
+    }
+
+    /**
+     * Remove directory with previous screenshots.
+     *
+     * @param string $dir Screenshot directory name.
+     */
+    protected static function clearDir($dir)
+    {
+        clearstatcache(true, $dir);
+        @rmdir($dir);
     }
 
 
