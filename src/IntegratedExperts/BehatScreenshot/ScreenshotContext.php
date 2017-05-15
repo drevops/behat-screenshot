@@ -13,6 +13,7 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\MinkExtension\Context\RawMinkContext;
+use Behat\Behat\Hook\Scope\BeforeStepScope;
 
 /**
  * Class ScreenshotContext.
@@ -20,11 +21,11 @@ use Behat\MinkExtension\Context\RawMinkContext;
 class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext
 {
     /**
-     * Scenario name.
+     * Screenshot scope.
      *
-     * @var string
+     * @var BeforeStepScope
      */
-    protected $scenarioName;
+    protected $screenshotScope;
 
     /**
      * The timestamp of the start of the scenario execution.
@@ -41,27 +42,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected $dir;
 
     /**
-     * Screenshot number.
-     *
-     * Used to track multiple screenshot within a single scenario.
-     *
-     * @var string
-     */
-    protected $number;
-
-    /**
      * Date format format for screenshot file name.
      *
      * @var string
      */
     protected $dateFormat;
-
-    /**
-     * Date time zone.
-     *
-     * @var string
-     */
-    protected $dateTimeZone;
 
     /**
      * Flag to create a screenshot when test fails.
@@ -95,16 +80,25 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @BeforeScenario
      */
-    public function beforeScenarioScreenshotInit(BeforeScenarioScope $scope)
+    public function beforeScenarioInit(BeforeScenarioScope $scope)
     {
         if ($scope->getScenario()->hasTag('javascript')) {
             if ($this->getSession()->getDriver() instanceof Selenium2Driver) {
                 $this->getSession()->resizeWindow(1440, 900, 'current');
             }
         }
+    }
 
-        $this->scenarioName = $scope->getScenario()->getTitle();
-        $this->number = 0;
+    /**
+     * Init values required for snapshot.
+     *
+     * @param BeforeStepScope $scope
+     *
+     * @BeforeStep
+     */
+    public function beforeStepInit(BeforeStepScope $scope)
+    {
+        $this->screenshotScope = $scope;
     }
 
     /**
@@ -117,7 +111,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     public function printLastResponseOnError(AfterStepScope $event)
     {
         if ($this->onFail && !$event->getTestResult()->isPassed()) {
-            $this->saveDebugScreenshot();
+            $this->saveDebug();
         }
     }
 
@@ -128,7 +122,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @When /^(?:|I\s)save screenshot$/
      */
-    public function saveDebugScreenshot()
+    public function saveDebug()
     {
         $this->prepareDir();
 
@@ -136,7 +130,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         if ($driver instanceof GoutteDriver) {
             // Goutte is a pure PHP browser, so the only 'screenshot' we can save
             // is actual HTML of the page.
-            $filename = $this->makeScreenshotFileName('html', $this->number++);
+            $filename = $this->makeFileName('html');
             // Try to get a response from the visited page, if there is any loaded
             // content at all.
             try {
@@ -148,7 +142,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
         // Selenium driver covers Selenium and PhantomJS.
         if ($driver instanceof Selenium2Driver) {
-            $filename = $this->makeScreenshotFileName('png', $this->number++);
+            $filename = $this->makeFileName('png');
             $this->saveScreenshot($filename, $this->dir);
         }
     }
@@ -160,28 +154,16 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * Format: micro.seconds_title_of_scenario_trimmed.ext.
      *
      * @param string $ext File extension without dot.
-     * @param int $index File index to include.
      *
      * @return string
      *   Unique file name.
      */
-    protected function makeScreenshotFileName($ext, $index)
+    protected function makeFileName($ext)
     {
-        $filename = wordwrap($this->scenarioName, 40);
-        $filename = strpos($filename, "\n") !== false
-            ? substr($filename, 0, strpos($filename, "\n"))
-            : $filename;
-        $filename = str_replace('/', 'SLASH', $filename);
-        $filename = str_replace(' ', '_', $filename);
-        $filename = strtolower($filename);
-        $filename = sprintf(
-            '%s_%s_%02d',
-            $this->scenarioStartedTimestamp,
-            $filename,
-            $index
-        );
+        $fileName = basename($this->screenshotScope->getFeature()->getFile());
+        $stepLine = $this->screenshotScope->getStep()->getLine();
 
-        return $filename.'.'.$ext;
+        return sprintf('%s.%s_[%s].%s', $this->scenarioStartedTimestamp, $fileName, $stepLine, $ext);
     }
 
 

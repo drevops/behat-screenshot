@@ -36,6 +36,20 @@ In your feature:
   Then I save screenshot
 ```
 
+test feature:
+```
+@testapi
+Feature: Behat screenshots
+
+  Ensure that Behat is capable of taking screenshots.
+
+  @phpserver
+  Scenario: Make HTML screenshot of the test page
+    Given I am on the screenshot test page
+    When I save screenshot
+    Then file wildcard "*.api.screenshot.feature_\[9\]\.html" should exist
+```
+
 ## Local development
 ### Preparing local environment
 1. Install [Vagrant](https://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Composer](https://getcomposer.org/).
