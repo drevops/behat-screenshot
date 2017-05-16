@@ -111,7 +111,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     public function printLastResponseOnError(AfterStepScope $event)
     {
         if ($this->onFail && !$event->getTestResult()->isPassed()) {
-            $this->saveDebug();
+            $this->saveDebugScreenshot();
         }
     }
 
@@ -122,7 +122,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @When /^(?:|I\s)save screenshot$/
      */
-    public function saveDebug()
+    public function saveDebugScreenshot()
     {
         $this->prepareDir();
 
