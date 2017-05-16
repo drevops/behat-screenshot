@@ -10,10 +10,10 @@ namespace IntegratedExperts\BehatScreenshot;
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\MinkExtension\Context\RawMinkContext;
-use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
 
 /**
@@ -57,13 +57,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected $onFail;
 
     /**
-     * Flag to clear screenshot dir before scenario init.
-     *
-     * @var bool
-     */
-    protected static $purge = 0;
-
-    /**
      * Initializes context.
      *
      * Every scenario gets its own context instance.
@@ -90,17 +83,27 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public static function init(BeforeSuiteScope $scope)
     {
-        foreach ($scope->getSuite()->getSetting('contexts') as $context) {
-            if (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
-                $contextSettings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0];
+        $contextSettings = [
+            // @todo: Replace this with proper Filesystem().
+            'dir' => __DIR__.'/screenshot',
+            'purge' => false,
+        ];
+
+        if (getenv('BEHAT_SCREENSHOT_PURGE')) {
+            $purge = (bool) getenv('BEHAT_SCREENSHOT_PURGE');
+        } else {
+            foreach ($scope->getSuite()->getSetting('contexts') as $context) {
+                if (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
+                    $contextSettings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0] + $contextSettings;
+                    break;
+                }
             }
+
+            $purge = $contextSettings['purge'];
         }
 
-        self::$purge = (getenv('BEHAT_SCREENSHOT_PURGE')) ? intval(getenv('BEHAT_SCREENSHOT_PURGE')) : (isset($contextSettings['purge'])) ? $contextSettings['purge'] : self::$purge;
-        $dir = (isset($contextSettings['dir'])) ? $contextSettings['dir'] : __DIR__.'/screenshot';
-
-        if (self::$purge === 1 && isset($dir)) {
-            self::purgeDir($dir);
+        if ($purge) {
+            self::purgeDir($contextSettings['dir']);
         }
     }
 

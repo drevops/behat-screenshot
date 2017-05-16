@@ -26,7 +26,6 @@ default:
           -
             dir: %paths.base%/screenshots
             fail: true
-            date_format: Ymh_His
             purge: 1
         - FeatureContext            
 ```
