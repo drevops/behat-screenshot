@@ -15,6 +15,8 @@ use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\MinkExtension\Context\RawMinkContext;
 use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Class ScreenshotContext.
@@ -84,8 +86,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     public static function init(BeforeSuiteScope $scope)
     {
         $contextSettings = [
-            // @todo: Replace this with proper Filesystem().
-            'dir' => __DIR__.'/screenshot',
+            'dir' => getcwd().'/screenshot',
             'purge' => false,
         ];
 
@@ -206,10 +207,8 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected function prepareDir()
     {
-        // Clear stat cache and force creation of the screenshot dir.
-        // This is required to handle slow file systems, like the ones used in VMs.
-        clearstatcache(true, $this->dir);
-        @mkdir($this->dir);
+        $fs = new Filesystem();
+        $fs->mkdir($this->dir, 0755);
     }
 
     /**
@@ -219,11 +218,10 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected static function purgeDir($dir)
     {
-        $files = glob($dir.'/*');
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
+        $fs = new Filesystem();
+        $finder = new Finder();
+        if ($fs->exists($dir)) {
+            $fs->remove($finder->files()->in($dir));
         }
     }
 
