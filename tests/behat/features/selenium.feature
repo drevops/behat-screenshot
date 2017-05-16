@@ -7,4 +7,4 @@ Feature: Selenium screenshots
     Given I remove all files from screenshot directory
     When I am on the screenshot test page
     And I save screenshot
-    Then file wildcard "*_capture_a_screenshot_using_selenium_00.png" should exist
+    Then file wildcard "*.selenium.feature_[\9\]\.png" should exist

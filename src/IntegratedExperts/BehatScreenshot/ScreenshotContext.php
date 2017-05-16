@@ -13,6 +13,7 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\MinkExtension\Context\RawMinkContext;
+use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
 
 /**
@@ -21,11 +22,11 @@ use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
 class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext
 {
     /**
-     * Scenario name.
+     * Screenshot scope.
      *
-     * @var string
+     * @var BeforeStepScope
      */
-    protected $scenarioName;
+    protected $screenshotScope;
 
     /**
      * The timestamp of the start of the scenario execution.
@@ -42,27 +43,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected $dir;
 
     /**
-     * Screenshot number.
-     *
-     * Used to track multiple screenshot within a single scenario.
-     *
-     * @var string
-     */
-    protected $number;
-
-    /**
      * Date format format for screenshot file name.
      *
      * @var string
      */
     protected $dateFormat;
-
-    /**
-     * Date time zone.
-     *
-     * @var string
-     */
-    protected $dateTimeZone;
 
     /**
      * Flag to create a screenshot when test fails.
@@ -103,15 +88,19 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @BeforeSuite
      */
-    public static function setup(BeforeSuiteScope $scope)
+    public static function init(BeforeSuiteScope $scope)
     {
         foreach ($scope->getSuite()->getSetting('contexts') as $context) {
-            self::$purge = (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['purge'])) ? $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['purge'] : self::$purge;
-            $dir = (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['dir'])) ? $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0]['dir'] : __DIR__.'/screenshot';
+            if (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
+                $contextSettings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0];
+            }
         }
 
-        if ((self::$purge === 1 || intval(getenv('BEHAT_SCREENSHOT_PURGE')) === 1) && isset($dir)) {
-            self::clearDir($dir);
+        self::$purge = (getenv('BEHAT_SCREENSHOT_PURGE')) ? intval(getenv('BEHAT_SCREENSHOT_PURGE')) : (isset($contextSettings['purge'])) ? $contextSettings['purge'] : self::$purge;
+        $dir = (isset($contextSettings['dir'])) ? $contextSettings['dir'] : __DIR__.'/screenshot';
+
+        if (self::$purge === 1 && isset($dir)) {
+            self::purgeDir($dir);
         }
     }
 
@@ -122,16 +111,25 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @BeforeScenario
      */
-    public function beforeScenarioScreenshotInit(BeforeScenarioScope $scope)
+    public function beforeScenarioInit(BeforeScenarioScope $scope)
     {
         if ($scope->getScenario()->hasTag('javascript')) {
             if ($this->getSession()->getDriver() instanceof Selenium2Driver) {
                 $this->getSession()->resizeWindow(1440, 900, 'current');
             }
         }
+    }
 
-        $this->scenarioName = $scope->getScenario()->getTitle();
-        $this->number = 0;
+    /**
+     * Init values required for snapshot.
+     *
+     * @param BeforeStepScope $scope
+     *
+     * @BeforeStep
+     */
+    public function beforeStepInit(BeforeStepScope $scope)
+    {
+        $this->screenshotScope = $scope;
     }
 
     /**
@@ -163,7 +161,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         if ($driver instanceof GoutteDriver) {
             // Goutte is a pure PHP browser, so the only 'screenshot' we can save
             // is actual HTML of the page.
-            $filename = $this->makeScreenshotFileName('html', $this->number++);
+            $filename = $this->makeFileName('html');
             // Try to get a response from the visited page, if there is any loaded
             // content at all.
             try {
@@ -175,7 +173,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
         // Selenium driver covers Selenium and PhantomJS.
         if ($driver instanceof Selenium2Driver) {
-            $filename = $this->makeScreenshotFileName('png', $this->number++);
+            $filename = $this->makeFileName('png');
             $this->saveScreenshot($filename, $this->dir);
         }
     }
@@ -187,28 +185,16 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * Format: micro.seconds_title_of_scenario_trimmed.ext.
      *
      * @param string $ext File extension without dot.
-     * @param int $index File index to include.
      *
      * @return string
      *   Unique file name.
      */
-    protected function makeScreenshotFileName($ext, $index)
+    protected function makeFileName($ext)
     {
-        $filename = wordwrap($this->scenarioName, 40);
-        $filename = strpos($filename, "\n") !== false
-            ? substr($filename, 0, strpos($filename, "\n"))
-            : $filename;
-        $filename = str_replace('/', 'SLASH', $filename);
-        $filename = str_replace(' ', '_', $filename);
-        $filename = strtolower($filename);
-        $filename = sprintf(
-            '%s_%s_%02d',
-            $this->scenarioStartedTimestamp,
-            $filename,
-            $index
-        );
+        $fileName = basename($this->screenshotScope->getFeature()->getFile());
+        $stepLine = $this->screenshotScope->getStep()->getLine();
 
-        return $filename.'.'.$ext;
+        return sprintf('%s.%s_[%s].%s', $this->scenarioStartedTimestamp, $fileName, $stepLine, $ext);
     }
 
 
@@ -228,10 +214,14 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @param string $dir Screenshot directory name.
      */
-    protected static function clearDir($dir)
+    protected static function purgeDir($dir)
     {
-        clearstatcache(true, $dir);
-        @rmdir($dir);
+        $files = glob($dir.'/*');
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
     }
 
 
