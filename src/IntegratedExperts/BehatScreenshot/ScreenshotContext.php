@@ -31,13 +31,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected $screenshotScope;
 
     /**
-     * The timestamp of the start of the scenario execution.
-     *
-     * @var string
-     */
-    protected $scenarioStartedTimestamp;
-
-    /**
      * Directory where screenshots are stored.
      *
      * @var string
@@ -70,10 +63,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     public function __construct($parameters = [])
     {
         $this->dir = isset($parameters['dir']) ? $parameters['dir'] : __DIR__.'/screenshot';
-        $this->dateFormat = isset($parameters['dateFormat']) ? $parameters['dateFormat'] : 'Ymh_His';
         $this->onFail = isset($parameters['fail']) ? $parameters['fail'] : true;
-
-        $this->scenarioStartedTimestamp = date($this->dateFormat);
     }
 
     /**
@@ -83,7 +73,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @BeforeSuite
      */
-    public static function init(BeforeSuiteScope $scope)
+    public static function beforeSuitInit(BeforeSuiteScope $scope)
     {
         $contextSettings = [
             'dir' => getcwd().'/screenshot',
@@ -198,7 +188,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         $fileName = basename($this->screenshotScope->getFeature()->getFile());
         $stepLine = $this->screenshotScope->getStep()->getLine();
 
-        return sprintf('%s.%s_[%s].%s', $this->scenarioStartedTimestamp, $fileName, $stepLine, $ext);
+        return sprintf('%s.%s_[%s].%s', microtime(), $fileName, $stepLine, $ext);
     }
 
 
