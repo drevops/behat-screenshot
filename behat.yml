@@ -10,7 +10,8 @@ default:
         - IntegratedExperts\BehatScreenshot\ScreenshotContext:
           -
             dir: %paths.base%/screenshots
-            date_format: Ymh_His
+            fail: false
+            purge: true
         - FeatureContext:
           -
             screenshot_dir: %paths.base%/screenshots

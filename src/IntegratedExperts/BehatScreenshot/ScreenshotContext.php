@@ -10,10 +10,13 @@ namespace IntegratedExperts\BehatScreenshot;
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Behat\Mink\Driver\GoutteDriver;
+use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\MinkExtension\Context\RawMinkContext;
-use Behat\Behat\Hook\Scope\BeforeStepScope;
+use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Yaml\Exception\RuntimeException;
 
 /**
  * Class ScreenshotContext.
@@ -21,18 +24,18 @@ use Behat\Behat\Hook\Scope\BeforeStepScope;
 class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext
 {
     /**
-     * Screenshot scope.
-     *
-     * @var BeforeStepScope
-     */
-    protected $screenshotScope;
-
-    /**
-     * The timestamp of the start of the scenario execution.
+     * Screenshot step filename.
      *
      * @var string
      */
-    protected $scenarioStartedTimestamp;
+    protected $featureFile;
+
+    /**
+     * Screenshot step line.
+     *
+     * @var int
+     */
+    protected $stepLine;
 
     /**
      * Directory where screenshots are stored.
@@ -40,13 +43,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @var string
      */
     protected $dir;
-
-    /**
-     * Date format format for screenshot file name.
-     *
-     * @var string
-     */
-    protected $dateFormat;
 
     /**
      * Flag to create a screenshot when test fails.
@@ -67,10 +63,40 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     public function __construct($parameters = [])
     {
         $this->dir = isset($parameters['dir']) ? $parameters['dir'] : __DIR__.'/screenshot';
-        $this->dateFormat = isset($parameters['dateFormat']) ? $parameters['dateFormat'] : 'Ymh_His';
         $this->onFail = isset($parameters['fail']) ? $parameters['fail'] : true;
+    }
 
-        $this->scenarioStartedTimestamp = date($this->dateFormat);
+    /**
+     * Init function before tests run.
+     *
+     * @param BeforeSuiteScope $scope
+     *
+     * @BeforeSuite
+     */
+    public static function beforeSuitInit(BeforeSuiteScope $scope)
+    {
+        $contextSettings = null;
+        foreach ($scope->getSuite()->getSetting('contexts') as $context) {
+            if (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
+                $contextSettings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0];
+                break;
+            }
+        }
+
+        if (empty($contextSettings['dir'])) {
+            throw new RuntimeException('Screenshot directory is not provided in Behat configuration');
+        }
+
+        $purge = false;
+        if (getenv('BEHAT_SCREENSHOT_PURGE')) {
+            $purge = (bool) getenv('BEHAT_SCREENSHOT_PURGE');
+        } elseif (isset($contextSettings['purge'])) {
+            $purge = $contextSettings['purge'];
+        }
+
+        if ($purge) {
+            self::purgeFilesInDir($contextSettings['dir']);
+        }
     }
 
     /**
@@ -98,7 +124,8 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public function beforeStepInit(BeforeStepScope $scope)
     {
-        $this->screenshotScope = $scope;
+        $this->featureFile = $scope->getFeature()->getFile();
+        $this->stepLine = $scope->getStep()->getLine();
     }
 
     /**
@@ -120,73 +147,59 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * Handles different driver types.
      *
-     * @When /^(?:|I\s)save screenshot$/
+     * @When save screenshot
+     * @When I save screenshot
      */
     public function saveDebugScreenshot()
     {
-        $this->prepareDir();
-
         $driver = $this->getSession()->getDriver();
-        if ($driver instanceof GoutteDriver) {
-            // Goutte is a pure PHP browser, so the only 'screenshot' we can save
-            // is actual HTML of the page.
-            $filename = $this->makeFileName('html');
-            // Try to get a response from the visited page, if there is any loaded
-            // content at all.
-            try {
-                $html = $this->getSession()->getDriver()->getContent();
-                $this->writeFile($filename, $html);
-            } catch (Exception $e) {
-            }
-        }
 
-        // Selenium driver covers Selenium and PhantomJS.
-        if ($driver instanceof Selenium2Driver) {
-            $filename = $this->makeFileName('png');
-            $this->saveScreenshot($filename, $this->dir);
-        }
+        $data = $driver instanceof Selenium2Driver ? $this->getSession()->getScreenshot() : $this->getSession()->getDriver()->getContent();
+        $ext = $driver instanceof Selenium2Driver ? 'png' : 'html';
+
+        $this->saveScreenshotData($this->makeFileName($ext), $data);
     }
 
+    protected function saveScreenshotData($filename, $data)
+    {
+        $this->prepareDir($this->dir);
+        file_put_contents($this->dir.DIRECTORY_SEPARATOR.$filename, $data);
+    }
 
     /**
      * Make screenshot filename.
      *
-     * Format: micro.seconds_title_of_scenario_trimmed.ext.
+     * Format: microseconds.featurefilename_linenumber.ext
      *
      * @param string $ext File extension without dot.
      *
-     * @return string
-     *   Unique file name.
+     * @return string Unique file name.
      */
     protected function makeFileName($ext)
     {
-        $fileName = basename($this->screenshotScope->getFeature()->getFile());
-        $stepLine = $this->screenshotScope->getStep()->getLine();
-
-        return sprintf('%s.%s_[%s].%s', $this->scenarioStartedTimestamp, $fileName, $stepLine, $ext);
+        return sprintf('%01.2f.%s_[%s].%s', microtime(true), basename($this->featureFile), $this->stepLine, $ext);
     }
 
-
     /**
-     * Prepare directory for write new screenshot.
+     * Prepare directory.
      */
-    protected function prepareDir()
+    protected function prepareDir($dir)
     {
-        // Clear stat cache and force creation of the screenshot dir.
-        // This is required to handle slow file systems, like the ones used in VMs.
-        clearstatcache(true, $this->dir);
-        @mkdir($this->dir);
+        $fs = new Filesystem();
+        $fs->mkdir($dir, 0755);
     }
 
-
     /**
-     * Write data into file.
+     * Remove files in directory.
      *
-     * @param string $filename Name for write file.
-     * @param string $data Data for write ito file.
+     * @param string $dir Directory name.
      */
-    protected function writeFile($filename, $data)
+    protected static function purgeFilesInDir($dir)
     {
-        file_put_contents($this->dir.DIRECTORY_SEPARATOR.$filename, $data);
+        $fs = new Filesystem();
+        $finder = new Finder();
+        if ($fs->exists($dir)) {
+            $fs->remove($finder->files()->in($dir));
+        }
     }
 }
