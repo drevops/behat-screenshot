@@ -11,12 +11,12 @@ use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
-use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\MinkExtension\Context\RawMinkContext;
 use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Yaml\Exception\RuntimeException;
 
 /**
  * Class ScreenshotContext.
@@ -28,7 +28,14 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @var string
      */
-    protected $stepFile;
+    protected $featureFile;
+
+    /**
+     * Screenshot step line.
+     *
+     * @var int
+     */
+    protected $stepLine;
 
     /**
      * Directory where screenshots are stored.
@@ -68,26 +75,27 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public static function beforeSuitInit(BeforeSuiteScope $scope)
     {
-        $contextSettings = [
-            'dir' => getcwd().'/screenshot',
-            'purge' => false,
-        ];
+        $contextSettings = null;
+        foreach ($scope->getSuite()->getSetting('contexts') as $context) {
+            if (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
+                $contextSettings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0];
+                break;
+            }
+        }
 
+        if (empty($contextSettings['dir'])) {
+            throw new RuntimeException('Screenshot directory is not provided in Behat configuration');
+        }
+
+        $purge = false;
         if (getenv('BEHAT_SCREENSHOT_PURGE')) {
             $purge = (bool) getenv('BEHAT_SCREENSHOT_PURGE');
-        } else {
-            foreach ($scope->getSuite()->getSetting('contexts') as $context) {
-                if (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
-                    $contextSettings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0] + $contextSettings;
-                    break;
-                }
-            }
-
+        } elseif (isset($contextSettings['purge'])) {
             $purge = $contextSettings['purge'];
         }
 
         if ($purge) {
-            self::purgeDir($contextSettings['dir']);
+            self::purgeFilesInDir($contextSettings['dir']);
         }
     }
 
@@ -116,7 +124,8 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public function beforeStepInit(BeforeStepScope $scope)
     {
-        $this->stepFile = $this->screenshotScope->getFeature()->getFile();
+        $this->featureFile = $scope->getFeature()->getFile();
+        $this->stepLine = $scope->getStep()->getLine();
     }
 
     /**
@@ -138,85 +147,59 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * Handles different driver types.
      *
-     * @When /^(?:|I\s)save screenshot$/
+     * @When save screenshot
+     * @When I save screenshot
      */
     public function saveDebugScreenshot()
     {
-        $this->prepareDir();
-
         $driver = $this->getSession()->getDriver();
-        if ($driver instanceof GoutteDriver) {
-            // Goutte is a pure PHP browser, so the only 'screenshot' we can
-            // save is actual HTML of the page.
-            $filename = $this->makeFileName('html');
-            // Try to get a response from the visited page, if there is any
-            // loaded content at all.
-            try {
-                $html = $this->getSession()->getDriver()->getContent();
-                $this->writeFile($filename, $html);
-            } catch (Exception $e) {
-            }
-        }
 
-        // Selenium driver covers Selenium and PhantomJS.
-        if ($driver instanceof Selenium2Driver) {
-            $filename = $this->makeFileName('png');
-            $this->saveScreenshot($filename, $this->dir);
-        }
+        $data = $driver instanceof Selenium2Driver ? $this->getSession()->getScreenshot() : $this->getSession()->getDriver()->getContent();
+        $ext = $driver instanceof Selenium2Driver ? 'png' : 'html';
+
+        $this->saveScreenshotData($this->makeFileName($ext), $data);
     }
 
+    protected function saveScreenshotData($filename, $data)
+    {
+        $this->prepareDir($this->dir);
+        file_put_contents($this->dir.DIRECTORY_SEPARATOR.$filename, $data);
+    }
 
     /**
      * Make screenshot filename.
      *
-     * Format: micro.seconds_title_of_scenario_trimmed.ext.
+     * Format: microseconds.featurefilename_linenumber.ext
      *
      * @param string $ext File extension without dot.
      *
-     * @return string
-     *   Unique file name.
+     * @return string Unique file name.
      */
     protected function makeFileName($ext)
     {
-        $fileName = basename($this->stepFile);
-        $stepLine = $this->screenshotScope->getStep()->getLine();
-
-        return sprintf('%s.%s_[%s].%s', microtime(), $fileName, $stepLine, $ext);
+        return sprintf('%01.2f.%s_[%s].%s', microtime(true), basename($this->featureFile), $this->stepLine, $ext);
     }
 
-
     /**
-     * Prepare directory for write new screenshot.
+     * Prepare directory.
      */
-    protected function prepareDir()
+    protected function prepareDir($dir)
     {
         $fs = new Filesystem();
-        $fs->mkdir($this->dir, 0755);
+        $fs->mkdir($dir, 0755);
     }
 
     /**
-     * Remove directory with previous screenshots.
+     * Remove files in directory.
      *
-     * @param string $dir Screenshot directory name.
+     * @param string $dir Directory name.
      */
-    protected static function purgeDir($dir)
+    protected static function purgeFilesInDir($dir)
     {
         $fs = new Filesystem();
         $finder = new Finder();
         if ($fs->exists($dir)) {
             $fs->remove($finder->files()->in($dir));
         }
-    }
-
-
-    /**
-     * Write data into file.
-     *
-     * @param string $filename Name for write file.
-     * @param string $data Data for write ito file.
-     */
-    protected function writeFile($filename, $data)
-    {
-        file_put_contents($this->dir.DIRECTORY_SEPARATOR.$filename, $data);
     }
 }

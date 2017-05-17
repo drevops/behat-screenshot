@@ -26,7 +26,7 @@ default:
           -
             dir: %paths.base%/screenshots
             fail: true
-            purge: 1
+            purge: false
         - FeatureContext            
 ```
 
