@@ -24,11 +24,11 @@ use Symfony\Component\Finder\Finder;
 class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext
 {
     /**
-     * Screenshot scope.
+     * Screenshot step filename.
      *
-     * @var BeforeStepScope
+     * @var string
      */
-    protected $screenshotScope;
+    protected $stepFile;
 
     /**
      * Directory where screenshots are stored.
@@ -36,13 +36,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @var string
      */
     protected $dir;
-
-    /**
-     * Date format format for screenshot file name.
-     *
-     * @var string
-     */
-    protected $dateFormat;
 
     /**
      * Flag to create a screenshot when test fails.
@@ -123,7 +116,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public function beforeStepInit(BeforeStepScope $scope)
     {
-        $this->screenshotScope = $scope;
+        $this->stepFile = $this->screenshotScope->getFeature()->getFile();
     }
 
     /**
@@ -153,11 +146,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
         $driver = $this->getSession()->getDriver();
         if ($driver instanceof GoutteDriver) {
-            // Goutte is a pure PHP browser, so the only 'screenshot' we can save
-            // is actual HTML of the page.
+            // Goutte is a pure PHP browser, so the only 'screenshot' we can
+            // save is actual HTML of the page.
             $filename = $this->makeFileName('html');
-            // Try to get a response from the visited page, if there is any loaded
-            // content at all.
+            // Try to get a response from the visited page, if there is any
+            // loaded content at all.
             try {
                 $html = $this->getSession()->getDriver()->getContent();
                 $this->writeFile($filename, $html);
@@ -185,7 +178,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected function makeFileName($ext)
     {
-        $fileName = basename($this->screenshotScope->getFeature()->getFile());
+        $fileName = basename($this->stepFile);
         $stepLine = $this->screenshotScope->getStep()->getLine();
 
         return sprintf('%s.%s_[%s].%s', microtime(), $fileName, $stepLine, $ext);
