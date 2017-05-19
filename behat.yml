@@ -1,5 +1,5 @@
 default:
-  autoload: [ %paths.base%/tests/behat/features/bootstrap ]
+  autoload: [ %paths.base%/tests/behat/bootstrap ]
   suites:
     default:
       paths: [ %paths.base%/tests/behat/features ]
