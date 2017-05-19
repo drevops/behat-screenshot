@@ -77,7 +77,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     {
         $contextSettings = null;
         foreach ($scope->getSuite()->getSetting('contexts') as $context) {
-            if (isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
+            if (is_array($context) && isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
                 $contextSettings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0];
                 break;
             }
