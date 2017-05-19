@@ -62,7 +62,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public function __construct($parameters = [])
     {
-        $this->dir = isset($parameters['dir']) ? $parameters['dir'] : __DIR__.'/screenshot';
+        $this->dir = $this->extractParameterFromEnv('BEHAT_SCREENSHOT_DIR', $parameters['dir']);
         $this->onFail = isset($parameters['fail']) ? $parameters['fail'] : true;
     }
 
@@ -75,27 +75,13 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public static function beforeSuitInit(BeforeSuiteScope $scope)
     {
-        $contextSettings = null;
-        foreach ($scope->getSuite()->getSetting('contexts') as $context) {
-            if (is_array($context) && isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
-                $contextSettings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0];
-                break;
-            }
-        }
+        $contextSettings = self::getSettingsFromScope($scope);
 
-        if (empty($contextSettings['dir'])) {
-            throw new RuntimeException('Screenshot directory is not provided in Behat configuration');
-        }
-
-        $purge = false;
-        if (getenv('BEHAT_SCREENSHOT_PURGE')) {
-            $purge = (bool) getenv('BEHAT_SCREENSHOT_PURGE');
-        } elseif (isset($contextSettings['purge'])) {
-            $purge = $contextSettings['purge'];
-        }
+        $dir = self::extractParameterFromEnv('BEHAT_SCREENSHOT_DIR', $contextSettings['dir']);
+        $purge = self::extractParameterFromEnv('BEHAT_SCREENSHOT_PURGE', $contextSettings['purge'], false);
 
         if ($purge) {
-            self::purgeFilesInDir($contextSettings['dir']);
+            self::purgeFilesInDir($dir);
         }
     }
 
@@ -201,5 +187,38 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         if ($fs->exists($dir)) {
             $fs->remove($finder->files()->in($dir));
         }
+    }
+
+    /**
+     * Extract parameter from the list of provided parameters.
+     */
+    protected static function extractParameterFromEnv()
+    {
+        $candidates = func_get_args();
+        $candidates[0] = getenv($candidates[0]) === false ? null : getenv($candidates[0]);
+
+        foreach ($candidates as $candidate) {
+            if (isset($candidate)) {
+                return $candidate;
+            }
+        }
+
+        throw new RuntimeException('One of the parameters was not provided');
+    }
+
+    /**
+     * Extarct settings from scope.
+     */
+    protected static function getSettingsFromScope(BeforeSuiteScope $scope)
+    {
+        $settings = null;
+        foreach ($scope->getSuite()->getSetting('contexts') as $context) {
+            if (is_array($context) && isset($context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0])) {
+                $settings = $context['IntegratedExperts\BehatScreenshot\ScreenshotContext'][0];
+                break;
+            }
+        }
+
+        return $settings;
     }
 }

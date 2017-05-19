@@ -25,7 +25,13 @@ class FeatureContext extends MinkContext implements Context
      */
     public function __construct($parameters)
     {
-        $this->screenshotDir = isset($parameters['screenshot_dir']) ? $parameters['screenshot_dir'] : 'screenshots';
+        if (getenv('BEHAT_SCREENSHOT_DIR')) {
+            $this->screenshotDir = getenv('BEHAT_SCREENSHOT_DIR');
+        } elseif (isset($parameters['screenshot_dir'])) {
+            $this->screenshotDir = $parameters['screenshot_dir'];
+        } else {
+            throw new RuntimeException('Screenshots dir is not set.');
+        }
     }
 
     /**
@@ -54,12 +60,7 @@ class FeatureContext extends MinkContext implements Context
         $matches = glob($wildcard);
 
         if (empty($matches)) {
-            throw new \Exception(
-                sprintf(
-                    "Unable to find files matching wildcard '%s'",
-                    $wildcard
-                )
-            );
+            throw new \Exception(sprintf("Unable to find files matching wildcard '%s'", $wildcard));
         }
     }
 
