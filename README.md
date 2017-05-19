@@ -22,12 +22,13 @@ default:
   suites:
     default:
       contexts:
-        - IntegratedExperts\BehatScreenshot\ScreenshotContext:
-          -
-            dir: %paths.base%/screenshots
-            fail: true
-            purge: false
-        - FeatureContext            
+        - IntegratedExperts\BehatScreenshot\ScreenshotContext
+        - FeatureContext
+  extensions:
+    IntegratedExperts\BehatScreenshot\ScreenshotExtension:
+      dir: %paths.base%/screenshots
+      fail: true
+      purge: false
 ```
 
 In your feature:
