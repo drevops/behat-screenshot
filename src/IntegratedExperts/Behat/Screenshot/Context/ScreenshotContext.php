@@ -5,7 +5,7 @@
  * Behat context to enable Screenshot support in tests.
  */
 
-namespace IntegratedExperts\BehatScreenshot\Context;
+namespace IntegratedExperts\Behat\Screenshot\Context;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Behat\Hook\Scope\AfterStepScope;
@@ -36,12 +36,19 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected $stepLine;
 
-    /**
-     * Screenshot context parameters.
-     *
-     * @var array
-     */
-    protected $parameters;
+  /**
+   * Screenshot directory name.
+   *
+   * @var string
+   */
+    private $dir;
+
+  /**
+   * Makes screenshot when fail.
+   *
+   * @var bool
+   */
+    private $fail;
 
     /**
      * Init values required for snapshots.
@@ -81,7 +88,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public function printLastResponseOnError(AfterStepScope $event)
     {
-        if ($this->parameters['fail'] && !$event->getTestResult()->isPassed()) {
+        if ($this->fail && !$event->getTestResult()->isPassed()) {
             $this->saveDebugScreenshot();
         }
     }
@@ -115,37 +122,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * {@inheritdoc}
      */
-    public function getParameters()
+    public function setParameters($dir, $fail)
     {
-        return $this->parameters;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setParameters($parameters)
-    {
-        $this->parameters = $parameters;
+        $this->dir = $dir;
+        $this->fail = $fail;
 
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function purgeFilesInDir()
-    {
-        $fs = new Filesystem();
-        $finder = new Finder();
-        if ($fs->exists($this->parameters['dir'])) {
-            $fs->remove($finder->files()->in($this->parameters['dir']));
-        }
-    }
-
     protected function saveScreenshotData($filename, $data)
     {
-        $this->prepareDir($this->parameters['dir']);
-        file_put_contents($this->parameters['dir'].DIRECTORY_SEPARATOR.$filename, $data);
+        $this->prepareDir($this->dir);
+        file_put_contents($this->dir.DIRECTORY_SEPARATOR.$filename, $data);
     }
 
     /**

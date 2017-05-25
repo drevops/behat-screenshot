@@ -5,7 +5,7 @@
  * Behat screenshot extension.
  */
 
-namespace IntegratedExperts\BehatScreenshot;
+namespace IntegratedExperts\Behat\Screenshot;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
@@ -13,6 +13,7 @@ use Behat\Testwork\ServiceContainer\ExtensionManager;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\Console\Exception\RuntimeException;
 
 /**
  * Class ScreenshotExtension
@@ -23,16 +24,6 @@ class ScreenshotExtension implements ExtensionInterface
      * Extension configuration ID.
      */
     const MOD_ID = 'integratedexperts_screenshot';
-
-    /**
-     * Default base path.
-     */
-    const BASE_PATH = '%paths.base%';
-
-    /**
-     * Default screenshot dir.
-     */
-    const DEFAULT_SCREENSHOT_DIR = self::BASE_PATH.'/screenshot';
 
     /**
      * {@inheritdoc}
@@ -62,9 +53,9 @@ class ScreenshotExtension implements ExtensionInterface
     public function configure(ArrayNodeDefinition $builder)
     {
         $builder->children()
-            ->scalarNode('dir')->defaultValue(self::DEFAULT_SCREENSHOT_DIR)->end()
-            ->scalarNode('fail')->defaultFalse()->end()
-            ->scalarNode('purge')->defaultTrue()->end();
+            ->scalarNode('dir')->cannotBeEmpty()->end()
+            ->scalarNode('fail')->cannotBeEmpty()->end()
+            ->scalarNode('purge')->cannotBeEmpty()->end();
     }
 
     /**
@@ -72,10 +63,20 @@ class ScreenshotExtension implements ExtensionInterface
      */
     public function load(ContainerBuilder $container, array $config)
     {
-        $definition = new Definition('IntegratedExperts\BehatScreenshot\Context\Initializer\ScreenshotContextInitializer', [
-            $config,
-        ]);
-        $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
-        $container->setDefinition('integratedexperts_screenshot.screenshot_context_initializer', $definition);
+        if (!isset($config['dir'])) {
+            throw new RuntimeException('Parameter dir is not determine in behat config.');
+        } elseif (!isset($config['fail'])) {
+            throw new RuntimeException('Parameter fail is not determine in behat config.');
+        } elseif (!isset($config['purge'])) {
+            throw new RuntimeException('Parameter purge is not determine in behat config.');
+        } else {
+            $definition = new Definition('IntegratedExperts\Behat\Screenshot\Context\Initializer\ScreenshotContextInitializer', [
+                $config['dir'],
+                $config['fail'],
+                $config['purge'],
+            ]);
+            $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
+            $container->setDefinition('integratedexperts_screenshot.screenshot_context_initializer', $definition);
+        }
     }
 }
