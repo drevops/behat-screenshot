@@ -21,6 +21,7 @@ use Symfony\Component\Finder\Finder;
  */
 class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext, ScreenshotContextInterface
 {
+
     /**
      * Screenshot step filename.
      *
@@ -95,12 +96,20 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public function saveDebugScreenshot()
     {
+        $data = null;
         $driver = $this->getSession()->getDriver();
 
-        $data = $driver instanceof Selenium2Driver ? $this->getSession()->getScreenshot() : $this->getSession()->getDriver()->getContent();
-        $ext = $driver instanceof Selenium2Driver ? 'png' : 'html';
+        if ($driver instanceof Selenium2Driver) {
+            $data = $this->getSession()->getScreenshot();
+            $ext = 'png';
+        } elseif ($this->getSession()->getDriver()->getClient()->getInternalResponse()) {
+            $data = $this->getSession()->getDriver()->getContent();
+            $ext = 'html';
+        }
 
-        $this->saveScreenshotData($this->makeFileName($ext), $data);
+        if ($data) {
+            $this->saveScreenshotData($this->makeFileName($ext), $data);
+        }
     }
 
     /**
