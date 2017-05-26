@@ -7,7 +7,7 @@ Behat context to make screenshots
 [![License](https://poser.pugx.org/integratedexperts/behat-screenshot/license)](https://packagist.org/packages/integratedexperts/behat-screenshot)
 
 ## Features
-* Make screenshot using `I save screenshot` step definition.
+* Make screenshot using `I save screenshot` or `save screenshot` step definition.
 * Make screenshot when test fails.
 * Screnshot is saved as HTML page for Goutte driver.
 * Screnshot is saved as PNG image for Selenium driver.
