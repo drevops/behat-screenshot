@@ -8,9 +8,9 @@ namespace IntegratedExperts\Behat\Screenshot\Context\Initializer;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Initializer\ContextInitializer;
+use IntegratedExperts\Behat\Screenshot\Context\ScreenshotContextInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use IntegratedExperts\Behat\Screenshot\Context\ScreenshotContextInterface;
 
 /**
  * Class ScreenshotContextInitializer
@@ -18,25 +18,25 @@ use IntegratedExperts\Behat\Screenshot\Context\ScreenshotContextInterface;
 class ScreenshotContextInitializer implements ContextInitializer
 {
 
-  /**
-   * Screenshot directory name.
-   *
-   * @var string
-   */
+    /**
+     * Screenshot directory name.
+     *
+     * @var string
+     */
     private $dir;
 
-  /**
-   * Makes screenshot when fail.
-   *
-   * @var bool
-   */
+    /**
+     * Makes screenshot when fail.
+     *
+     * @var bool
+     */
     private $fail;
 
-  /**
-   * Purge dir before start test.
-   *
-   * @var bool
-   */
+    /**
+     * Purge dir before start test.
+     *
+     * @var bool
+     */
     private $purge;
 
     /**
@@ -76,9 +76,9 @@ class ScreenshotContextInitializer implements ContextInitializer
         }
     }
 
-  /**
-   * Remove files in directory.
-   */
+    /**
+     * Remove files in directory.
+     */
     protected function purgeFilesInDir()
     {
         $fs = new Filesystem();

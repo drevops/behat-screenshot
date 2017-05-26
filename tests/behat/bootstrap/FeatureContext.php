@@ -13,6 +13,7 @@ use Behat\MinkExtension\Context\MinkContext;
  */
 class FeatureContext extends MinkContext implements Context
 {
+
     /**
      * @var string $screenshotDir Directory where screenshots are stored.
      */

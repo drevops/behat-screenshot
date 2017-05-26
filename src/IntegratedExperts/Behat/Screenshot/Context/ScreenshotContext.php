@@ -14,7 +14,6 @@ use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\MinkExtension\Context\RawMinkContext;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 
 /**
  * Class ScreenshotContext.
@@ -36,19 +35,30 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected $stepLine;
 
-  /**
-   * Screenshot directory name.
-   *
-   * @var string
-   */
+    /**
+     * Screenshot directory name.
+     *
+     * @var string
+     */
     private $dir;
 
-  /**
-   * Makes screenshot when fail.
-   *
-   * @var bool
-   */
+    /**
+     * Makes screenshot when fail.
+     *
+     * @var bool
+     */
     private $fail;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setParameters($dir, $fail)
+    {
+        $this->dir = $dir;
+        $this->fail = $fail;
+
+        return $this;
+    }
 
     /**
      * Init values required for snapshots.
@@ -89,7 +99,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     public function printLastResponseOnError(AfterStepScope $event)
     {
         if ($this->fail && !$event->getTestResult()->isPassed()) {
-            $this->saveDebugScreenshot();
+            $this->iSaveScreenshot();
         }
     }
 
@@ -101,7 +111,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @When save screenshot
      * @When I save screenshot
      */
-    public function saveDebugScreenshot()
+    public function iSaveScreenshot()
     {
         $data = null;
         $driver = $this->getSession()->getDriver();
@@ -120,20 +130,28 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     }
 
     /**
-     * {@inheritdoc}
+     * Save screenshot data into a file.
+     *
+     * @param string $filename
+     *   File name to write.
+     * @param string $data
+     *   Data to write into a file.
      */
-    public function setParameters($dir, $fail)
-    {
-        $this->dir = $dir;
-        $this->fail = $fail;
-
-        return $this;
-    }
-
     protected function saveScreenshotData($filename, $data)
     {
         $this->prepareDir($this->dir);
         file_put_contents($this->dir.DIRECTORY_SEPARATOR.$filename, $data);
+    }
+
+    /**
+     * Prepare directory.
+     *
+     * @param string $dir Name of preparing directory.
+     */
+    protected function prepareDir($dir)
+    {
+        $fs = new Filesystem();
+        $fs->mkdir($dir, 0755);
     }
 
     /**
@@ -148,16 +166,5 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected function makeFileName($ext)
     {
         return sprintf('%01.2f.%s_[%s].%s', microtime(true), basename($this->featureFile), $this->stepLine, $ext);
-    }
-
-    /**
-     * Prepare directory.
-     *
-     * @param string $dir Name of preparing directory.
-     */
-    protected function prepareDir($dir)
-    {
-        $fs = new Filesystem();
-        $fs->mkdir($dir, 0755);
     }
 }

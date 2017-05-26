@@ -14,6 +14,7 @@ use Behat\Behat\Context\Context;
  */
 interface ScreenshotContextInterface extends Context
 {
+
     /**
      * Set context parameters.
      *
