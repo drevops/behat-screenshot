@@ -18,4 +18,3 @@ test:
   override:
     - composer cs
     - composer test
-    - BEHAT_SCREENSHOT_DIR=$CIRCLE_ARTIFACTS/behat composer test
