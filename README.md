@@ -22,7 +22,7 @@ default:
   suites:
     default:
       contexts:
-        - IntegratedExperts\BehatScreenshot\ScreenshotContext
+        - IntegratedExperts\Behat\Screenshot\Context\ScreenshotContext
         - FeatureContext
   extensions:
     IntegratedExperts\BehatScreenshot\ScreenshotExtension:
