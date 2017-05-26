@@ -11,6 +11,7 @@ Behat context to make screenshots
 * Make screenshot when test fails.
 * Screnshot is saved as HTML page for Goutte driver.
 * Screnshot is saved as PNG image for Selenium driver.
+* Screenshot directory can be specified through environment variable `BEHAT_SCREENSHOT_DIR` - useful for CI systems to override values in `behat.yml`.
 
 ## Installation
 `composer require integratedexperts/behat-screenshot`
