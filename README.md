@@ -26,7 +26,7 @@ default:
         - IntegratedExperts\Behat\Screenshot\Context\ScreenshotContext
         - FeatureContext
   extensions:
-    IntegratedExperts\BehatScreenshot\ScreenshotExtension:
+    IntegratedExperts\Behat\Screenshot\ScreenshotExtension:
       dir: %paths.base%/screenshots
       fail: true
       purge: false
