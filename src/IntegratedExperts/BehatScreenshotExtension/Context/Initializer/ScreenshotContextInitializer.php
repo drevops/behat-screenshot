@@ -44,7 +44,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      *
      * @var bool
      */
-    protected $doPurge;
+    protected $needsPurging;
 
     /**
      * ScreenshotContextInitializer constructor.
@@ -55,7 +55,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      */
     public function __construct($dir, $fail, $purge)
     {
-        $this->doPurge = true;
+        $this->needsPurging = true;
         $this->dir = $dir;
         $this->fail = $fail;
         $this->purge = $purge;
@@ -67,10 +67,11 @@ class ScreenshotContextInitializer implements ContextInitializer
     public function initializeContext(Context $context)
     {
         if ($context instanceof ScreenshotAwareContext) {
-            $context->setScreenshotParameters($this->dir, $this->fail);
-            if ($this->purge && $this->doPurge) {
+            $dir = $this->resolveDir();
+            $context->setScreenshotParameters($dir, $this->fail);
+            if ($this->purge && $this->needsPurging) {
                 $this->purgeFilesInDir();
-                $this->doPurge = false;
+                $this->needsPurging = false;
             }
         }
     }
@@ -85,5 +86,18 @@ class ScreenshotContextInitializer implements ContextInitializer
         if ($fs->exists($this->dir)) {
             $fs->remove($finder->files()->in($this->dir));
         }
+    }
+
+    /**
+     * Resolve directory using one of supported paths.
+     */
+    protected function resolveDir()
+    {
+        $dir = getenv('BEHAT_SCREENSHOT_DIR');
+        if (!empty($dir)) {
+            return $dir;
+        }
+
+        return $this->dir;
     }
 }
