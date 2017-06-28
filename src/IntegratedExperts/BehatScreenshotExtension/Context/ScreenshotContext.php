@@ -5,7 +5,7 @@
  * Behat context to enable Screenshot support in tests.
  */
 
-namespace IntegratedExperts\Behat\Screenshot\Context;
+namespace IntegratedExperts\BehatScreenshotExtension\Context;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Behat\Hook\Scope\AfterStepScope;
@@ -18,7 +18,7 @@ use Symfony\Component\Filesystem\Filesystem;
 /**
  * Class ScreenshotContext.
  */
-class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext, ScreenshotContextInterface
+class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext, ScreenshotAwareContext
 {
 
     /**
@@ -52,7 +52,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * {@inheritdoc}
      */
-    public function setParameters($dir, $fail)
+    public function setScreenshotParameters($dir, $fail)
     {
         $this->dir = $dir;
         $this->fail = $fail;

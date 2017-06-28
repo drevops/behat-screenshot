@@ -5,14 +5,14 @@
  * Behat context interface to enable Screenshot.
  */
 
-namespace IntegratedExperts\Behat\Screenshot\Context;
+namespace IntegratedExperts\BehatScreenshotExtension\Context;
 
 use Behat\Behat\Context\Context;
 
 /**
  * Interface ScreenshotContext.
  */
-interface ScreenshotContextInterface extends Context
+interface ScreenshotAwareContext extends Context
 {
 
     /**
@@ -23,5 +23,5 @@ interface ScreenshotContextInterface extends Context
      *
      * @return $this
      */
-    public function setParameters($dir, $fail);
+    public function setScreenshotParameters($dir, $fail);
 }

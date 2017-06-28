@@ -5,7 +5,7 @@
  * Behat screenshot extension.
  */
 
-namespace IntegratedExperts\Behat\Screenshot;
+namespace IntegratedExperts\BehatScreenshotExtension\ServiceContainer;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\Definition;
 /**
  * Class ScreenshotExtension
  */
-class ScreenshotExtension implements ExtensionInterface
+class BehatScreenshotExtension implements ExtensionInterface
 {
 
     /**
@@ -63,7 +63,7 @@ class ScreenshotExtension implements ExtensionInterface
      */
     public function load(ContainerBuilder $container, array $config)
     {
-        $definition = new Definition('IntegratedExperts\Behat\Screenshot\Context\Initializer\ScreenshotContextInitializer', [
+        $definition = new Definition('IntegratedExperts\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer', [
             $config['dir'],
             $config['fail'],
             $config['purge'],

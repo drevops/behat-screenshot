@@ -10,5 +10,8 @@
   <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
     <exclude-pattern>./tests/*</exclude-pattern>
   </rule>
+  <rule ref="Symfony2.NamingConventions.ValidClassName.InvalidInterfaceName">
+    <exclude-pattern>.*context.*</exclude-pattern>
+  </rule>
 
 </ruleset>
