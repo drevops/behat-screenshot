@@ -4,11 +4,11 @@
  * This file is part of the IntegratedExperts\BehatScreenshot package.
  */
 
-namespace IntegratedExperts\Behat\Screenshot\Context\Initializer;
+namespace IntegratedExperts\BehatScreenshotExtension\Context\Initializer;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Initializer\ContextInitializer;
-use IntegratedExperts\Behat\Screenshot\Context\ScreenshotContextInterface;
+use IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotAwareContext;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -23,28 +23,28 @@ class ScreenshotContextInitializer implements ContextInitializer
      *
      * @var string
      */
-    private $dir;
+    protected $dir;
 
     /**
      * Makes screenshot when fail.
      *
      * @var bool
      */
-    private $fail;
+    protected $fail;
 
     /**
      * Purge dir before start test.
      *
      * @var bool
      */
-    private $purge;
+    protected $purge;
 
     /**
-     * Does need to clear directory trigger.
+     * Check if need to actually purge.
      *
      * @var bool
      */
-    private $toPurge;
+    protected $needsPurging;
 
     /**
      * ScreenshotContextInitializer constructor.
@@ -55,7 +55,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      */
     public function __construct($dir, $fail, $purge)
     {
-        $this->toPurge = true;
+        $this->needsPurging = true;
         $this->dir = $dir;
         $this->fail = $fail;
         $this->purge = $purge;
@@ -66,12 +66,12 @@ class ScreenshotContextInitializer implements ContextInitializer
      */
     public function initializeContext(Context $context)
     {
-        if ($context instanceof ScreenshotContextInterface) {
-            $context->setParameters($this->dir, $this->fail);
-            // Calling clearing screenshot directory function.
-            if ($this->purge && $this->toPurge) {
+        if ($context instanceof ScreenshotAwareContext) {
+            $dir = $this->resolveDir();
+            $context->setScreenshotParameters($dir, $this->fail);
+            if ($this->purge && $this->needsPurging) {
                 $this->purgeFilesInDir();
-                $this->toPurge = false;
+                $this->needsPurging = false;
             }
         }
     }
@@ -86,5 +86,18 @@ class ScreenshotContextInitializer implements ContextInitializer
         if ($fs->exists($this->dir)) {
             $fs->remove($finder->files()->in($this->dir));
         }
+    }
+
+    /**
+     * Resolve directory using one of supported paths.
+     */
+    protected function resolveDir()
+    {
+        $dir = getenv('BEHAT_SCREENSHOT_DIR');
+        if (!empty($dir)) {
+            return $dir;
+        }
+
+        return $this->dir;
     }
 }

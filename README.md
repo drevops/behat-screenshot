@@ -23,10 +23,10 @@ default:
   suites:
     default:
       contexts:
-        - IntegratedExperts\Behat\Screenshot\Context\ScreenshotContext
+        - IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotContext
         - FeatureContext
   extensions:
-    IntegratedExperts\Behat\Screenshot\ScreenshotExtension:
+    IntegratedExperts\BehatScreenshotExtension:
       dir: %paths.base%/screenshots
       fail: true
       purge: false

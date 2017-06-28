@@ -7,7 +7,7 @@ default:
         - IntegratedExperts\BehatPhpServer\PhpServerContext:
           -
             docroot: %paths.base%/tests/behat/features/fixtures
-        - IntegratedExperts\Behat\Screenshot\Context\ScreenshotContext
+        - IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotContext
         - FeatureContext:
           -
             screenshot_dir: %paths.base%/screenshots
@@ -17,7 +17,7 @@ default:
       files_path: %paths.base%/tests/behat/features/fixtures
       selenium2: ~
       browser_name: chrome
-    IntegratedExperts\Behat\Screenshot\ScreenshotExtension:
+    IntegratedExperts\BehatScreenshotExtension:
       dir: %paths.base%/screenshots
       fail: false
       purge: true
