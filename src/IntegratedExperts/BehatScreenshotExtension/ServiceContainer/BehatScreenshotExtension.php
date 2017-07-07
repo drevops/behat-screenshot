@@ -55,7 +55,9 @@ class BehatScreenshotExtension implements ExtensionInterface
         $builder->children()
             ->scalarNode('dir')->isRequired()->cannotBeEmpty()->end()
             ->scalarNode('fail')->isRequired()->cannotBeEmpty()->end()
-            ->scalarNode('purge')->isRequired()->cannotBeEmpty()->end();
+            ->scalarNode('purge')->isRequired()->cannotBeEmpty()->end()
+            ->scalarNode('png')->defaultTrue()->end()
+            ->scalarNode('html')->defaultFalse()->end();
     }
 
     /**
@@ -67,6 +69,8 @@ class BehatScreenshotExtension implements ExtensionInterface
             $config['dir'],
             $config['fail'],
             $config['purge'],
+            $config['png'],
+            $config['html']
         ]);
         $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
         $container->setDefinition('integratedexperts_screenshot.screenshot_context_initializer', $definition);

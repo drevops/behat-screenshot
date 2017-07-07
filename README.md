@@ -10,7 +10,7 @@ Behat context to make screenshots
 * Make screenshot using `I save screenshot` or `save screenshot` step definition.
 * Make screenshot when test fails.
 * Screnshot is saved as HTML page for Goutte driver.
-* Screnshot is saved as PNG image for Selenium driver.
+* Screnshot is saved as PNG image or HTML page for Selenium driver.
 * Screenshot directory can be specified through environment variable `BEHAT_SCREENSHOT_DIR` - useful for CI systems to override values in `behat.yml`.
 
 ## Installation
@@ -30,7 +30,17 @@ default:
       dir: %paths.base%/screenshots
       fail: true
       purge: false
+      png: true
+      html: false
 ```
+
+## Options
+- `dir` (required) - Directory location to save screen shots. For exampe %paths.base%/screenshots
+- `fail` (required) - When there is a failure make a screen shot
+- `purge` (required) - Purge before starting
+- `png` - (optional) - Save a png screen shot when using the selenium2 driver
+- `html` - (optional) - Save a html screen shot, both png and html can be true
+
 
 In your feature:
 ```

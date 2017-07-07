@@ -23,5 +23,5 @@ interface ScreenshotAwareContext extends Context
      *
      * @return $this
      */
-    public function setScreenshotParameters($dir, $fail);
+    public function setScreenshotParameters($dir, $fail, $html, $png);
 }
