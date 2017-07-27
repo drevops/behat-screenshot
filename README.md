@@ -1,4 +1,4 @@
-# behat-screenshot
+# Behat Screenshot Extension
 Behat context to make screenshots
 
 [![CircleCI](https://circleci.com/gh/integratedexperts/behat-screenshot.svg?style=shield)](https://circleci.com/gh/integratedexperts/behat-screenshot)
