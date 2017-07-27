@@ -1,5 +1,5 @@
 # Behat Screenshot Extension
-Behat context to make screenshots
+Behat extension and a step definitions to create HTML and Image screenshots on demand or test fail.
 
 [![CircleCI](https://circleci.com/gh/integratedexperts/behat-screenshot.svg?style=shield)](https://circleci.com/gh/integratedexperts/behat-screenshot)
 [![Latest Stable Version](https://poser.pugx.org/integratedexperts/behat-screenshot/v/stable)](https://packagist.org/packages/integratedexperts/behat-screenshot)
