@@ -55,6 +55,7 @@ class BehatScreenshotExtension implements ExtensionInterface
         $builder->children()
             ->scalarNode('dir')->isRequired()->cannotBeEmpty()->end()
             ->scalarNode('fail')->isRequired()->cannotBeEmpty()->end()
+            ->scalarNode('fail_prefix')->defaultValue('failed_')->end()
             ->scalarNode('purge')->isRequired()->cannotBeEmpty()->end();
     }
 
@@ -66,6 +67,7 @@ class BehatScreenshotExtension implements ExtensionInterface
         $definition = new Definition('IntegratedExperts\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer', [
             $config['dir'],
             $config['fail'],
+            $config['fail_prefix'],
             $config['purge'],
         ]);
         $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);

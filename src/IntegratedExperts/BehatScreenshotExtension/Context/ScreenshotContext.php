@@ -50,12 +50,20 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     private $fail;
 
     /**
+     * Prefix for failed screenshot files.
+     *
+     * @var string
+     */
+    private $failPrefix;
+
+    /**
      * {@inheritdoc}
      */
-    public function setScreenshotParameters($dir, $fail)
+    public function setScreenshotParameters($dir, $fail, $failPrefix)
     {
         $this->dir = $dir;
         $this->fail = $fail;
+        $this->failPrefix = $failPrefix;
 
         return $this;
     }
@@ -99,7 +107,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     public function printLastResponseOnError(AfterStepScope $event)
     {
         if ($this->fail && !$event->getTestResult()->isPassed()) {
-            $this->iSaveScreenshot();
+            $this->iSaveScreenshot(true);
         }
     }
 
@@ -108,14 +116,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * Handles different driver types.
      *
+     * @param bool $fail Denotes if this was called in a context of the failed
+     *                   test.
+     *
      * @When save screenshot
      * @When I save screenshot
      */
-    public function iSaveScreenshot()
+    public function iSaveScreenshot($fail = false)
     {
         $data = null;
         $driver = $this->getSession()->getDriver();
 
+        $ext = 'html';
         if ($driver instanceof Selenium2Driver) {
             $data = $this->getSession()->getScreenshot();
             $ext = 'png';
@@ -125,7 +137,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         }
 
         if ($data) {
-            $this->saveScreenshotData($this->makeFileName($ext), $data);
+            if ($fail) {
+                $this->saveScreenshotData($this->makeFileName($ext, $this->failPrefix), $data);
+            } else {
+                $this->saveScreenshotData($this->makeFileName($ext), $data);
+            }
         }
     }
 
@@ -159,12 +175,13 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * Format: microseconds.featurefilename_linenumber.ext
      *
-     * @param string $ext File extension without dot.
+     * @param string $ext    File extension without dot.
+     * @param string $prefix Optional file name prefix for a filed test.
      *
      * @return string Unique file name.
      */
-    protected function makeFileName($ext)
+    protected function makeFileName($ext, $prefix = '')
     {
-        return sprintf('%01.2f.%s_[%s].%s', microtime(true), basename($this->featureFile), $this->stepLine, $ext);
+        return sprintf('%01.2f.%s%s_%s.%s', microtime(true), $prefix, basename($this->featureFile), $this->stepLine, $ext);
     }
 }

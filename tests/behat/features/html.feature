@@ -7,4 +7,4 @@ Feature: HTML screenshots
     When I am on the screenshot test page
     And the response status code should be 200
     And I save screenshot
-    Then file wildcard "*.html.feature_\[9\]\.html" should exist
+    Then file wildcard "*.html.feature_9\.html" should exist

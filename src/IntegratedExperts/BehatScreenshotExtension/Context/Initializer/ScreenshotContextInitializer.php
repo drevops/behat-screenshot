@@ -33,6 +33,13 @@ class ScreenshotContextInitializer implements ContextInitializer
     protected $fail;
 
     /**
+     * Prefix for failed screenshot files.
+     *
+     * @var string
+     */
+    private $failPrefix;
+
+    /**
      * Purge dir before start test.
      *
      * @var bool
@@ -49,16 +56,18 @@ class ScreenshotContextInitializer implements ContextInitializer
     /**
      * ScreenshotContextInitializer constructor.
      *
-     * @param string $dir   Screenshot dir.
-     * @param bool   $fail  Screenshot when fail.
-     * @param bool   $purge Purge dir before start script.
+     * @param string $dir        Screenshot dir.
+     * @param bool   $fail       Screenshot when fail.
+     * @param bool   $failPrefix File name prefix for a failed test.
+     * @param bool   $purge      Purge dir before start script.
      */
-    public function __construct($dir, $fail, $purge)
+    public function __construct($dir, $fail, $failPrefix, $purge)
     {
         $this->needsPurging = true;
         $this->dir = $dir;
-        $this->fail = $fail;
         $this->purge = $purge;
+        $this->fail = $fail;
+        $this->failPrefix = $failPrefix;
     }
 
     /**
@@ -68,7 +77,7 @@ class ScreenshotContextInitializer implements ContextInitializer
     {
         if ($context instanceof ScreenshotAwareContext) {
             $dir = $this->resolveDir();
-            $context->setScreenshotParameters($dir, $this->fail);
+            $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix);
             if ($this->purge && $this->needsPurging) {
                 $this->purgeFilesInDir();
                 $this->needsPurging = false;

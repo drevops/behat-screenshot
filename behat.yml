@@ -19,5 +19,5 @@ default:
       browser_name: chrome
     IntegratedExperts\BehatScreenshotExtension:
       dir: %paths.base%/screenshots
-      fail: false
+      fail: true
       purge: true
