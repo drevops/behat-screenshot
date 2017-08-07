@@ -52,10 +52,12 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * {@inheritdoc}
      */
-    public function setScreenshotParameters($dir, $fail)
+    public function setScreenshotParameters($dir, $fail, $html, $png)
     {
         $this->dir = $dir;
         $this->fail = $fail;
+        $this->html = $html;
+        $this->png = $png;
 
         return $this;
     }
@@ -117,16 +119,29 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         $driver = $this->getSession()->getDriver();
 
         if ($driver instanceof Selenium2Driver) {
-            $data = $this->getSession()->getScreenshot();
-            $ext = 'png';
+            // If both png and html are not set assume the default of saving png screen shots.
+            if ($this->png || empty($this->png) && empty($this->html)) {
+                $data = $this->getSession()->getScreenshot();
+                $ext = 'png';
+                if ($data) {
+                    $this->saveScreenshotData($this->makeFileName($ext), $data);
+                }
+            }
+            if ($this->html) {
+                $data = $this->getSession()->getDriver()->getContent();
+                $ext = 'html';
+                if ($data) {
+                    $this->saveScreenshotData($this->makeFileName($ext), $data);
+                }
+            }
         } elseif ($this->getSession()->getDriver()->getClient()->getInternalResponse()) {
             $data = $this->getSession()->getDriver()->getContent();
             $ext = 'html';
+            if ($data) {
+                $this->saveScreenshotData($this->makeFileName($ext), $data);
+            }
         }
 
-        if ($data) {
-            $this->saveScreenshotData($this->makeFileName($ext), $data);
-        }
     }
 
     /**
