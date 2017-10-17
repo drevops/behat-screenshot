@@ -33,9 +33,9 @@
     }
   },
   "scripts": {
-    "cs": "./vendor/bin/phpcs --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors -s -p",
-    "cbf": "./vendor/bin/phpcbf --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors",
-    "test": "vendor/bin/behat --colors --format=progress",
+    "cs": "phpcs --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors -s -p",
+    "cbf": "phpcbf --runtime-set installed_paths $(pwd)/vendor/escapestudios/symfony2-coding-standard --colors",
+    "test": "behat --colors --format=progress",
     "cleanup": "vagrant -f destroy &>/dev/null || $(which true); rm -Rf $(pwd)/.vagrant; rm -Rf $(pwd)/.beetbox; rm -Rf $(pwd)/Vagrantfile; rm -Rf $(pwd)/vendor;"
   }
 }
