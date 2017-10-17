@@ -38,6 +38,20 @@ In your feature:
   Then I save screenshot
 ```
 
+## Options
+
+- `dir:path/to/dir`
+
+  Path to directory to save scereenshots. Directory structure will be created if the directory does not exist.
+  
+- `fail`: `true`/`false`
+  
+  Prefix failed screenshots with 'fail_' string. Useful to distinguish failed and intended screenshots.
+      
+- `purge`: `false`/`false`
+  
+  Remove all files from the screenshots directory on each test run. Useful during debugging of tests.
+
 ## Local development
 ### Preparing local environment
 1. Install [Vagrant](https://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Composer](https://getcomposer.org/).
