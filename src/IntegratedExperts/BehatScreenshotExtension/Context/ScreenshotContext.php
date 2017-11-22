@@ -129,6 +129,9 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
         $ext = 'html';
         if ($driver instanceof Selenium2Driver) {
+            $data = $this->getSession()->getPage()->getOuterHtml();
+            $this->saveScreenshotData($this->makeFileName('html'), $data);
+
             $data = $this->getSession()->getScreenshot();
             $ext = 'png';
         } elseif ($this->getSession()->getDriver()->getClient()->getInternalResponse()) {
