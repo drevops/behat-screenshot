@@ -8,3 +8,4 @@ Feature: HTML screenshots
     And the response status code should be 200
     And I save screenshot
     Then file wildcard "*.html.feature_9\.html" should exist
+    And file wildcard "*.html.feature_9\.png" should not exist

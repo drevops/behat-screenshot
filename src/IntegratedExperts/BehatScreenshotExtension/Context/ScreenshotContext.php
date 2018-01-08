@@ -12,6 +12,7 @@ use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Mink\Driver\Selenium2Driver;
+use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -124,24 +125,24 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public function iSaveScreenshot($fail = false)
     {
-        $data = null;
         $driver = $this->getSession()->getDriver();
 
-        $ext = 'html';
-        if ($driver instanceof Selenium2Driver) {
-            $data = $this->getSession()->getScreenshot();
-            $ext = 'png';
-        } elseif ($this->getSession()->getDriver()->getClient()->getInternalResponse()) {
-            $data = $this->getSession()->getDriver()->getContent();
-            $ext = 'html';
-        }
+        $fileName = $this->makeFileName('html', $fail ? $this->failPrefix : '');
+        $data = $driver->getContent();
+        $this->saveScreenshotData($fileName, $data);
 
-        if ($data) {
-            if ($fail) {
-                $this->saveScreenshotData($this->makeFileName($ext, $this->failPrefix), $data);
-            } else {
-                $this->saveScreenshotData($this->makeFileName($ext), $data);
-            }
+        // Drivers that do not support making screenshots, including Goutte
+        // driver that is shipped with Behat, throw exception. For such drivers,
+        // screenshot stored as an HTML page (without referenced assets).
+        try {
+            $data = $driver->getScreenshot();
+            // Preserve filename, but change the extension - this is to group
+            // content and screenshot files together by name.
+            $fileName = substr($fileName, 0, -1 * strlen('html')).'png';
+            $this->saveScreenshotData($fileName, $data);
+        } catch (UnsupportedDriverActionException $exception) {
+            // Nothing to do here - drivers without support for screenshots
+            // simply do not have them created.
         }
     }
 

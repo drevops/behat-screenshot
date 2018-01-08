@@ -7,3 +7,4 @@ Feature: Selenium screenshots
     When I am on the screenshot test page
     And save screenshot
     Then file wildcard "*.selenium.feature_8.png" should exist
+    And file wildcard "*.selenium.feature_8.html" should exist

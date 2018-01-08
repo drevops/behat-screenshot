@@ -66,6 +66,23 @@ class FeatureContext extends MinkContext implements Context
     }
 
     /**
+     * Checks whether a file wildcard at provided path does not exist.
+     *
+     * @param string $wildcard File name with a wildcard.
+     *
+     * @Given /^file wildcard "([^"]*)" should not exist$/
+     */
+    public function assertFileShouldNotExist($wildcard)
+    {
+        $wildcard = $this->screenshotDir.DIRECTORY_SEPARATOR.$wildcard;
+        $matches = glob($wildcard);
+
+        if (!empty($matches)) {
+            throw new \Exception(sprintf("Files matching wildcard '%s' were found, but were not supposed to", $wildcard));
+        }
+    }
+
+    /**
      * Remove all files from screenshot directory.
      *
      * @Given I remove all files from screenshot directory
