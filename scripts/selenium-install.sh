@@ -4,7 +4,7 @@
 #
 #=========================================================
 SELENIUM_URL=https://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
-CHROMEDRIVER_URL=http://chromedriver.storage.googleapis.com/2.25/chromedriver_linux64.zip
+CHROMEDRIVER_URL=http://chromedriver.storage.googleapis.com/2.37/chromedriver_linux64.zip
 #=========================================================
 
 cd /var/tmp
