@@ -43,9 +43,7 @@ class FeatureContext extends MinkContext implements Context
      */
     public function goToScreenshotTestPage()
     {
-        $this->getSession()->visit(
-            'http://localhost:8888/screenshot.html'
-        );
+        $this->visitPath('screenshot.html');
     }
 
     /**

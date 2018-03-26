@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <ruleset name="behat-screenshot">
   <description>The coding standard for behat-screenshot.</description>
+  <arg name="colors"/>
+  <arg value="sp"/>
 
   <rule ref="Symfony2" />
 
