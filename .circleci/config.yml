@@ -1,0 +1,45 @@
+version: 2
+jobs:
+  build:
+    working_directory: /app
+    docker:
+      - image: integratedexperts/circleci2-builder
+        environment:
+          COMPOSER_ALLOW_SUPERUSER: 1
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Composer validate.
+          command: composer validate --ansi --strict
+      - run:
+          name: Pull newest Docker images.
+          command: composer docker:pull
+      - run:
+          name: Start containers.
+          command: |
+            composer docker:start
+      - run:
+          name: Copy codebase into container.
+          command: |
+            docker cp -L /app/. $(docker-compose ps -q phpserver):/app/
+      - run:
+          name: Install dev dependencies.
+          command: |
+            composer docker:cli -- composer install --ansi
+      - run:
+          name: Lint code.
+          command: composer docker:cli -- composer cs
+      - run:
+          name: Run tests.
+          command: |
+            composer docker:cli -- mkdir -p /app/screenshots
+            composer docker:cli -- composer test
+      - run:
+          name: Copy artifacts.
+          command: |
+            mkdir -p  /tmp/artifacts/behat
+            docker cp $(docker-compose ps -q phpserver):/app/screenshots  /tmp/artifacts/behat
+      - store_artifacts:
+          path: /tmp/artifacts

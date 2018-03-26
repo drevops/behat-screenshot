@@ -53,16 +53,11 @@ In your feature:
   Remove all files from the screenshots directory on each test run. Useful during debugging of tests.
 
 ## Local development
-### Preparing local environment
-1. Install [Vagrant](https://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Composer](https://getcomposer.org/).
-2. Install all dependencies: `composer install`
-3. Provision local VM: `vagrant up`
+1. Install Docker.
+2. Run `composer docker:start`.
 
 ### Running tests
 ```bash
-vagrant ssh
-scripts/selenium-install.sh
-scripts/selenium-start.sh
 composer test
 ```
 ### Cleanup an environment
