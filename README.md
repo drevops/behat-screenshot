@@ -10,7 +10,7 @@ Behat extension and a step definition to create HTML and image screenshots on de
 * Make screenshot using `I save screenshot` or `save screenshot` step definition.
 * Make screenshot when test fails.
 * Screnshot is saved as HTML page for Goutte driver.
-* Screnshot is saved as PNG image for Selenium driver.
+* Screnshot is saved as both HTML and PNG image for Selenium driver.
 * Screenshot directory can be specified through environment variable `BEHAT_SCREENSHOT_DIR` - useful for CI systems to override values in `behat.yml`.
 
 ## Installation
