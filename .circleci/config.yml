@@ -8,8 +8,7 @@ jobs:
           COMPOSER_ALLOW_SUPERUSER: 1
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - run:
           name: Composer validate.
           command: composer validate --ansi --strict
