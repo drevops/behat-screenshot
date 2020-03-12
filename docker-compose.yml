@@ -1,7 +1,7 @@
 version: '2'
 services:
   phpserver:
-    image: amazeeio/php:7.1-cli-drupal
+    image: amazeeio/php:7.3-cli-drupal
     volumes:
       - .:/app:delegated
   selenium:

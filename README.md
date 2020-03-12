@@ -7,11 +7,12 @@ Behat extension and a step definition to create HTML and image screenshots on de
 [![License](https://poser.pugx.org/integratedexperts/behat-screenshot/license)](https://packagist.org/packages/integratedexperts/behat-screenshot)
 
 ## Features
-* Make screenshot using `I save screenshot` or `save screenshot` step definition.
-* Make screenshot when test fails.
-* Screnshot is saved as HTML page for Goutte driver.
-* Screnshot is saved as both HTML and PNG image for Selenium driver.
-* Screenshot directory can be specified through environment variable `BEHAT_SCREENSHOT_DIR` - useful for CI systems to override values in `behat.yml`.
+* Create a screenshot using `I save screenshot` or `save screenshot` step definition.
+* Create a screenshot when test fails.
+* Screenshot is saved as HTML page for Goutte driver.
+* Screenshot is saved as both HTML and PNG image for Selenium driver.
+* Screenshot directory can be specified through environment variable `BEHAT_SCREENSHOT_DIR` (useful for CI systems to override values in `behat.yml`).
+* Screenshots can be purged after every test run by setting `purge: true` (useful during test debugging). 
 
 ## Installation
 `composer require integratedexperts/behat-screenshot`
@@ -40,26 +41,35 @@ In your feature:
 
 ## Options
 
-- `dir:path/to/dir`
+- `dir:` `path/to/dir`
 
   Path to directory to save scereenshots. Directory structure will be created if the directory does not exist.
   
-- `fail`: `true`/`false`
+- `fail:` `true` or `false`
   
   Prefix failed screenshots with 'fail_' string. Useful to distinguish failed and intended screenshots.
       
-- `purge`: `false`/`false`
+- `purge:` `false` or `false`
   
   Remove all files from the screenshots directory on each test run. Useful during debugging of tests.
 
-## Local development
-1. Install Docker.
-2. Run `composer docker:start`.
+## Maintenance
 
-### Running tests
+### Local development setup
+1. Install Docker.
+2. Start environment: `composer docker:start`.
+3. Install dependencies: `composer docker:cli -- composer install --ansi --no-suggest`.
+
+### Lint code
 ```bash
-composer test
+composer docker:cli -- composer lint
+
 ```
+### Run tests
+```bash
+composer docker:cli -- composer test
+```
+
 ### Cleanup an environment
 ```bash
 composer cleanup
