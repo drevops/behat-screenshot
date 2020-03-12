@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /app
     docker:
-      - image: integratedexperts/circleci2-builder
+      - image: integratedexperts/ci-builder
         environment:
           COMPOSER_ALLOW_SUPERUSER: 1
     steps:
@@ -26,10 +26,10 @@ jobs:
       - run:
           name: Install dev dependencies.
           command: |
-            composer docker:cli -- composer install --ansi
+            composer docker:cli -- composer install --ansi --no-suggest
       - run:
           name: Lint code.
-          command: composer docker:cli -- composer cs
+          command: composer docker:cli -- composer lint
       - run:
           name: Run tests.
           command: |

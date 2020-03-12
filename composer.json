@@ -31,7 +31,7 @@
     }
   },
   "scripts": {
-    "cs": "phpcs",
+    "lint ": "phpcs",
     "test": "behat --colors --format=progress",
     "cleanup": "rm -Rf $(pwd)/vendor; rm composer.lock",
     "docker:start": "docker-compose up -d --build",
