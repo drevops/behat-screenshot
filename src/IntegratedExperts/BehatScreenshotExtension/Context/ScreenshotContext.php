@@ -79,7 +79,12 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     public function beforeScenarioInit(BeforeScenarioScope $scope)
     {
         if ($scope->getScenario()->hasTag('javascript')) {
-            if ($this->getSession()->getDriver() instanceof Selenium2Driver) {
+            $driver = $this->getSession()->getDriver();
+            if ($driver instanceof Selenium2Driver) {
+                // Start driver's session manually if it is not already started.
+                if (!$driver->isStarted()) {
+                    $driver->start();
+                }
                 $this->getSession()->resizeWindow(1440, 900, 'current');
             }
         }
