@@ -12,6 +12,7 @@ use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Mink\Driver\Selenium2Driver;
+use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
 use Symfony\Component\Filesystem\Filesystem;
@@ -133,7 +134,15 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         $driver = $this->getSession()->getDriver();
 
         $fileName = $this->makeFileName('html', $fail ? $this->failPrefix : '');
-        $data = $driver->getContent();
+
+        try {
+            $data = $driver->getContent();
+        } catch (DriverException $exception) {
+            // Do not do anything if the driver does not have any content - most
+            // likely the page has not been loaded yet.
+            return;
+        }
+
         $this->saveScreenshotData($fileName, $data);
 
         // Drivers that do not support making screenshots, including Goutte
