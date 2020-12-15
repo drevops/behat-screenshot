@@ -86,7 +86,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
                 if (!$driver->isStarted()) {
                     $driver->start();
                 }
-                $this->getSession()->resizeWindow(1440, 900, 'current');
             }
         }
     }
