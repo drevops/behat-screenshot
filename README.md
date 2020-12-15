@@ -39,6 +39,13 @@ In your feature:
   Then I save screenshot
 ```
 
+You may optionally specify size of browser window in the screenshot step:
+
+```
+  Then I save 1440 x 900 screenshot
+  And I save 800 x 600 screenshot
+```
+
 ## Options
 
 - `dir:` `path/to/dir`
