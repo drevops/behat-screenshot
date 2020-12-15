@@ -160,6 +160,21 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     }
 
     /**
+     * Save screenshot with specific dimensions.
+     *
+     * @param int $width Width to resize browser to.
+     * @param int $height Height to resize browser to.
+     *
+     * @When save :width x :height screenshot
+     * @When I save :width x :height screenshot
+     */
+    public function iSaveSizedScreenshot($width = 1440, $height = 900)
+    {
+        $this->getSession()->resizeWindow((int)$width, (int)$height, 'current');
+        $this->iSaveScreenshot(false);
+    }
+
+    /**
      * Save screenshot data into a file.
      *
      * @param string $filename
