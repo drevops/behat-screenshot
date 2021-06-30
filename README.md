@@ -43,13 +43,13 @@ In your feature:
 
 - `dir:` `path/to/dir`
 
-  Path to directory to save scereenshots. Directory structure will be created if the directory does not exist.
+  Path to directory to save screenshots. Directory structure will be created if the directory does not exist.
   
-- `fail:` `true` or `false`
+- `fail:` `true` or `false` (default `false`)
   
   Prefix failed screenshots with 'fail_' string. Useful to distinguish failed and intended screenshots.
       
-- `purge:` `false` or `false`
+- `purge:` `true` or `false` (default `false`)
   
   Remove all files from the screenshots directory on each test run. Useful during debugging of tests.
 
