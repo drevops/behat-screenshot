@@ -28,7 +28,7 @@ default:
         - FeatureContext
   extensions:
     IntegratedExperts\BehatScreenshotExtension:
-      dir: %paths.base%/screenshots
+      dir: '%paths.base%/screenshots'
       fail: true
       purge: false
 ```
