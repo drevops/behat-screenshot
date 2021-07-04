@@ -8,3 +8,7 @@ Feature: Selenium screenshots
     And save screenshot
     Then file wildcard "*.selenium.feature_8.png" should exist
     And file wildcard "*.selenium.feature_8.html" should exist
+    And save 800 x 600 screenshot
+    Then file wildcard "*.selenium.feature_11.png" should exist
+    And save 1440 x 900 screenshot
+    And file wildcard "*.selenium.feature_13.html" should exist
