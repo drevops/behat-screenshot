@@ -170,7 +170,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     public function iSaveSizedScreenshot($width = 1440, $height = 900)
     {
-        $this->getSession()->resizeWindow((int) $width, (int) $height, 'current');
+        try {
+            $this->getSession()->resizeWindow((int) $width, (int) $height, 'current');
+        } catch (UnsupportedDriverActionException $exception) {
+            // Nothing to do here - drivers without resize support may proceed.
+        }
         $this->iSaveScreenshot(false);
     }
 
