@@ -99,6 +99,9 @@ class ScreenshotContextInitializer implements ContextInitializer
 
     /**
      * Resolve directory using one of supported paths.
+     *
+     * @return string
+     *   Path to the screenshots directory.
      */
     protected function resolveDir()
     {

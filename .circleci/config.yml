@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /app
     docker:
-      - image: integratedexperts/ci-builder
+      - image: drevops/ci-builder
         environment:
           COMPOSER_ALLOW_SUPERUSER: 1
     steps:
@@ -13,32 +13,27 @@ jobs:
           name: Composer validate.
           command: composer validate --ansi --strict
       - run:
-          name: Pull newest Docker images.
-          command: composer docker:pull
-      - run:
           name: Start containers.
-          command: |
-            composer docker:start
+          command: docker-compose up -d --build
       - run:
           name: Copy codebase into container.
-          command: |
-            docker cp -L /app/. $(docker-compose ps -q phpserver):/app/
+          command: docker cp -L /app/. $(docker-compose ps -q phpserver):/app/
       - run:
           name: Install dev dependencies.
-          command: |
-            composer docker:cli -- composer install --ansi --no-suggest
+          command: docker-compose exec phpserver composer install --ansi --no-suggest
       - run:
           name: Lint code.
-          command: composer docker:cli -- composer lint
+          command: docker-compose exec phpserver vendor/bin/phpcs
       - run:
           name: Run tests.
           command: |
-            composer docker:cli -- mkdir -p /app/screenshots
-            composer docker:cli -- composer test
+            docker-compose exec phpserver mkdir -p /app/screenshots
+            docker-compose exec phpserver vendor/bin/behat
       - run:
           name: Copy artifacts.
           command: |
             mkdir -p  /tmp/artifacts/behat
             docker cp $(docker-compose ps -q phpserver):/app/screenshots  /tmp/artifacts/behat
+          when: always
       - store_artifacts:
           path: /tmp/artifacts
