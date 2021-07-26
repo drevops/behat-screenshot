@@ -4,15 +4,18 @@
   <arg name="colors"/>
   <arg value="sp"/>
 
-  <rule ref="Symfony2" />
+  <rule ref="Symfony" />
 
   <file>src/</file>
   <file>tests/</file>
-  
+
   <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
     <exclude-pattern>./tests/*</exclude-pattern>
   </rule>
-  <rule ref="Symfony2.NamingConventions.ValidClassName.InvalidInterfaceName">
+  <rule ref="Symfony.NamingConventions.ValidClassName.InvalidInterfaceName">
+    <exclude-pattern>.*context.*</exclude-pattern>
+  </rule>
+  <rule ref="Symfony.Commenting.Annotations.Invalid">
     <exclude-pattern>.*context.*</exclude-pattern>
   </rule>
 

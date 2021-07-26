@@ -1,5 +1,5 @@
 # Behat Screenshot Extension
-Behat extension and a step definition to create HTML and image screenshots on demand or test fail.
+Behat extension and a step definition to create HTML and image screenshots on demand or when tests fail.
 
 [![CircleCI](https://circleci.com/gh/integratedexperts/behat-screenshot.svg?style=shield)](https://circleci.com/gh/integratedexperts/behat-screenshot)
 [![Latest Stable Version](https://poser.pugx.org/integratedexperts/behat-screenshot/v/stable)](https://packagist.org/packages/integratedexperts/behat-screenshot)
@@ -12,7 +12,7 @@ Behat extension and a step definition to create HTML and image screenshots on de
 * Screenshot is saved as HTML page for Goutte driver.
 * Screenshot is saved as both HTML and PNG image for Selenium driver.
 * Screenshot directory can be specified through environment variable `BEHAT_SCREENSHOT_DIR` (useful for CI systems to override values in `behat.yml`).
-* Screenshots can be purged after every test run by setting `purge: true` (useful during test debugging). 
+* Screenshots can be purged after every test run by setting `purge: true` (useful during test debugging).
 
 ## Installation
 `composer require integratedexperts/behat-screenshot`
@@ -35,7 +35,7 @@ default:
 
 In your feature:
 ```
-  Given I am on "http://google.com"  
+  Given I am on "http://google.com"
   Then I save screenshot
 ```
 
@@ -51,13 +51,13 @@ You may optionally specify size of browser window in the screenshot step:
 - `dir:` `path/to/dir`
 
   Path to directory to save screenshots. Directory structure will be created if the directory does not exist.
-  
+
 - `fail:` `true` or `false` (default `false`)
-  
+
   Prefix failed screenshots with 'fail_' string. Useful to distinguish failed and intended screenshots.
-      
+
 - `purge:` `true` or `false` (default `false`)
-  
+
   Remove all files from the screenshots directory on each test run. Useful during debugging of tests.
 
 ## Maintenance

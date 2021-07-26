@@ -1,0 +1,6 @@
+.gitattributes       export-ignore
+.circleci            export-ignore
+tests                export-ignore
+behat.yml            export-ignore
+docker-compose.yml   export-ignore
+phpcs.xml            export-ignore
