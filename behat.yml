@@ -9,7 +9,7 @@ default:
           -
             docroot: "%paths.base%/tests/behat/features/fixtures"
             host: "phpserver"
-        - IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotContext
+        - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
         - FeatureContext:
           -
             screenshot_dir: "%paths.base%/screenshots"
@@ -23,7 +23,7 @@ default:
         wd_host: "http://selenium:4444/wd/hub"
         capabilities: { "browser": "chrome", "version": "*", "marionette": true }
       javascript_session: selenium2
-    IntegratedExperts\BehatScreenshotExtension:
+    DrevOps\BehatScreenshotExtension:
       dir: "%paths.base%/screenshots"
       fail: true
       purge: true

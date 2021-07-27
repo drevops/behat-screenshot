@@ -5,7 +5,7 @@
  * Behat context to enable Screenshot support in tests.
  */
 
-namespace IntegratedExperts\BehatScreenshotExtension\Context;
+namespace DrevOps\BehatScreenshotExtension\Context;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Behat\Hook\Scope\AfterStepScope;

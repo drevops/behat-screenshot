@@ -5,7 +5,7 @@
  * Behat context interface to enable Screenshot.
  */
 
-namespace IntegratedExperts\BehatScreenshotExtension\Context;
+namespace DrevOps\BehatScreenshotExtension\Context;
 
 use Behat\Behat\Context\Context;
 

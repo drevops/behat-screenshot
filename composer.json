@@ -1,5 +1,5 @@
 {
-    "name": "integratedexperts/behat-screenshot",
+    "name": "drevops/behat-screenshot",
     "description": "Behat extension and step definitions to create HTML and image screenshots on demand or when tests fail",
     "type": "library",
     "license": "GPL-2.0-or-later",
@@ -25,7 +25,7 @@
     },
     "autoload": {
         "psr-0": {
-            "IntegratedExperts\\BehatScreenshot": "src/"
+            "DrevOps\\BehatScreenshot": "src/"
         }
     }
 }

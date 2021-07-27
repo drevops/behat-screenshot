@@ -215,7 +215,7 @@ default:
           -
             docroot: "%paths.base%/tests/behat/features/fixtures"
             host: "phpserver"
-        - IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotContext
+        - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
   extensions:
     Behat\MinkExtension:
       goutte: ~
