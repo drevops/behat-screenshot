@@ -4,6 +4,9 @@ services:
     image: amazeeio/php:7.4-cli-drupal
     volumes:
       - .:/app:delegated
+    environment:
+      # To enable xdebug: XDEBUG_ENABLE=true dc up -d --force-recreate phpserver
+      XDEBUG_ENABLE: ${XDEBUG_ENABLE:-}
   selenium:
     image: selenium/standalone-chrome
     depends_on:
