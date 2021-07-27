@@ -15,6 +15,9 @@
   <rule ref="Symfony.NamingConventions.ValidClassName.InvalidInterfaceName">
     <exclude-pattern>.*context.*</exclude-pattern>
   </rule>
+  <rule ref="Symfony.Commenting.FunctionComment.MissingParamTag">
+    <exclude-pattern>*</exclude-pattern>
+  </rule>
   <rule ref="Symfony.Commenting.Annotations.Invalid">
     <exclude-pattern>.*context.*</exclude-pattern>
   </rule>

@@ -1,5 +1,5 @@
 # Behat Screenshot Extension
-Behat extension and a step definition to create HTML and image screenshots on demand or when tests fail.
+Behat extension and step definitions to create HTML and image screenshots on demand or when tests fail.
 
 [![CircleCI](https://circleci.com/gh/integratedexperts/behat-screenshot.svg?style=shield)](https://circleci.com/gh/integratedexperts/behat-screenshot)
 [![Latest Stable Version](https://poser.pugx.org/integratedexperts/behat-screenshot/v/stable)](https://packagist.org/packages/integratedexperts/behat-screenshot)
@@ -12,13 +12,28 @@ Behat extension and a step definition to create HTML and image screenshots on de
 * Screenshot is saved as HTML page for Goutte driver.
 * Screenshot is saved as both HTML and PNG image for Selenium driver.
 * Screenshot directory can be specified through environment variable `BEHAT_SCREENSHOT_DIR` (useful for CI systems to override values in `behat.yml`).
-* Screenshots can be purged after every test run by setting `purge: true` (useful during test debugging).
+* Screenshots can be purged after every test run by setting `purge: true` (useful during test debugging) or setting environment variable `BEHAT_SCREENSHOT_PURGE=1`.
 
 ## Installation
-`composer require integratedexperts/behat-screenshot`
+
+    composer require --dev integratedexperts/behat-screenshot
 
 ## Usage
-Example `behat.yml`:
+
+Example `behat.yml` with default parameters:
+```yaml
+default:
+  suites:
+    default:
+      contexts:
+        - IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotContext
+        - FeatureContext
+  extensions:
+    IntegratedExperts\BehatScreenshotExtension: ~
+```
+
+or with parameters:
+
 ```yaml
 default:
   suites:
@@ -30,6 +45,7 @@ default:
     IntegratedExperts\BehatScreenshotExtension:
       dir: '%paths.base%/screenshots'
       fail: true
+      fail_prefix: 'failed_'
       purge: false
 ```
 
@@ -48,36 +64,51 @@ You may optionally specify size of browser window in the screenshot step:
 
 ## Options
 
-- `dir:` `path/to/dir`
+- `dir:` `path/to/dir` (default `%paths.base%/screenshots`)
 
   Path to directory to save screenshots. Directory structure will be created if the directory does not exist.
 
-- `fail:` `true` or `false` (default `false`)
+- `fail:` `true` or `false` (default `true`)
 
-  Prefix failed screenshots with 'fail_' string. Useful to distinguish failed and intended screenshots.
+  Capture screenshots for failed tests.
+
+- `fail_refix:` (default `failed_`)
+
+  Prefix failed screenshots with `fail_` string. Useful to distinguish failed and intended screenshots.
 
 - `purge:` `true` or `false` (default `false`)
 
   Remove all files from the screenshots directory on each test run. Useful during debugging of tests.
+  Can be overridden with `BEHAT_SCREENSHOT_PURGE` environment variable set to `1` or `true`.
 
 ## Maintenance
 
 ### Local development setup
+
 1. Install Docker.
-2. Start environment: `composer docker:start`.
-3. Install dependencies: `composer docker:cli -- composer install --ansi --no-suggest`.
+2. Start environment: `docker-compose up -d --build`.
+3. Install dependencies: `docker-compose exec phpserver composer install --ansi --no-suggest`.
 
 ### Lint code
-```bash
-composer docker:cli -- composer lint
 
+```bash
+docker-compose exec phpserver vendor/bin/phpcs
 ```
+
 ### Run tests
+
 ```bash
-composer docker:cli -- composer test
+docker-compose exec phpserver vendor/bin/behat
 ```
 
-### Cleanup an environment
+### Enable Xdebug
+
 ```bash
-composer cleanup
+XDEBUG_ENABLE=true docker-compose up -d phpserver
+```
+
+To disable, run
+
+```bash
+docker-compose up -d phpserver
 ```

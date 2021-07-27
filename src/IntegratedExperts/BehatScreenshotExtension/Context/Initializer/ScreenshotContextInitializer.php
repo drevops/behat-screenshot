@@ -76,9 +76,9 @@ class ScreenshotContextInitializer implements ContextInitializer
     public function initializeContext(Context $context)
     {
         if ($context instanceof ScreenshotAwareContext) {
-            $dir = $this->resolveDir();
+            $dir = $this->resolveScreenshotDir();
             $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix);
-            if ($this->purge && $this->needsPurging) {
+            if ($this->shouldPurge() && $this->needsPurging) {
                 $this->purgeFilesInDir();
                 $this->needsPurging = false;
             }
@@ -103,7 +103,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      * @return string
      *   Path to the screenshots directory.
      */
-    protected function resolveDir()
+    protected function resolveScreenshotDir()
     {
         $dir = getenv('BEHAT_SCREENSHOT_DIR');
         if (!empty($dir)) {
@@ -111,5 +111,16 @@ class ScreenshotContextInitializer implements ContextInitializer
         }
 
         return $this->dir;
+    }
+
+    /**
+     * Decide if 'purge' flag was set.
+     *
+     * @return bool
+     *   TRUE if should purge, FALSE otherwise.
+     */
+    protected function shouldPurge()
+    {
+        return getenv('BEHAT_SCREENSHOT_PURGE') || $this->purge;
     }
 }

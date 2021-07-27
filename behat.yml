@@ -4,6 +4,7 @@ default:
     default:
       paths: [ "%paths.base%/tests/behat/features" ]
       contexts:
+        - BehatCliContext
         - DrevOps\BehatPhpServer\PhpServerContext:
           -
             docroot: "%paths.base%/tests/behat/features/fixtures"

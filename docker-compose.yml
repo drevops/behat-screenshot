@@ -5,7 +5,7 @@ services:
     volumes:
       - .:/app:delegated
     environment:
-      # To enable xdebug: XDEBUG_ENABLE=true dc up -d --force-recreate phpserver
+      # To enable xdebug: XDEBUG_ENABLE=true docker-compose up -d phpserver
       XDEBUG_ENABLE: ${XDEBUG_ENABLE:-}
   selenium:
     image: selenium/standalone-chrome

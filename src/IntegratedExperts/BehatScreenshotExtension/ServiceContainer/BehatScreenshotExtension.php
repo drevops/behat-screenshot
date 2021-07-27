@@ -53,10 +53,10 @@ class BehatScreenshotExtension implements ExtensionInterface
     public function configure(ArrayNodeDefinition $builder)
     {
         $builder->children()
-            ->scalarNode('dir')->isRequired()->cannotBeEmpty()->end()
-            ->scalarNode('fail')->isRequired()->cannotBeEmpty()->end()
-            ->scalarNode('fail_prefix')->defaultValue('failed_')->end()
-            ->scalarNode('purge')->isRequired()->cannotBeEmpty()->end();
+            ->scalarNode('dir')->cannotBeEmpty()->defaultValue('%paths.base%/screenshots')->end()
+            ->scalarNode('fail')->cannotBeEmpty()->defaultValue(true)->end()
+            ->scalarNode('fail_prefix')->cannotBeEmpty()->defaultValue('failed_')->end()
+            ->scalarNode('purge')->cannotBeEmpty()->defaultValue(false)->end();
     }
 
     /**
