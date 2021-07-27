@@ -1,14 +1,14 @@
 <?php
 /**
  * @file
- * This file is part of the IntegratedExperts\BehatScreenshot package.
+ * This file is part of the DrevOps\BehatScreenshot package.
  */
 
-namespace IntegratedExperts\BehatScreenshotExtension\Context\Initializer;
+namespace DrevOps\BehatScreenshotExtension\Context\Initializer;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Initializer\ContextInitializer;
-use IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotAwareContext;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContext;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 

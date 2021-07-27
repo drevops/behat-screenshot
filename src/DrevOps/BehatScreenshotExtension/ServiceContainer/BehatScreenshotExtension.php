@@ -5,7 +5,7 @@
  * Behat screenshot extension.
  */
 
-namespace IntegratedExperts\BehatScreenshotExtension\ServiceContainer;
+namespace DrevOps\BehatScreenshotExtension\ServiceContainer;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
@@ -23,7 +23,7 @@ class BehatScreenshotExtension implements ExtensionInterface
     /**
      * Extension configuration ID.
      */
-    const MOD_ID = 'integratedexperts_screenshot';
+    const MOD_ID = 'drevops_screenshot';
 
     /**
      * {@inheritdoc}
@@ -64,13 +64,13 @@ class BehatScreenshotExtension implements ExtensionInterface
      */
     public function load(ContainerBuilder $container, array $config)
     {
-        $definition = new Definition('IntegratedExperts\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer', [
+        $definition = new Definition('DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer', [
             $config['dir'],
             $config['fail'],
             $config['fail_prefix'],
             $config['purge'],
         ]);
         $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
-        $container->setDefinition('integratedexperts_screenshot.screenshot_context_initializer', $definition);
+        $container->setDefinition('drevops_screenshot.screenshot_context_initializer', $definition);
     }
 }

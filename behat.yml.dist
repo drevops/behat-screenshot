@@ -3,9 +3,9 @@ default:
     default:
       contexts:
         - FeatureContext
-        - IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotContext
+        - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
   extensions:
-    IntegratedExperts\BehatScreenshotExtension:
+    DrevOps\BehatScreenshotExtension:
       dir: %paths.base%/screenshots
       fail: true
       purge: false

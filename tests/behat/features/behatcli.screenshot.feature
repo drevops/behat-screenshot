@@ -7,7 +7,7 @@ Feature: Screenshot context
   Scenario: Test Screenshot context with all parameters defined in behat.yml
     Given screenshot context behat configuration with value:
       """
-      IntegratedExperts\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             fail: true
             purge: true
@@ -25,7 +25,7 @@ Feature: Screenshot context
   Scenario: Test Screenshot context with no parameters defined in behat.yml
     Given screenshot context behat configuration with value:
       """
-      IntegratedExperts\BehatScreenshotExtension: ~
+      DrevOps\BehatScreenshotExtension: ~
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -40,7 +40,7 @@ Feature: Screenshot context
   Scenario: Test Screenshot context with 'fail' set to 'true' which will save screenshot on fail
     Given screenshot context behat configuration with value:
       """
-      IntegratedExperts\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension:
             fail: true
       """
     And scenario steps tagged with "@phpserver":
@@ -55,7 +55,7 @@ Feature: Screenshot context
   Scenario: Test Screenshot context with 'fail' set to 'false' which will not save screenshot on fail
     Given screenshot context behat configuration with value:
       """
-      IntegratedExperts\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension:
             fail: false
       """
     And scenario steps tagged with "@phpserver":
@@ -70,7 +70,7 @@ Feature: Screenshot context
   Scenario: Test Screenshot context with 'purge' set to 'false' which will not purge files between runs
     Given screenshot context behat configuration with value:
       """
-      IntegratedExperts\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension:
             purge: false
       """
     And scenario steps tagged with "@phpserver":
@@ -96,7 +96,7 @@ Feature: Screenshot context
   Scenario: Test Screenshot context with 'purge' set to 'true' which will purge files between runs
     Given screenshot context behat configuration with value:
       """
-      IntegratedExperts\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension:
             purge: true
       """
     And scenario steps tagged with "@phpserver":
@@ -122,7 +122,7 @@ Feature: Screenshot context
   Scenario: Test Screenshot context with 'purge' set to 'false', but env variable set to 'true' which will purge files between runs.
     Given screenshot context behat configuration with value:
       """
-      IntegratedExperts\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension:
             purge: false
       """
     And scenario steps tagged with "@phpserver":

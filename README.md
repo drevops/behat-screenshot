@@ -1,10 +1,10 @@
 # Behat Screenshot Extension
 Behat extension and step definitions to create HTML and image screenshots on demand or when tests fail.
 
-[![CircleCI](https://circleci.com/gh/integratedexperts/behat-screenshot.svg?style=shield)](https://circleci.com/gh/integratedexperts/behat-screenshot)
-[![Latest Stable Version](https://poser.pugx.org/integratedexperts/behat-screenshot/v/stable)](https://packagist.org/packages/integratedexperts/behat-screenshot)
-[![Total Downloads](https://poser.pugx.org/integratedexperts/behat-screenshot/downloads)](https://packagist.org/packages/integratedexperts/behat-screenshot)
-[![License](https://poser.pugx.org/integratedexperts/behat-screenshot/license)](https://packagist.org/packages/integratedexperts/behat-screenshot)
+[![CircleCI](https://circleci.com/gh/drevops/behat-screenshot.svg?style=shield)](https://circleci.com/gh/drevops/behat-screenshot)
+[![Latest Stable Version](https://poser.pugx.org/drevops/behat-screenshot/v/stable)](https://packagist.org/packages/drevops/behat-screenshot)
+[![Total Downloads](https://poser.pugx.org/drevops/behat-screenshot/downloads)](https://packagist.org/packages/drevops/behat-screenshot)
+[![License](https://poser.pugx.org/drevops/behat-screenshot/license)](https://packagist.org/packages/drevops/behat-screenshot)
 
 ## Features
 * Create a screenshot using `I save screenshot` or `save screenshot` step definition.
@@ -16,7 +16,7 @@ Behat extension and step definitions to create HTML and image screenshots on dem
 
 ## Installation
 
-    composer require --dev integratedexperts/behat-screenshot
+    composer require --dev drevops/behat-screenshot
 
 ## Usage
 
@@ -26,10 +26,10 @@ default:
   suites:
     default:
       contexts:
-        - IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotContext
+        - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
         - FeatureContext
   extensions:
-    IntegratedExperts\BehatScreenshotExtension: ~
+    DrevOps\BehatScreenshotExtension: ~
 ```
 
 or with parameters:
@@ -39,10 +39,10 @@ default:
   suites:
     default:
       contexts:
-        - IntegratedExperts\BehatScreenshotExtension\Context\ScreenshotContext
+        - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
         - FeatureContext
   extensions:
-    IntegratedExperts\BehatScreenshotExtension:
+    DrevOps\BehatScreenshotExtension:
       dir: '%paths.base%/screenshots'
       fail: true
       fail_prefix: 'failed_'
