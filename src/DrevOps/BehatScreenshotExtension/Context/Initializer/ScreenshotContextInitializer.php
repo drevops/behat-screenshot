@@ -79,7 +79,7 @@ class ScreenshotContextInitializer implements ContextInitializer
             $dir = $this->resolveScreenshotDir();
             $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix);
             if ($this->shouldPurge() && $this->needsPurging) {
-                $this->purgeFilesInDir();
+                $this->purgeFilesInDir($dir);
                 $this->needsPurging = false;
             }
         }
@@ -87,13 +87,16 @@ class ScreenshotContextInitializer implements ContextInitializer
 
     /**
      * Remove files in directory.
+     *
+     * @param string $dir
+     *   Directory to purge files in.
      */
-    protected function purgeFilesInDir()
+    protected function purgeFilesInDir($dir)
     {
         $fs = new Filesystem();
         $finder = new Finder();
-        if ($fs->exists($this->dir)) {
-            $fs->remove($finder->files()->in($this->dir));
+        if ($fs->exists($dir)) {
+            $fs->remove($finder->files()->in($dir));
         }
     }
 
