@@ -72,7 +72,7 @@ You may optionally specify size of browser window in the screenshot step:
 
   Capture screenshots for failed tests.
 
-- `fail_refix:` (default `failed_`)
+- `fail_prefix:` (default `failed_`)
 
   Prefix failed screenshots with `fail_` string. Useful to distinguish failed and intended screenshots.
 
