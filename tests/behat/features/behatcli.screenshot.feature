@@ -37,6 +37,41 @@ Feature: Screenshot context
     Then it should pass
     And behat cli file wildcard "screenshots/*.stub.feature_7\.html" should exist
 
+  Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_DIR set to custom dir.
+    Given screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension: ~
+      """
+    And scenario steps tagged with "@phpserver":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 404
+      """
+    And behat cli file wildcard "screenshots" should not exist
+    And "BEHAT_SCREENSHOT_DIR" environment variable is set to "screenshots_custom"
+
+    When I run "behat --no-colors --strict"
+    Then it should fail
+    And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should exist
+
+  Scenario: Test Screenshot context with 'dir' set to '%paths.base%/screenshots' env variable BEHAT_SCREENSHOT_DIR set to custom dir.
+    Given screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension:
+            dir: "%paths.base%/screenshots"
+      """
+    And scenario steps tagged with "@phpserver":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 404
+      """
+    And behat cli file wildcard "screenshots" should not exist
+    And "BEHAT_SCREENSHOT_DIR" environment variable is set to "screenshots_custom"
+
+    When I run "behat --no-colors --strict"
+    Then it should fail
+    And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should exist
+
   Scenario: Test Screenshot context with 'fail' set to 'true' which will save screenshot on fail
     Given screenshot context behat configuration with value:
       """
