@@ -2,9 +2,9 @@
 Behat extension and step definitions to create HTML and image screenshots on demand or when tests fail.
 
 [![CircleCI](https://circleci.com/gh/drevops/behat-screenshot.svg?style=shield)](https://circleci.com/gh/drevops/behat-screenshot)
-[![Latest Stable Version](https://poser.pugx.org/drevops/behat-screenshot/v/stable)](https://packagist.org/packages/drevops/behat-screenshot)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/drevops/behat-screenshot)
 [![Total Downloads](https://poser.pugx.org/drevops/behat-screenshot/downloads)](https://packagist.org/packages/drevops/behat-screenshot)
-[![License](https://poser.pugx.org/drevops/behat-screenshot/license)](https://packagist.org/packages/drevops/behat-screenshot)
+![LICENSE](https://img.shields.io/github/license/drevops/behat-screenshot)
 
 ## Features
 * Create a screenshot using `I save screenshot` or `save screenshot` step definition.
