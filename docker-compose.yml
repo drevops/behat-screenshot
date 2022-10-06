@@ -1,13 +1,11 @@
 version: '2'
 services:
   phpserver:
-    image: amazeeio/php:7.4-cli-drupal
+    image: amazeeio/php:8.1-cli-drupal
     volumes:
       - .:/app:delegated
     environment:
       # To enable xdebug: XDEBUG_ENABLE=true docker-compose up -d phpserver
       XDEBUG_ENABLE: ${XDEBUG_ENABLE:-}
-  selenium:
+  chrome:
     image: selenium/standalone-chrome
-    depends_on:
-      - phpserver
