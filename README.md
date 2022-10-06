@@ -86,8 +86,9 @@ You may optionally specify size of browser window in the screenshot step:
 ### Local development setup
 
 1. Install Docker.
-2. Start environment: `docker-compose up -d --build`.
-3. Install dependencies: `docker-compose exec phpserver composer install --ansi --no-suggest`.
+2. If using M1: `cp default.docker-compose.override.yml docker-compose.override.yml`
+3. Start environment: `docker-compose up -d --build`.
+4. Install dependencies: `docker-compose exec phpserver composer install --ansi --no-suggest`.
 
 ### Lint code
 
