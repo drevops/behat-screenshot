@@ -38,6 +38,20 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected $stepLine;
 
     /**
+     * Screenshot step text, sanitised for filename.
+     *
+     * @var string
+     */
+    protected $stepText;
+
+    /**
+     * Current URL, sanitised for filename.
+     *
+     * @var string
+     */
+    protected $currentUrl;
+
+    /**
      * Screenshot directory name.
      *
      * @var string
@@ -59,13 +73,30 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     private $failPrefix;
 
     /**
+     * Pattern for filename generation.
+     *
+     * @var string
+     */
+    private $filenamePattern = '@microtime.@prefix@feature_file_@step_line.@ext';
+
+    /**
+     * Tokens for filename generation.
+     *
+     * @var array<string>
+     */
+    private $filenameTokens = [];
+
+    /**
      * {@inheritdoc}
      */
-    public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix): static
+    public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix, string|null $filenamePattern = null): static
     {
         $this->dir = $dir;
         $this->fail = $fail;
         $this->failPrefix = $failPrefix;
+        if (!is_null($filenamePattern)) {
+            $this->filenamePattern = $filenamePattern;
+        }
 
         return $this;
     }
@@ -106,6 +137,12 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         }
         $this->featureFile = $featureFile;
         $this->stepLine = $scope->getStep()->getLine();
+
+        $this->setFilenameToken('feature_file', basename($this->featureFile));
+        $this->setFilenameToken('step_line', (string) $this->stepLine);
+        $this->setFilenameToken('step_text', $scope->getStep()->getText());
+        $this->setFilenameToken('microtime', sprintf('%01.2f', microtime(true)));
+        $this->setFilenameToken('datetime', date('YmdTHis'));
     }
 
     /**
@@ -220,6 +257,36 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected function makeFileName(string $ext, string $prefix = ''): string
     {
-        return sprintf('%01.2f.%s%s_%s.%s', microtime(true), $prefix, basename($this->featureFile), $this->stepLine, $ext);
+        $this->setFilenameToken('ext', $ext);
+        $this->setFilenameToken('prefix', $prefix);
+        try {
+            $currentUrl = $this->getSession()->getCurrentUrl();
+            if ($parsed = parse_url($currentUrl)) {
+                foreach ($parsed as $key => $value) {
+                    $this->setFilenameToken("current_{$key}", (string) $parsed[$key]);
+                }
+            }
+            $this->setFilenameToken('current_url', $currentUrl);
+        } catch (\Exception $e) {
+            // Browser may not have visited a page yet.
+        }
+
+        return strtr($this->filenamePattern, $this->filenameTokens);
+    }
+
+    /**
+     * Set filename tokens, ensuring safe strings.
+     *
+     * @param string $key
+     *   Token to set, without @ prefix.
+     * @param string $value
+     *   Value to set token to.
+     */
+    protected function setFilenameToken(string $key, string $value) : void
+    {
+        $value = preg_replace("/[^[:alnum:]\.]+/i", "_", $value);
+        if (!is_null($value)) {
+            $this->filenameTokens["@{$key}"] = trim($value, '_');
+        }
     }
 }

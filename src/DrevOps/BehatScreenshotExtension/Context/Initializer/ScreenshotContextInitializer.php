@@ -26,6 +26,13 @@ class ScreenshotContextInitializer implements ContextInitializer
     protected $dir;
 
     /**
+     * Screenshot filename pattern.
+     *
+     * @var string
+     */
+    protected $filenamePattern;
+
+    /**
      * Makes screenshot when fail.
      *
      * @var bool
@@ -56,18 +63,20 @@ class ScreenshotContextInitializer implements ContextInitializer
     /**
      * ScreenshotContextInitializer constructor.
      *
-     * @param string $dir        Screenshot dir.
-     * @param bool   $fail       Screenshot when fail.
-     * @param string $failPrefix File name prefix for a failed test.
-     * @param bool   $purge      Purge dir before start script.
+     * @param string $dir             Screenshot dir.
+     * @param bool   $fail            Screenshot when fail.
+     * @param string $failPrefix      File name prefix for a failed test.
+     * @param bool   $purge           Purge dir before start script.
+     * @param string $filenamePattern Filename pattern to write to.
      */
-    public function __construct(string $dir, bool $fail, string $failPrefix, bool $purge)
+    public function __construct(string $dir, bool $fail, string $failPrefix, bool $purge, string $filenamePattern)
     {
         $this->needsPurging = true;
         $this->dir = $dir;
-        $this->purge = $purge;
         $this->fail = $fail;
         $this->failPrefix = $failPrefix;
+        $this->filenamePattern = $filenamePattern;
+        $this->purge = $purge;
     }
 
     /**
@@ -77,7 +86,8 @@ class ScreenshotContextInitializer implements ContextInitializer
     {
         if ($context instanceof ScreenshotAwareContext) {
             $dir = $this->resolveScreenshotDir();
-            $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix);
+            $filenamePattern = $this->resolveScreenshotFilenamePattern();
+            $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix, $filenamePattern);
             if ($this->shouldPurge() && $this->needsPurging) {
                 $this->purgeFilesInDir($dir);
                 $this->needsPurging = false;
@@ -114,6 +124,22 @@ class ScreenshotContextInitializer implements ContextInitializer
         }
 
         return $this->dir;
+    }
+
+    /**
+     * Resolve filename pattern for screenshots.
+     *
+     * @return string
+     *   Filename pattern containing tokens for replacement.
+     */
+    protected function resolveScreenshotFilenamePattern()
+    {
+        $filenamePattern = getenv('BEHAT_SCREENSHOT_FILENAME_PATTERN');
+        if (!empty($filenamePattern)) {
+            return $filenamePattern;
+        }
+
+        return $this->filenamePattern;
     }
 
     /**

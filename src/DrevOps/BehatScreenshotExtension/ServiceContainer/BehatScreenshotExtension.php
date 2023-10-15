@@ -61,6 +61,7 @@ class BehatScreenshotExtension implements ExtensionInterface
                 ->scalarNode('dir')->cannotBeEmpty()->defaultValue('%paths.base%/screenshots')->end()
                 ->scalarNode('fail')->cannotBeEmpty()->defaultValue(true)->end()
                 ->scalarNode('fail_prefix')->cannotBeEmpty()->defaultValue('failed_')->end()
+                ->scalarNode('filename_pattern')->cannotBeEmpty()->defaultValue('@microtime.@prefix@feature_file_@step_line.@ext')->end()
                 ->scalarNode('purge')->cannotBeEmpty()->defaultValue(false)->end();
         }
     }
@@ -75,6 +76,7 @@ class BehatScreenshotExtension implements ExtensionInterface
             $config['fail'],
             $config['fail_prefix'],
             $config['purge'],
+            $config['filename_pattern'],
         ]);
         $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
         $container->setDefinition('drevops_screenshot.screenshot_context_initializer', $definition);

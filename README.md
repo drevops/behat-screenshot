@@ -30,7 +30,7 @@
 * Create a screenshot when test fails.
 * Screenshot is saved as HTML page for Goutte driver.
 * Screenshot is saved as both HTML and PNG image for Selenium driver.
-* Screenshot directory can be specified through environment variable `BEHAT_SCREENSHOT_DIR` (useful for CI systems to override values in `behat.yml`).
+* Screenshot directory and filename can be specified through environment variables `BEHAT_SCREENSHOT_DIR` and `BEHAT_SCREENSHOT_FILENAME_PATTERN` (useful for CI systems to override values in `behat.yml`).
 * Screenshots can be purged after every test run by setting `purge: true` (useful during test debugging) or setting environment variable `BEHAT_SCREENSHOT_PURGE=1`.
 
 ## Installation
@@ -67,6 +67,7 @@ default:
       dir: '%paths.base%/screenshots'
       fail: true
       fail_prefix: 'failed_'
+      filename_pattern: '@fail_prefix@feature_file.@step_line.@ext'
       purge: false
 ```
 
@@ -89,6 +90,7 @@ You may optionally specify size of browser window in the screenshot step:
 - `dir:` `path/to/dir` (default `%paths.base%/screenshots`)
 
   Path to directory to save screenshots. Directory structure will be created if the directory does not exist.
+  Can be overridden with `BEHAT_SCREENSHOT_DIR` environment variable.
 
 - `fail:` `true` or `false` (default `true`)
 
@@ -97,6 +99,22 @@ You may optionally specify size of browser window in the screenshot step:
 - `fail_prefix:` (default `failed_`)
 
   Prefix failed screenshots with `fail_` string. Useful to distinguish failed and intended screenshots.
+
+- `filename_pattern:` (default ``)
+
+  Pattern to generate filenames. The following variables are provided:
+
+    | Token | Substituted with | Example value(s) |
+    |--|--|--|
+    | `@ext` | The extension of the file captured | `html` or `png` |
+    | `@prefix` | The value of `fail_prefix` above | `failed_`, `error` |
+    | `@feature_file` | The filename of the `.feature` file currently being executed | `example.feature` |
+    | `@step_line` | The line in the `.feature` file currently being executed | `67` |
+    | `@microtime` | The current microtime to two decimal places | `1697358758.18` |
+    | `@step_text` | The text of the step currently being executed | `I_am_on_the_test_page` |
+    | `@current_url` | The URL of the browser | `https_example_org_some_path` |
+    | `@current_path` | The current path of the browser | `some_path` |
+    | `@current_*` | Other [parse_url()](https://www.php.net/manual/en/function.parse-url.php) values returned for the current URL. | `https`, `example_org`, `80`, ... |
 
 - `purge:` `true` or `false` (default `false`)
 
