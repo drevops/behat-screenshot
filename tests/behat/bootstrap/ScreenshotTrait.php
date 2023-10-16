@@ -22,9 +22,9 @@ trait ScreenshotTrait
     /**
      * Init test parameters.
      *
-     * @param array $parameters Array of parameters from config.
+     * @param array<string> $parameters Array of parameters from config.
      */
-    public function screenshotInitParams($parameters)
+    public function screenshotInitParams(array $parameters): void
     {
         if (getenv('BEHAT_SCREENSHOT_DIR')) {
             $this->screenshotDir = getenv('BEHAT_SCREENSHOT_DIR');
@@ -41,7 +41,7 @@ trait ScreenshotTrait
      * @Given /^(?:|I )am on (?:|the )screenshot test page$/
      * @Given /^(?:|I )go to (?:|the )screenshot test page$/
      */
-    public function goToScreenshotTestPage()
+    public function goToScreenshotTestPage(): void
     {
         $this->visitPath('screenshot.html');
     }
@@ -53,7 +53,7 @@ trait ScreenshotTrait
      *
      * @Given /^file wildcard "([^"]*)" should exist$/
      */
-    public function assertFileShouldExist($wildcard)
+    public function assertFileShouldExist(string $wildcard): void
     {
         $wildcard = $this->screenshotDir.DIRECTORY_SEPARATOR.$wildcard;
         $matches = glob($wildcard);
@@ -70,7 +70,7 @@ trait ScreenshotTrait
      *
      * @Given /^file wildcard "([^"]*)" should not exist$/
      */
-    public function assertFileShouldNotExist($wildcard)
+    public function assertFileShouldNotExist(string $wildcard): void
     {
         $wildcard = $this->screenshotDir.DIRECTORY_SEPARATOR.$wildcard;
         $matches = glob($wildcard);
@@ -85,11 +85,12 @@ trait ScreenshotTrait
      *
      * @Given I remove all files from screenshot directory
      */
-    public function emptyScreenshotDirectory()
+    public function emptyScreenshotDirectory(): void
     {
-        array_map(
-            'unlink',
-            glob($this->screenshotDir.DIRECTORY_SEPARATOR.'/*')
-        );
+        $files = glob($this->screenshotDir.DIRECTORY_SEPARATOR.'/*');
+
+        if (!empty($files)) {
+            array_map('unlink', $files);
+        }
     }
 }

@@ -20,9 +20,9 @@ interface ScreenshotAwareContext extends Context
      *
      * @param string $dir        Directory to store screenshots.
      * @param bool   $fail       Create screenshots on fail.
-     * @param bool   $failPrefix File name prefix for a failed test.
+     * @param string $failPrefix File name prefix for a failed test.
      *
      * @return $this
      */
-    public function setScreenshotParameters($dir, $fail, $failPrefix);
+    public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix): static;
 }

@@ -61,7 +61,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * {@inheritdoc}
      */
-    public function setScreenshotParameters($dir, $fail, $failPrefix)
+    public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix): static
     {
         $this->dir = $dir;
         $this->fail = $fail;
@@ -77,7 +77,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @BeforeScenario
      */
-    public function beforeScenarioInit(BeforeScenarioScope $scope)
+    public function beforeScenarioInit(BeforeScenarioScope $scope): void
     {
         if ($scope->getScenario()->hasTag('javascript')) {
             $driver = $this->getSession()->getDriver();
@@ -98,9 +98,13 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @BeforeStep
      */
-    public function beforeStepInit(BeforeStepScope $scope)
+    public function beforeStepInit(BeforeStepScope $scope): void
     {
-        $this->featureFile = $scope->getFeature()->getFile();
+        $featureFile = $scope->getFeature()->getFile();
+        if (!$featureFile) {
+            throw new \RuntimeException('Feature file not found.');
+        }
+        $this->featureFile = $featureFile;
         $this->stepLine = $scope->getStep()->getLine();
     }
 
@@ -111,7 +115,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @AfterStep
      */
-    public function printLastResponseOnError(AfterStepScope $event)
+    public function printLastResponseOnError(AfterStepScope $event): void
     {
         if ($this->fail && !$event->getTestResult()->isPassed()) {
             $this->iSaveScreenshot(true);
@@ -129,7 +133,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @When save screenshot
      * @When I save screenshot
      */
-    public function iSaveScreenshot($fail = false)
+    public function iSaveScreenshot($fail = false): void
     {
         $driver = $this->getSession()->getDriver();
 
@@ -169,14 +173,14 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @When save :width x :height screenshot
      * @When I save :width x :height screenshot
      */
-    public function iSaveSizedScreenshot($width = 1440, $height = 900)
+    public function iSaveSizedScreenshot(string|int $width = 1440, string|int $height = 900): void
     {
         try {
             $this->getSession()->resizeWindow((int) $width, (int) $height, 'current');
         } catch (UnsupportedDriverActionException $exception) {
             // Nothing to do here - drivers without resize support may proceed.
         }
-        $this->iSaveScreenshot(false);
+        $this->iSaveScreenshot();
     }
 
     /**
@@ -187,7 +191,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @param string $data
      *   Data to write into a file.
      */
-    protected function saveScreenshotData($filename, $data)
+    protected function saveScreenshotData(string $filename, string $data): void
     {
         $this->prepareDir($this->dir);
         file_put_contents($this->dir.DIRECTORY_SEPARATOR.$filename, $data);
@@ -198,7 +202,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @param string $dir Name of preparing directory.
      */
-    protected function prepareDir($dir)
+    protected function prepareDir(string $dir): void
     {
         $fs = new Filesystem();
         $fs->mkdir($dir, 0755);
@@ -214,7 +218,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @return string Unique file name.
      */
-    protected function makeFileName($ext, $prefix = '')
+    protected function makeFileName(string $ext, string $prefix = ''): string
     {
         return sprintf('%01.2f.%s%s_%s.%s', microtime(true), $prefix, basename($this->featureFile), $this->stepLine, $ext);
     }

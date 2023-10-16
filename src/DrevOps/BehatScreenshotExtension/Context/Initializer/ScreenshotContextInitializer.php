@@ -13,7 +13,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
- * Class ScreenshotContextInitializer
+ * Class ScreenshotContextInitializer.
  */
 class ScreenshotContextInitializer implements ContextInitializer
 {
@@ -58,10 +58,10 @@ class ScreenshotContextInitializer implements ContextInitializer
      *
      * @param string $dir        Screenshot dir.
      * @param bool   $fail       Screenshot when fail.
-     * @param bool   $failPrefix File name prefix for a failed test.
+     * @param string $failPrefix File name prefix for a failed test.
      * @param bool   $purge      Purge dir before start script.
      */
-    public function __construct($dir, $fail, $failPrefix, $purge)
+    public function __construct(string $dir, bool $fail, string $failPrefix, bool $purge)
     {
         $this->needsPurging = true;
         $this->dir = $dir;
@@ -73,7 +73,7 @@ class ScreenshotContextInitializer implements ContextInitializer
     /**
      * {@inheritdoc}
      */
-    public function initializeContext(Context $context)
+    public function initializeContext(Context $context): void
     {
         if ($context instanceof ScreenshotAwareContext) {
             $dir = $this->resolveScreenshotDir();
@@ -91,7 +91,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      * @param string $dir
      *   Directory to purge files in.
      */
-    protected function purgeFilesInDir($dir)
+    protected function purgeFilesInDir(string $dir): void
     {
         $fs = new Filesystem();
         $finder = new Finder();
@@ -106,7 +106,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      * @return string
      *   Path to the screenshots directory.
      */
-    protected function resolveScreenshotDir()
+    protected function resolveScreenshotDir(): string
     {
         $dir = getenv('BEHAT_SCREENSHOT_DIR');
         if (!empty($dir)) {
@@ -122,7 +122,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      * @return bool
      *   TRUE if should purge, FALSE otherwise.
      */
-    protected function shouldPurge()
+    protected function shouldPurge(): bool
     {
         return getenv('BEHAT_SCREENSHOT_PURGE') || $this->purge;
     }

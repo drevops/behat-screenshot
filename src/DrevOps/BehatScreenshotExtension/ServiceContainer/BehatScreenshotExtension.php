@@ -11,6 +11,8 @@ use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
 use Behat\Testwork\ServiceContainer\ExtensionManager;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeBuilder;
+use Symfony\Component\Config\Definition\Builder\NodeParentInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 
@@ -28,14 +30,14 @@ class BehatScreenshotExtension implements ExtensionInterface
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getConfigKey()
+    public function getConfigKey(): string
     {
         return self::MOD_ID;
     }
@@ -43,26 +45,30 @@ class BehatScreenshotExtension implements ExtensionInterface
     /**
      * {@inheritdoc}
      */
-    public function initialize(ExtensionManager $extensionManager)
+    public function initialize(ExtensionManager $extensionManager): void
     {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function configure(ArrayNodeDefinition $builder)
+    public function configure(ArrayNodeDefinition $builder): void
     {
-        $builder->children()
-            ->scalarNode('dir')->cannotBeEmpty()->defaultValue('%paths.base%/screenshots')->end()
-            ->scalarNode('fail')->cannotBeEmpty()->defaultValue(true)->end()
-            ->scalarNode('fail_prefix')->cannotBeEmpty()->defaultValue('failed_')->end()
-            ->scalarNode('purge')->cannotBeEmpty()->defaultValue(false)->end();
+        $definitionChildren = $builder->children();
+        if ($definitionChildren instanceof NodeBuilder) {
+            // @phpstan-ignore-next-line
+            $definitionChildren
+                ->scalarNode('dir')->cannotBeEmpty()->defaultValue('%paths.base%/screenshots')->end()
+                ->scalarNode('fail')->cannotBeEmpty()->defaultValue(true)->end()
+                ->scalarNode('fail_prefix')->cannotBeEmpty()->defaultValue('failed_')->end()
+                ->scalarNode('purge')->cannotBeEmpty()->defaultValue(false)->end();
+        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function load(ContainerBuilder $container, array $config)
+    public function load(ContainerBuilder $container, array $config): void
     {
         $definition = new Definition('DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer', [
             $config['dir'],
