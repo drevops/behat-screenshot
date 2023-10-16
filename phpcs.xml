@@ -1,25 +1,27 @@
 <?xml version="1.0"?>
-<ruleset name="behat-screenshot">
-  <description>The coding standard for behat-screenshot.</description>
-  <arg name="colors"/>
-  <arg value="sp"/>
+<ruleset name="custom">
+    <description>Custom PHPCS standard.</description>
+    <!-- Show sniff codes in all reports -->
+    <arg value="s"/>
+    <!-- Show progress of the run. -->
+    <arg value="p"/>
+    <arg name="colors"/>
 
-  <rule ref="Symfony" />
+    <rule ref="Symfony"/>
 
-  <file>src/</file>
-  <file>tests/</file>
+    <file>src</file>
+    <file>tests</file>
 
-  <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
-    <exclude-pattern>./tests/*</exclude-pattern>
-  </rule>
-  <rule ref="Symfony.NamingConventions.ValidClassName.InvalidInterfaceName">
-    <exclude-pattern>.*context.*</exclude-pattern>
-  </rule>
-  <rule ref="Symfony.Commenting.FunctionComment.MissingParamTag">
-    <exclude-pattern>*</exclude-pattern>
-  </rule>
-  <rule ref="Symfony.Commenting.Annotations.Invalid">
-    <exclude-pattern>.*context.*</exclude-pattern>
-  </rule>
-
+    <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+        <exclude-pattern>./tests/*</exclude-pattern>
+    </rule>
+    <rule ref="Symfony.NamingConventions.ValidClassName.InvalidInterfaceName">
+        <exclude-pattern>.*context.*</exclude-pattern>
+    </rule>
+    <rule ref="Symfony.Commenting.FunctionComment.MissingParamTag">
+        <exclude-pattern>*</exclude-pattern>
+    </rule>
+    <rule ref="Symfony.Commenting.Annotations.Invalid">
+        <exclude-pattern>.*context.*</exclude-pattern>
+    </rule>
 </ruleset>
