@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: /app
+    working_directory: /root/project
     docker:
       - image: drevops/ci-runner:23.10.0
         environment:
@@ -17,7 +17,7 @@ jobs:
           command: docker compose up -d --build
       - run:
           name: Copy codebase into container.
-          command: docker cp -L /app/. $(docker compose ps -q phpserver):/app/
+          command: docker cp -L . $(docker compose ps -q phpserver):/app/
       - run:
           name: Install dev dependencies.
           command: docker compose exec phpserver composer install --ansi --no-suggest
@@ -34,8 +34,10 @@ jobs:
       - run:
           name: Copy artifacts.
           command: |
-            mkdir -p /tmp/artifacts/behat
-            docker cp $(docker compose ps -q phpserver):/app/screenshots /tmp/artifacts/behat
+            mkdir -p "/tmp/test_results" && docker compose cp phpserver:/app/.logs/test_results/. "/tmp/test_results/"
+            mkdir -p "/tmp/artifacts" && docker compose cp phpserver:/app/.logs/. "/tmp/artifacts/"
           when: always
+      - store_test_results:
+          path: /tmp/test_results
       - store_artifacts:
           path: /tmp/artifacts
