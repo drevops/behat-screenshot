@@ -187,11 +187,21 @@ EOL;
     /**
      * Sets specified ENV variable
      *
+     * @When /^the "([^"]*)" environment variable is set to "([^"]*)"$/
+     */
+    public function iSetEnvironmentVariable($name, $value)
+    {
+        $this->env = array($name => (string) $value);
+    }
+
+    /**
+     * Sets the BEHAT_PARAMS env variable
+     *
      * @When /^"BEHAT_PARAMS" environment variable is set to:$/
      *
      * @param PyStringNode $value
      */
-    public function iSetEnvironmentVariable(PyStringNode $value)
+    public function iSetBehatParamsEnvironmentVariable(PyStringNode $value)
     {
         $this->env = array('BEHAT_PARAMS' => (string) $value);
     }
@@ -215,13 +225,7 @@ EOL;
             strtr($this->options, array('\'' => '"', '"' => '\"'))
         );
 
-        if (method_exists('\\Symfony\\Component\\Process\\Process', 'fromShellCommandline')) {
-            $this->process = Process::fromShellCommandline($cmd);
-        } else {
-            // BC layer for symfony/process 4.1 and older
-            $this->process = new Process(null);
-            $this->process->setCommandLine($cmd);
-        }
+        $this->process = Process::fromShellCommandline($cmd);
 
         // Prepare the process parameters.
         $this->process->setTimeout(20);
@@ -335,7 +339,10 @@ EOL;
 
         $fileContent = trim(file_get_contents($path));
 
-        $fileContent = preg_replace('/time="(.*)"/', 'time="-IGNORE-VALUE-"', $fileContent);
+        $fileContent = preg_replace('/time="(.*)"/U', 'time="-IGNORE-VALUE-"', $fileContent);
+
+        // The placeholder is necessary because of different separators on Unix and Windows environments
+        $text = str_replace('-DIRECTORY-SEPARATOR-', DIRECTORY_SEPARATOR, $text);
 
         $dom = new DOMDocument();
         $dom->loadXML($text);
