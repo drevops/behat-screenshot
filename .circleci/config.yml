@@ -23,14 +23,10 @@ jobs:
           command: docker compose exec phpserver composer install --ansi --no-suggest
       - run:
           name: Lint code.
-          command: |
-            docker compose exec phpserver vendor/bin/phpcs
-            docker compose exec phpserver vendor/bin/phpstan || true
+          command: docker compose exec phpserver composer lint || true
       - run:
           name: Run tests.
-          command: |
-            docker compose exec phpserver mkdir -p /app/screenshots
-            docker compose exec phpserver vendor/bin/behat
+          command: docker compose exec phpserver composer test
       - run:
           name: Copy artifacts.
           command: |
