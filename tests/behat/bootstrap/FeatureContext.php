@@ -13,14 +13,15 @@ use Behat\MinkExtension\Context\MinkContext;
  */
 class FeatureContext extends MinkContext implements Context
 {
+
     use ScreenshotTrait;
 
     /**
      * FeatureContext constructor.
      *
-     * @param array $parameters Array of parameters from config.
+     * @param array<string> $parameters Array of parameters from config.
      */
-    public function __construct($parameters)
+    public function __construct(array $parameters)
     {
         $this->screenshotInitParams($parameters);
     }

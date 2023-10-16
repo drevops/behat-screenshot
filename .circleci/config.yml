@@ -23,7 +23,7 @@ jobs:
           command: docker compose exec phpserver composer install --ansi --no-suggest
       - run:
           name: Lint code.
-          command: docker compose exec phpserver composer lint || true
+          command: docker compose exec phpserver composer lint
       - run:
           name: Run tests.
           command: docker compose exec phpserver composer test
