@@ -12,7 +12,15 @@ default:
         - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
         - FeatureContext:
           -
-            screenshot_dir: "%paths.base%/screenshots"
+            screenshot_dir: '%paths.base%/.logs/screenshots'
+
+  formatters:
+    pretty: true
+    # Disable JUnit formatter if memory leaks start to occur.
+    # See @https://github.com/Behat/Behat/pull/1423
+    junit:
+      output_path: '%paths.base%/.logs/test_results/behat'
+
   extensions:
     Behat\MinkExtension:
       goutte: ~
@@ -24,6 +32,6 @@ default:
         capabilities: { "browser": "chrome", "version": "*", "marionette": true }
       javascript_session: selenium2
     DrevOps\BehatScreenshotExtension:
-      dir: "%paths.base%/screenshots"
+      dir: '%paths.base%/.logs/screenshots'
       fail: true
       purge: true

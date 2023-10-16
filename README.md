@@ -108,14 +108,15 @@ You may optionally specify size of browser window in the screenshot step:
 ### Local development setup
 
 1. Install Docker.
-2. If using M1: `cp default.docker-compose.override.yml docker-compose.override.yml`
+2. If using M1: `cp docker-compose.override.default.yml docker-compose.override.yml`
 3. Start environment: `docker compose up -d --build`.
-4. Install dependencies: `docker compose exec phpserver composer install --ansi --no-suggest`.
+4. Install dependencies: `docker compose exec phpserver composer install --ansi`.
 
 ### Lint code
 
 ```bash
 docker compose exec phpserver vendor/bin/phpcs
+docker compose exec phpserver vendor/bin/phpstan
 ```
 
 ### Run tests
