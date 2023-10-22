@@ -77,7 +77,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @var string
      */
-    private $filenamePattern = '@microtime.@prefix@feature_file_@step_line.@ext';
+    private $filenamePattern = '{microtime}.{prefix}{feature_file}_{step_line}.{ext}';
 
     /**
      * Tokens for filename generation.
@@ -277,8 +277,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * Set filename tokens, ensuring safe strings.
      *
+     * Retains alphanumeric characters and period, replacing everything else with underscore.
+     * Trims resulting leading/trailing underscores from values except for BC on "prefix".
+     *
      * @param string $key
-     *   Token to set, without @ prefix.
+     *   Token to set, without curly braces.
      * @param string $value
      *   Value to set token to.
      */
@@ -286,7 +289,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     {
         $value = preg_replace("/[^[:alnum:]\.]+/i", "_", $value);
         if (!is_null($value)) {
-            $this->filenameTokens["@{$key}"] = trim($value, '_');
+            if ('prefix' === $key) {
+                $this->filenameTokens["{{$key}}"] = $value;
+            } else {
+                $this->filenameTokens["{{$key}}"] = trim($value, '_');
+            }
         }
     }
 }

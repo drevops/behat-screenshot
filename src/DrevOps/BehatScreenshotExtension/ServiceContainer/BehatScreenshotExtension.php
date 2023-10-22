@@ -61,7 +61,7 @@ class BehatScreenshotExtension implements ExtensionInterface
                 ->scalarNode('dir')->cannotBeEmpty()->defaultValue('%paths.base%/screenshots')->end()
                 ->scalarNode('fail')->cannotBeEmpty()->defaultValue(true)->end()
                 ->scalarNode('fail_prefix')->cannotBeEmpty()->defaultValue('failed_')->end()
-                ->scalarNode('filename_pattern')->cannotBeEmpty()->defaultValue('@microtime.@prefix@feature_file_@step_line.@ext')->end()
+                ->scalarNode('filename_pattern')->cannotBeEmpty()->defaultValue('{microtime}.{prefix}{feature_file}_{step_line}.{ext}')->end()
                 ->scalarNode('purge')->cannotBeEmpty()->defaultValue(false)->end();
         }
     }

@@ -67,7 +67,7 @@ default:
       dir: '%paths.base%/screenshots'
       fail: true
       fail_prefix: 'failed_'
-      filename_pattern: '@fail_prefix@feature_file.@step_line.@ext'
+      filename_pattern: '{fail_prefix}{feature_file}.{step_line}.{ext}'
       purge: false
 ```
 
@@ -106,15 +106,15 @@ You may optionally specify size of browser window in the screenshot step:
 
     | Token | Substituted with | Example value(s) |
     |--|--|--|
-    | `@ext` | The extension of the file captured | `html` or `png` |
-    | `@prefix` | The value of `fail_prefix` above | `failed_`, `error` |
-    | `@feature_file` | The filename of the `.feature` file currently being executed | `example.feature` |
-    | `@step_line` | The line in the `.feature` file currently being executed | `67` |
-    | `@microtime` | The current microtime to two decimal places | `1697358758.18` |
-    | `@step_text` | The text of the step currently being executed | `I_am_on_the_test_page` |
-    | `@current_url` | The URL of the browser | `https_example_org_some_path` |
-    | `@current_path` | The current path of the browser | `some_path` |
-    | `@current_*` | Other [parse_url()](https://www.php.net/manual/en/function.parse-url.php) values returned for the current URL. | `https`, `example_org`, `80`, ... |
+    | `{ext}` | The extension of the file captured | `html` or `png` |
+    | `{prefix}` | The value of `fail_prefix` above | `failed_`, `error` |
+    | `{feature_file}` | The filename of the `.feature` file currently being executed | `example.feature` |
+    | `{step_line}` | The line in the `.feature` file currently being executed | `67` |
+    | `{microtime}` | The current microtime to two decimal places | `1697358758.18` |
+    | `{step_text}` | The text of the step currently being executed | `I_am_on_the_test_page` |
+    | `{current_url}` | The URL of the browser | `https_example_org_some_path` |
+    | `{current_path}` | The current path of the browser | `some_path` |
+    | `{current_}*` | Other [parse_url()](https://www.php.net/manual/en/function.parse-url.php) values returned for the current URL. | `https`, `example_org`, `80`, ... |
 
 - `purge:` `true` or `false` (default `false`)
 
