@@ -108,12 +108,13 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots/CONFIG.*.XFAILX.stub.feature.6.CONFIG.html" should exist
 
-  Scenario: Test Screenshot context with configuration 'filename_pattern' set to custom value.
+  @filename_token
+  Scenario Outline: Test Screenshot context with configuration 'filename_pattern' set to custom value.
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
             fail_prefix: "XFAILX"
-            filename_pattern: "CONFIG.{microtime}.{prefix}.{feature_file}.{step_line}.CONFIG.{ext}"
+            filename_pattern: "CONFIG.<token>.CONFIG.{ext}"
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -121,11 +122,19 @@ Feature: Screenshot context
       And the response status code should be 404
       """
     And behat cli file wildcard "screenshots" should not exist
-    And "BEHAT_SCREENSHOT_FILENAME_PATTERN" environment variable is set to "ENV.{microtime}.{prefix}.{feature_file}.{step_line}.ENV.{ext}"
+    # And "BEHAT_SCREENSHOT_FILENAME_PATTERN" environment variable is set to "CONFIG.<token>.{ext}"
 
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots/ENV.*.XFAILX.stub.feature.6.ENV.html" should exist
+    And behat cli file wildcard "screenshots/CONFIG.<value>.CONFIG.html" should exist
+
+  Examples:
+    | token | value |
+    | {step_line} | 6 |
+    | {feature_file} | stub.feature |
+    | {current_url} | http_phpserver_8888_screenshot.html |
+    | {current_port} | 8888 |
+    | {current_path} | screenshot.html |
 
   Scenario: Test Screenshot context with 'fail' set to 'true' which will save screenshot on fail
     Given screenshot context behat configuration with value:
