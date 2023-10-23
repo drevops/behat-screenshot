@@ -30,7 +30,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      *
      * @var string
      */
-    protected $filenamePattern;
+    protected string $filenamePattern;
 
     /**
      * Makes screenshot when fail.

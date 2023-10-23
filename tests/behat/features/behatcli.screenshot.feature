@@ -73,6 +73,7 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should exist
 
+  @filename_token
   Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_FILENAME_PATTERN set to custom value.
     Given screenshot context behat configuration with value:
       """
@@ -90,12 +91,13 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots/screenshot-*.html" should exist
 
+  @filename_token @step_line
   Scenario: Test Screenshot context with configuration 'filename_pattern' set to custom value.
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
             fail_prefix: "XFAILX"
-            filename_pattern: "CONFIG.{microtime}.{prefix}.{feature_file}.{step_line}.CONFIG.{ext}"
+            filename_pattern: "CONFIG.{datetime:u}.{fail_prefix}.{feature_file}.{step_line}.CONFIG.{ext}"
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -114,7 +116,7 @@ Feature: Screenshot context
       """
       DrevOps\BehatScreenshotExtension:
             fail_prefix: "XFAILX"
-            filename_pattern: "CONFIG.<token>.CONFIG.{ext}"
+            filename_pattern: "CONFIG.{<token>}.CONFIG.html"
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -128,13 +130,19 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots/CONFIG.<value>.CONFIG.html" should exist
 
-  Examples:
-    | token | value |
-    | {step_line} | 6 |
-    | {feature_file} | stub.feature |
-    | {current_url} | http_phpserver_8888_screenshot.html |
-    | {current_port} | 8888 |
-    | {current_path} | screenshot.html |
+    Examples:
+      | token          | value                                  |
+      | step_line      | 6                                      |
+      | feature_file   | stub.feature                           |
+      | datetime       | 20*_*                                  |
+      | datetime:u     | 1*                                     |
+      | step_text      | the_response_status_code_should_be_404 |
+      | url            | http_phpserver_8888_screenshot.html    |
+      | url:port       | 8888                                   |
+      | url:path       | screenshot.html                        |
+      | url:host       | phpserver                              |
+      | fail_prefix    | XFAILX                                 |
+      # | step_line:%03d | 006                                    |
 
   Scenario: Test Screenshot context with 'fail' set to 'true' which will save screenshot on fail
     Given screenshot context behat configuration with value:
@@ -246,7 +254,7 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6\.html" should not exist
 
   Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_PURGE set to '1' which will purge files between
-    runs and env variable BEHAT_SCREENSHOT_DIR set to 'screenshots_custom'.
+  runs and env variable BEHAT_SCREENSHOT_DIR set to 'screenshots_custom'.
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension: ~

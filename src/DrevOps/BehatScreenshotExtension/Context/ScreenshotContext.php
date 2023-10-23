@@ -77,7 +77,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @var string
      */
-    private $filenamePattern = '{microtime}.{prefix}{feature_file}_{step_line}.{ext}';
+    private $filenamePattern = '{datetime:u}.{fail_prefix}{feature_file}_{step_line}.{ext}';
 
     /**
      * Tokens for filename generation.
@@ -138,11 +138,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         $this->featureFile = $featureFile;
         $this->stepLine = $scope->getStep()->getLine();
 
-        $this->setFilenameToken('feature_file', basename($this->featureFile));
-        $this->setFilenameToken('step_line', (string) $this->stepLine);
-        $this->setFilenameToken('step_text', $scope->getStep()->getText());
-        $this->setFilenameToken('microtime', sprintf('%01.2f', microtime(true)));
-        $this->setFilenameToken('datetime', date('YmdTHis'));
+        $this->setFilenameTokens($scope);
     }
 
     /**
@@ -251,24 +247,22 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * Format: microseconds.featurefilename_linenumber.ext
      *
      * @param string $ext    File extension without dot.
-     * @param string $prefix Optional file name prefix for a filed test.
+     * @param string $prefix Optional file name prefix for a failed test.
      *
-     * @return string Unique file name.
+     * @return string File name.
      */
     protected function makeFileName(string $ext, string $prefix = ''): string
     {
         $this->setFilenameToken('ext', $ext);
-        $this->setFilenameToken('prefix', $prefix);
-        try {
-            $currentUrl = $this->getSession()->getCurrentUrl();
-            if ($parsed = parse_url($currentUrl)) {
-                foreach ($parsed as $key => $value) {
-                    $this->setFilenameToken("current_{$key}", (string) $parsed[$key]);
-                }
+
+        // Sprintf for step_line.
+        $pattern = '/{(step_line:.*)}/U';
+        preg_match_all($pattern, $this->filenamePattern, $matches);
+        if (!empty($matches[1])) {
+            foreach ($matches as $token) {
+                $parts = explode(':', $token);
+                $this->setFilenameToken("step_line:{$parts[1]}", sprintf($parts[1], $this->stepLine));
             }
-            $this->setFilenameToken('current_url', $currentUrl);
-        } catch (\Exception $e) {
-            // Browser may not have visited a page yet.
         }
 
         return strtr($this->filenamePattern, $this->filenameTokens);
@@ -285,15 +279,43 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @param string $value
      *   Value to set token to.
      */
-    protected function setFilenameToken(string $key, string $value) : void
+    protected function setFilenameToken(string $key, string|int $value) : void
     {
-        $value = preg_replace("/[^[:alnum:]\.]+/i", "_", $value);
+        $value = preg_replace("/[^[:alnum:]\.]+/i", "_", (string) $value);
         if (!is_null($value)) {
             if ('prefix' === $key) {
                 $this->filenameTokens["{{$key}}"] = $value;
             } else {
                 $this->filenameTokens["{{$key}}"] = trim($value, '_');
             }
+        }
+    }
+
+    /**
+     * Set tokens for capture filename.
+     *
+     * @param BeforeStepScope $scope
+     * @return void
+     */
+    private function setFilenameTokens(BeforeStepScope $scope)
+    {
+        $this->setFilenameToken('feature_file', basename($this->featureFile));
+        $this->setFilenameToken('step_line', (string) $this->stepLine);
+        $this->setFilenameToken('step_text', $scope->getStep()->getText());
+        $this->setFilenameToken('datetime:u', sprintf('%01.2f', microtime(true)));
+        $this->setFilenameToken('datetime', date('Ymd_His'));
+        $this->setFilenameToken('fail_prefix', $this->failPrefix);
+        $this->setFilenameToken('url', 'unknown');
+        try {
+            $currentUrl = $this->getSession()->getDriver()->getCurrentUrl();
+            $this->setFilenameToken('url', $currentUrl);
+            if ($currentUrlParts = parse_url($currentUrl)) {
+                foreach ($currentUrlParts as $key => $value) {
+                    $this->setFilenameToken("url:{$key}", $value);
+                }
+            }
+        } catch (\Exception $exception) {
+            // Browser may not be on a URL yet.
         }
     }
 }
