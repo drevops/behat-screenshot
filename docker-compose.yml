@@ -7,4 +7,4 @@ services:
       # To enable xdebug: XDEBUG_ENABLE=true docker compose up -d phpserver
       XDEBUG_ENABLE: ${XDEBUG_ENABLE:-}
   chrome:
-    image: selenium/standalone-chrome:111.0
+    image: selenium/standalone-chrome:119.0
