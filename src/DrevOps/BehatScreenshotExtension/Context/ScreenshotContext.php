@@ -244,14 +244,14 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * Make screenshot filename.
      *
-     * Example format: behat-{date:u}.{step_file}-{$step_line}.{ext}
+     * Example format: behat-{datetime:u}.{step_file}-{$step_line}.{ext}
      *
      * @param string $ext    File extension without dot.
      * @param string $prefix Optional file name prefix for a failed test.
      *
      * @return string File name.
      */
-    protected function makeFileName(string $ext, string $prefix = ''): string
+    protected function makeFileName(string $ext, string $prefix = '') : string
     {
         $this->setFilenameToken('ext', $ext);
 
@@ -273,7 +273,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     {
         $value = preg_replace("/[^[:alnum:]\.]+/i", "_", (string) $value);
         if (!is_null($value)) {
-            if ('prefix' === $key) {
+            if ('fail_prefix' === $key) {
                 $this->filenameTokens["{{$key}}"] = $value;
             } else {
                 $this->filenameTokens["{{$key}}"] = trim($value, '_');
@@ -287,9 +287,9 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @param BeforeStepScope $scope
      * @return void
      */
-    private function setFilenameTokens(BeforeStepScope $scope)
+    private function setFilenameTokens(BeforeStepScope $scope) : void
     {
-        $this->setFilenameToken('feature_file', basename($this->featureFile));
+        $this->setFilenameToken('feature_file', basename($this->featureFile, '.feature'));
         $this->setFilenameToken('step_line', (string) $this->stepLine);
         $this->setFilenameToken('step_text', $scope->getStep()->getText());
         $this->setFilenameToken('datetime:u', sprintf('%01.2f', microtime(true)));
@@ -311,6 +311,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         // Sprintf for step_line.
         $pattern = '/{(step_line:.*)}/U';
         // @FIXME Should use the configured filenamePattern here.
+        // See journal 2023-11-26.
         preg_match_all($pattern, "some.{step_line:%03d}.other", $matches);
         if (!empty($matches[1])) {
             foreach ($matches as $tokens) {
