@@ -244,7 +244,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * Make screenshot filename.
      *
-     * Format: microseconds.featurefilename_linenumber.ext
+     * Example format: behat-{date:u}.{step_file}-{$step_line}.{ext}
      *
      * @param string $ext    File extension without dot.
      * @param string $prefix Optional file name prefix for a failed test.
@@ -254,16 +254,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected function makeFileName(string $ext, string $prefix = ''): string
     {
         $this->setFilenameToken('ext', $ext);
-
-        // Sprintf for step_line.
-        $pattern = '/{(step_line:.*)}/U';
-        preg_match_all($pattern, $this->filenamePattern, $matches);
-        if (!empty($matches[1])) {
-            foreach ($matches as $token) {
-                $parts = explode(':', $token);
-                $this->setFilenameToken("step_line:{$parts[1]}", sprintf($parts[1], $this->stepLine));
-            }
-        }
 
         return strtr($this->filenamePattern, $this->filenameTokens);
     }
@@ -316,6 +306,19 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             }
         } catch (\Exception $exception) {
             // Browser may not be on a URL yet.
+        }
+
+        // Sprintf for step_line.
+        $pattern = '/{(step_line:.*)}/U';
+        // @FIXME Should use the configured filenamePattern here.
+        preg_match_all($pattern, "some.{step_line:%03d}.other", $matches);
+        if (!empty($matches[1])) {
+            foreach ($matches as $tokens) {
+                foreach ($tokens as $token) {
+                    $parts = explode(':', $token);
+                    $this->setFilenameToken("step_line:{$parts[1]}", sprintf($parts[1], $this->stepLine));
+                }
+            }
         }
     }
 }

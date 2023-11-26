@@ -86,7 +86,7 @@ class ScreenshotContextInitializer implements ContextInitializer
     {
         if ($context instanceof ScreenshotAwareContext) {
             $dir = $this->resolveScreenshotDir();
-            $filenamePattern = $this->resolveScreenshotFilenamePattern();
+            $filenamePattern = $this->resolveScreenshotFilenamePattern($context);
             $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix, $filenamePattern);
             if ($this->shouldPurge() && $this->needsPurging) {
                 $this->purgeFilesInDir($dir);
@@ -132,7 +132,7 @@ class ScreenshotContextInitializer implements ContextInitializer
      * @return string
      *   Filename pattern containing tokens for replacement.
      */
-    protected function resolveScreenshotFilenamePattern()
+    protected function resolveScreenshotFilenamePattern(Context $context)
     {
         $filenamePattern = getenv('BEHAT_SCREENSHOT_FILENAME_PATTERN');
         if (!empty($filenamePattern)) {
