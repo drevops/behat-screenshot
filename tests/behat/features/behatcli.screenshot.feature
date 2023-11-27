@@ -72,7 +72,7 @@ Feature: Screenshot context
 
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots_custom/*.failed_stub_6.feature.html" should exist
+    And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6.html" should exist
 
   @filename_token
   Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_FILENAME_PATTERN set to custom value.
@@ -152,16 +152,16 @@ Feature: Screenshot context
 
     Examples:
       | token        | value                                  |
-      | step_line    | 6                                      |
-      | feature_file | stub.feature                           |
       | datetime     | 20*_*                                  |
       | datetime:u   | 1*                                     |
+      | fail_prefix  | XFAILX                                 |
+      | feature_file | stub.feature                           |
+      | step_line    | 6                                      |
       | step_text    | the_response_status_code_should_be_404 |
       | url          | http_phpserver_8888_screenshot.html    |
-      | url:port     | 8888                                   |
-      | url:path     | screenshot.html                        |
       | url:host     | phpserver                              |
-      | fail_prefix  | XFAILX                                 |
+      | url:path     | screenshot.html                        |
+      | url:port     | 8888                                   |
       # | step_line:%03d | 006                                    |
 
   Scenario: Test Screenshot context with 'fail' set to 'true' which will save screenshot on fail

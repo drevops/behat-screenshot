@@ -104,17 +104,18 @@ You may optionally specify size of browser window in the screenshot step:
 
   Pattern to generate filenames. The following variables are provided:
 
-    | Token            | Substituted with | Example value(s) |
-    |------------------|--|--|
-    | `{ext}`          | The extension of the file captured | `html` or `png` |
-    | `{fail_prefix}`  | The value of `fail_prefix` above | `failed_`, `error` |
-    | `{feature_file}` | The filename of the `.feature` file currently being executed | `example.feature` |
-    | `{step_line}`    | The line in the `.feature` file currently being executed | `67` |
-    | `{microtime}`    | The current microtime to two decimal places | `1697358758.18` |
-    | `{step_text}`    | The text of the step currently being executed | `I_am_on_the_test_page` |
-    | `{url}`          | The URL of the browser | `https_example_org_some_path` |
-    | `{url:path}`     | The current path of the browser | `some_path` |
-    | `{current_*}`    | Other [parse_url()](https://www.php.net/manual/en/function.parse-url.php) values returned for the current URL. | `https`, `example_org`, `80`, ... |
+ | Token                           | Substituted with                                                                                               | Example value(s) |
+ |---------------------------------|----------------------------------------------------------------------------------------------------------------|--|
+ | `{datetime}`                    | Current date in `Ymd_His` format                                                                               | `20231128_060912` |
+ | `{datetime:u}`                  | Current date and time as microtime                                                                             | `1701105456.71` |
+ | `{ext}`                         | Extension of the file captured                                                                                 | `html` or `png` |
+ | `{fail_prefix}`                 | Value of `fail_prefix` above                                                                                   | `failed_`, `error` |
+ | `{feature_file}`                | Filename of the `.feature` file currently being executed                                                       | `example.feature` |
+ | `{microtime}`                   | Current microtime to two decimal places                                                                        | `1697358758.18` |
+ | `{step_line}`                   | Line in the `.feature` file currently being executed                                                           | `67` |
+ | `{step_text}`                   | Text of the step currently being executed                                                                      | `I_am_on_the_test_page` |
+ | `{url}`                         | URL of tested browser.                                                                                         | `https_example_org_some_path` |
+ | `{url:host}`, `{url:path}`, ... | URL components of tested browser (ref [`parse_url()`](https://www.php.net/manual/en/function.parse-url.php)).  | `some_path` |
 
 - `purge:` `true` or `false` (default `false`)
 
