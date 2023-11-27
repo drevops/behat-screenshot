@@ -289,7 +289,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     private function setFilenameTokens(BeforeStepScope $scope) : void
     {
-        $this->setFilenameToken('feature_file', basename($this->featureFile, '.feature'));
+        $this->setFilenameToken('feature_file', basename($this->featureFile));
         $this->setFilenameToken('step_line', (string) $this->stepLine);
         $this->setFilenameToken('step_text', $scope->getStep()->getText());
         $this->setFilenameToken('datetime:u', sprintf('%01.2f', microtime(true)));

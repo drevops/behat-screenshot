@@ -21,7 +21,7 @@ Feature: Screenshot context
       """
     When I run "behat --no-colors --strict"
     Then it should pass
-    And behat cli file wildcard "screenshots/stub-7.I_save_screenshot.html" should exist
+    And behat cli file wildcard "screenshots/stub.feature-7.I_save_screenshot.html" should exist
 
   Scenario: Test Screenshot context with no parameters defined in behat.yml
     Given screenshot context behat configuration with value:
@@ -36,7 +36,7 @@ Feature: Screenshot context
       """
     When I run "behat --no-colors --strict"
     Then it should pass
-    And behat cli file wildcard "screenshots/*.stub_7.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_7.html" should exist
 
   Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_DIR set to custom dir.
     Given screenshot context behat configuration with value:
@@ -53,7 +53,7 @@ Feature: Screenshot context
 
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots_custom/*.failed_stub_6.html" should exist
+    And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6.html" should exist
 
   @filename_token
   Scenario: Test Screenshot context with 'dir' set to '%paths.base%/screenshots' and env variable BEHAT_SCREENSHOT_DIR set to custom dir.
@@ -72,7 +72,7 @@ Feature: Screenshot context
 
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots_custom/*.failed_stub_6\.html" should exist
+    And behat cli file wildcard "screenshots_custom/*.failed_stub_6.feature.html" should exist
 
   @filename_token
   Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_FILENAME_PATTERN set to custom value.
@@ -109,7 +109,7 @@ Feature: Screenshot context
 
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots/*.stub.006.html" should exist
+    And behat cli file wildcard "screenshots/*.stub.feature.006.html" should exist
 
   @filename_token
   Scenario: Test Screenshot context with configuration 'filename_pattern' set to custom value.
@@ -128,7 +128,7 @@ Feature: Screenshot context
 
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots/CONFIG.*.XFAILX.stub.6.CONFIG.html" should exist
+    And behat cli file wildcard "screenshots/CONFIG.*.XFAILX.stub.feature.6.CONFIG.html" should exist
 
   @filename_token
   Scenario Outline: Test Screenshot context with configuration 'filename_pattern' set to custom value.
@@ -153,7 +153,7 @@ Feature: Screenshot context
     Examples:
       | token        | value                                  |
       | step_line    | 6                                      |
-      | feature_file | stub                                   |
+      | feature_file | stub.feature                           |
       | datetime     | 20*_*                                  |
       | datetime:u   | 1*                                     |
       | step_text    | the_response_status_code_should_be_404 |
@@ -177,7 +177,7 @@ Feature: Screenshot context
       """
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots/*.failed_stub_6.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should exist
 
   Scenario: Test Screenshot context with 'fail' set to 'false' which will not save screenshot on fail
     Given screenshot context behat configuration with value:
@@ -192,7 +192,7 @@ Feature: Screenshot context
       """
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots/*.failed_stub_6.html" should not exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should not exist
 
   Scenario: Test Screenshot context with 'purge' set to 'false' which will not purge files between runs
     Given screenshot context behat configuration with value:
@@ -207,7 +207,7 @@ Feature: Screenshot context
       """
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots/*.failed_stub_6.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should exist
     # Run again, but with error on another line.
     And scenario steps tagged with "@phpserver":
       """
@@ -216,9 +216,9 @@ Feature: Screenshot context
       And the response status code should be 404
       """
     When I run "behat --no-colors --strict"
-    And behat cli file wildcard "screenshots/*.failed_stub_7.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_7.html" should exist
     # Assert that the file from the previous run is still present.
-    And behat cli file wildcard "screenshots/*.failed_stub_6.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should exist
 
   Scenario: Test Screenshot context with 'purge' set to 'true' which will purge files between runs
     Given screenshot context behat configuration with value:
@@ -233,7 +233,7 @@ Feature: Screenshot context
       """
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots/*.failed_stub_6.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should exist
     # Run again, but with error on another line.
     And scenario steps tagged with "@phpserver":
       """
@@ -242,9 +242,9 @@ Feature: Screenshot context
       And the response status code should be 404
       """
     When I run "behat --no-colors --strict"
-    And behat cli file wildcard "screenshots/*.failed_stub_7.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_7.html" should exist
     # Assert that the file from the previous run is not present.
-    And behat cli file wildcard "screenshots/*.failed_stub_6.html" should not exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should not exist
 
   Scenario: Test Screenshot context with 'purge' set to 'false', but env variable set to 'true' which will purge files between runs.
     Given screenshot context behat configuration with value:
@@ -259,7 +259,7 @@ Feature: Screenshot context
       """
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots/*.failed_stub_6.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should exist
     # Run again, but with error on another line.
     And scenario steps tagged with "@phpserver":
       """
@@ -269,9 +269,9 @@ Feature: Screenshot context
       """
     When "BEHAT_SCREENSHOT_PURGE" environment variable is set to "1"
     And I run "behat --no-colors --strict"
-    And behat cli file wildcard "screenshots/*.failed_stub_7.html" should exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_7.html" should exist
     # Assert that the file from the previous run is not present.
-    And behat cli file wildcard "screenshots/*.failed_stub_6.html" should not exist
+    And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should not exist
 
   @testA
   Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_PURGE set to '1' which will purge files between
@@ -292,7 +292,7 @@ Feature: Screenshot context
 
     When I run "behat --no-colors --strict"
     Then it should fail
-    And behat cli file wildcard "screenshots_custom/*.failed_stub_6.html" should exist
+    And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6.html" should exist
     # Run again, but with error on another line.
     And scenario steps tagged with "@phpserver":
       """
@@ -301,6 +301,6 @@ Feature: Screenshot context
       And the response status code should be 404
       """
     When I run "behat --no-colors --strict"
-    And behat cli file wildcard "screenshots_custom/*.failed_stub_7.html" should exist
+    And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_7.html" should exist
     # Assert that the file from the previous run is not present.
-    And behat cli file wildcard "screenshots_custom/*.failed_stub_6.html" should not exist
+    And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6.html" should not exist
