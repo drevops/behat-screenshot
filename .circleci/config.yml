@@ -10,25 +10,25 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Validate Composer configuration.
+          name: Validate Composer configuration
           command: composer validate --ansi --strict
       - run:
-          name: Start containers.
+          name: Start containers
           command: docker compose up -d --build
       - run:
-          name: Copy codebase into container.
+          name: Copy codebase into container
           command: docker cp -L . $(docker compose ps -q phpserver):/app/
       - run:
-          name: Install dev dependencies.
+          name: Install dev dependencies
           command: docker compose exec phpserver composer install --ansi --no-suggest
       - run:
-          name: Lint code.
+          name: Lint code
           command: docker compose exec phpserver composer lint
       - run:
-          name: Run tests.
+          name: Run tests
           command: docker compose exec phpserver composer test
       - run:
-          name: Copy artifacts.
+          name: Copy artifacts
           command: |
             mkdir -p "/tmp/test_results" && docker compose cp phpserver:/app/.logs/test_results/. "/tmp/test_results/"
             mkdir -p "/tmp/artifacts" && docker compose cp phpserver:/app/.logs/. "/tmp/artifacts/"
