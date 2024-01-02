@@ -185,7 +185,7 @@ default:
             host: "phpserver"
   extensions:
     Behat\MinkExtension:
-      goutte: ~
+      browserkit_http: ~
       selenium2: ~
       base_url: http://nginx:8080
 EOL;
@@ -218,7 +218,7 @@ default:
         - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
   extensions:
     Behat\MinkExtension:
-      goutte: ~
+      browserkit_http: ~
       selenium2: ~
       base_url: http://nginx:8080
 EOL;

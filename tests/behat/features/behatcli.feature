@@ -46,7 +46,7 @@ Feature: Behat CLI context
                   host: "phpserver"
         extensions:
           Behat\MinkExtension:
-            goutte: ~
+            browserkit_http: ~
             selenium2: ~
             base_url: http://nginx:8080
       """
