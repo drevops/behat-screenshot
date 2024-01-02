@@ -23,7 +23,7 @@ default:
 
   extensions:
     Behat\MinkExtension:
-      goutte: ~
+      browserkit_http: ~
       files_path: "%paths.base%/tests/behat/features/fixtures"
       browser_name: chrome
       base_url: http://phpserver:8888
