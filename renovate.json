@@ -4,5 +4,9 @@
     "automerge": true,
     "extends": [
         "config:base"
+    ],
+    "ignoreDeps": [
+        "selenium/standalone-chrome",
+        "seleniarm/standalone-chromium"
     ]
 }
