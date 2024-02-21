@@ -39,24 +39,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
     /**
      * Screenshot directory name.
-     *
-     * @var string
      */
-    private $dir;
+    private string $dir = '';
 
     /**
      * Makes screenshot when fail.
-     *
-     * @var bool
      */
-    private $fail;
+    private ?bool $fail = null;
 
     /**
      * Prefix for failed screenshot files.
-     *
-     * @var string
      */
-    private $failPrefix;
+    private string $failPrefix = '';
 
     /**
      * {@inheritdoc}
@@ -94,7 +88,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * Init values required for snapshot.
      *
-     * @param BeforeStepScope $scope
      *
      * @BeforeStep
      */
@@ -141,7 +134,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
         try {
             $data = $driver->getContent();
-        } catch (DriverException $exception) {
+        } catch (DriverException) {
             // Do not do anything if the driver does not have any content - most
             // likely the page has not been loaded yet.
             return;
@@ -158,7 +151,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             // content and screenshot files together by name.
             $fileName = substr($fileName, 0, -1 * strlen('html')).'png';
             $this->saveScreenshotData($fileName, $data);
-        } catch (UnsupportedDriverActionException $exception) {
+        } catch (UnsupportedDriverActionException) {
             // Nothing to do here - drivers without support for screenshots
             // simply do not have them created.
         }
@@ -177,7 +170,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     {
         try {
             $this->getSession()->resizeWindow((int) $width, (int) $height, 'current');
-        } catch (UnsupportedDriverActionException $exception) {
+        } catch (UnsupportedDriverActionException) {
             // Nothing to do here - drivers without resize support may proceed.
         }
         $this->iSaveScreenshot();
