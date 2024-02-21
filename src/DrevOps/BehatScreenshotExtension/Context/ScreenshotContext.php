@@ -40,7 +40,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * Makes screenshot when fail.
      */
-    private bool $fail;
+    private bool $fail = false;
 
     /**
      * Screenshot directory name.
