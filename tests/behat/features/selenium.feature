@@ -14,7 +14,7 @@ Feature: Selenium screenshots
     And file wildcard "*.selenium.feature_13.html" should exist
 
   @phpserver @javascript
-  Scenario: Capture a screenshot using Selenium driver
+  Scenario: Capture a screenshot with name using Selenium driver
     When I am on the screenshot test page
     And I save screenshot with name "hello-selenium-screenshot"
     Then file wildcard "hello-selenium-screenshot.png" should exist
