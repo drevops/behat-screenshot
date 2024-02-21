@@ -127,17 +127,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * Handles different driver types.
      *
-     * @param bool $fail Denotes if this was called in a context of the failed
-     *                   test.
+     * @param bool        $fail     Denotes if this was called in a context of the failed
+     *                              test.
+     * @param string|null $filename File name.
      *
      * @When save screenshot
      * @When I save screenshot
      */
-    public function iSaveScreenshot($fail = false): void
+    public function iSaveScreenshot($fail = false, $filename = null): void
     {
         $driver = $this->getSession()->getDriver();
 
-        $fileName = $this->makeFileName('html', $fail ? $this->failPrefix : '');
+        $fileName = $this->makeFileName('html', $fail ? $this->failPrefix : '', $filename);
 
         try {
             $data = $driver->getContent();
@@ -162,6 +163,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             // Nothing to do here - drivers without support for screenshots
             // simply do not have them created.
         }
+    }
+
+    /**
+     * Save screenshot with name.
+     *
+     * @param string $filename File name.
+     *
+     * @When I save screenshot with name :filename
+     */
+    public function iSaveScreenshotWithName(string $filename): void
+    {
+        $this->iSaveScreenshot(false, $filename);
     }
 
     /**
@@ -213,13 +226,18 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * Format: microseconds.featurefilename_linenumber.ext
      *
-     * @param string $ext    File extension without dot.
-     * @param string $prefix Optional file name prefix for a filed test.
+     * @param string      $ext      File extension without dot.
+     * @param string      $prefix   Optional file name prefix for a filed test.
+     * @param string|null $filename Optional file name.
      *
      * @return string Unique file name.
      */
-    protected function makeFileName(string $ext, string $prefix = ''): string
+    protected function makeFileName(string $ext, string $prefix = '', string $filename = null): string
     {
+        if (!empty($filename)) {
+            return sprintf('%s.%s', $filename, $ext);
+        }
+
         return sprintf('%01.2f.%s%s_%s.%s', microtime(true), $prefix, basename($this->featureFile), $this->stepLine, $ext);
     }
 }
