@@ -19,55 +19,16 @@ class ScreenshotContextInitializer implements ContextInitializer
 {
 
     /**
-     * Screenshot directory name.
-     *
-     * @var string
-     */
-    protected $dir;
-
-    /**
-     * Makes screenshot when fail.
-     *
-     * @var bool
-     */
-    protected $fail;
-
-    /**
-     * Prefix for failed screenshot files.
-     *
-     * @var string
-     */
-    private $failPrefix;
-
-    /**
-     * Purge dir before start test.
-     *
-     * @var bool
-     */
-    protected $purge;
-
-    /**
-     * Check if need to actually purge.
-     *
-     * @var bool
-     */
-    protected $needsPurging;
-
-    /**
      * ScreenshotContextInitializer constructor.
      *
-     * @param string $dir        Screenshot dir.
-     * @param bool   $fail       Screenshot when fail.
-     * @param string $failPrefix File name prefix for a failed test.
-     * @param bool   $purge      Purge dir before start script.
+     * @param string $dir          Screenshot dir.
+     * @param bool   $fail         Screenshot when fail.
+     * @param string $failPrefix   File name prefix for a failed test.
+     * @param bool   $purge        Purge dir before start script.
+     * @param bool   $needsPurging Check if need to actually purge.
      */
-    public function __construct(string $dir, bool $fail, string $failPrefix, bool $purge)
+    public function __construct(protected string $dir, protected bool $fail, private readonly string $failPrefix, protected bool $purge, protected bool $needsPurging = true)
     {
-        $this->needsPurging = true;
-        $this->dir = $dir;
-        $this->purge = $purge;
-        $this->fail = $fail;
-        $this->failPrefix = $failPrefix;
     }
 
     /**
