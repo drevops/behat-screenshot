@@ -12,3 +12,10 @@ Feature: Selenium screenshots
     Then file wildcard "*.selenium.feature_11.png" should exist
     And save 1440 x 900 screenshot
     And file wildcard "*.selenium.feature_13.html" should exist
+
+  @phpserver @javascript
+  Scenario: Capture a screenshot using Selenium driver
+    When I am on the screenshot test page
+    And I save screenshot with name "hello-selenium-screenshot"
+    Then file wildcard "hello-selenium-screenshot.png" should exist
+    And file wildcard "hello-selenium-screenshot.html" should exist
