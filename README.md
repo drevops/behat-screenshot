@@ -119,6 +119,12 @@ docker compose exec phpserver composer install --ansi
 docker compose exec phpserver composer lint
 ```
 
+### Lint fix
+
+```bash
+docker compose exec phpserver composer lint-fix
+```
+
 ### Run tests
 
 ```bash
