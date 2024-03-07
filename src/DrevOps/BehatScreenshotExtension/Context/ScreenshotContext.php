@@ -76,11 +76,22 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         if ($scope->getScenario()->hasTag('javascript')) {
             $driver = $this->getSession()->getDriver();
             if ($driver instanceof Selenium2Driver) {
-                // Start driver's session manually if it is not already started.
-                if (!$driver->isStarted()) {
-                    $driver->start();
+                try {
+                    // Start driver's session manually if it is not already started.
+                    if (!$driver->isStarted()) {
+                        $driver->start();
+                    }
+                    $this->getSession()->resizeWindow(1440, 900, 'current');
+                } catch (\Exception $exception) {
+                    throw new \RuntimeException(
+                        sprintf(
+                            'Please make sure that Selenium server is running. %s',
+                            $exception->getMessage(),
+                        ),
+                        $exception->getCode(),
+                        $exception,
+                    );
                 }
-                $this->getSession()->resizeWindow(1440, 900, 'current');
             }
         }
     }
