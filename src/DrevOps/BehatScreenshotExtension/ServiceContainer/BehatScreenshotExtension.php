@@ -62,10 +62,10 @@ class BehatScreenshotExtension implements ExtensionInterface
             ->scalarNode('purge')->cannotBeEmpty()->defaultValue(false)->end()
             ->scalarNode('filenamePattern')
                 ->cannotBeEmpty()
-                ->defaultValue('{datetime:u}.{feature_file}.feature_{step_line}.{ext}')->end()
+                ->defaultValue('{datetime:U}.{feature_file}.feature_{step_line}.{ext}')->end()
             ->scalarNode('filenamePatternFailed')
                 ->cannotBeEmpty()
-                ->defaultValue('{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}')->end();
+                ->defaultValue('{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}')->end();
     }
 
     /**

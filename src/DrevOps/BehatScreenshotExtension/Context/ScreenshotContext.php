@@ -19,6 +19,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Class ScreenshotContext.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext, ScreenshotAwareContext
 {
@@ -154,7 +156,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     {
         $driver = $this->getSession()->getDriver();
         $fileName = $this->makeFileName('html', $filename, $fail);
-
         try {
             $data = $driver->getContent();
         } catch (DriverException) {
@@ -259,12 +260,21 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected function makeFileName(string $ext, string $filename = null, bool $fail = false): string
     {
         if (!empty($filename)) {
+            // Make sure {ext} token is on filename.
+            if (!str_ends_with($filename, '.{ext}')) {
+                $filename .= '.{ext}';
+            }
+
             return $this->replaceToken($filename, ['ext' => $ext]);
         }
 
         $filename = $this->filenamePattern;
         if ($fail) {
             $filename = $this->filenamePatternFailed;
+        }
+        // Make sure {ext} token is on filename.
+        if (!str_ends_with($filename, '.{ext}')) {
+            $filename .= '.{ext}';
         }
 
         return $this->replaceToken($filename, ['ext' => $ext]);
@@ -284,13 +294,15 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected function replaceToken(string $text, array $data = []): string
     {
+        $replacement = $text;
         $tokens = $this->scanTokens($text);
         $tokenReplacements = $this->buildTokenReplacements($tokens, $data);
+
         if (!empty($tokenReplacements)) {
-            return str_replace(array_keys($tokenReplacements), array_values($tokenReplacements), $text);
+            $replacement = str_replace(array_keys($tokenReplacements), array_values($tokenReplacements), $text);
         }
 
-        return $text;
+        return $replacement;
     }
 
     /**
@@ -306,8 +318,8 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         $pattern = '/\{(.*?)\}/';
         preg_match_all($pattern, $text, $matches);
         $result = [];
-        foreach ($matches[1] as $match) {
-            $result[] = $match;
+        foreach ($matches[0] as $key => $match) {
+            $result[$match] = $matches[1][$key];
         }
 
         return $result;
@@ -328,7 +340,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     protected function buildTokenReplacements(array $tokens, array $data): array
     {
         $replacements = [];
-        foreach ($tokens as $token) {
+        foreach ($tokens as $originalToken => $token) {
             $tokenParts = explode(':', $token);
             $qualifier = null;
             $format = null;
@@ -341,7 +353,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             if (!empty($nameQualifierParts)) {
                 $qualifier = implode('_', $nameQualifierParts);
             }
-            $replacements[$token] = $this->buildTokenReplacement($token, $name, $qualifier, $format, $data);
+            $replacements[$originalToken] = $this->buildTokenReplacement($originalToken, $name, $qualifier, $format, $data);
         }
 
         return $replacements;
@@ -366,6 +378,9 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     {
         $replacement = $token;
         switch ($name) {
+            case 'feature':
+                $replacement = $this->replaceFeatureToken($token, $name, $qualifier, $format, $data);
+                break;
             case 'url':
                 $replacement = $this->replaceUrlToken($token, $name, $qualifier, $format, $data);
                 break;
@@ -389,6 +404,31 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     }
 
     /**
+     * Replace {feature} token.
+     *
+     * @param string       $token     Original token.
+     * @param string       $name      Token name.
+     * @param string|null  $qualifier Token qualifier.
+     * @param string|null  $format    Token format.
+     * @param array<mixed> $data      Extra data to provide context to replace token.
+     *
+     * @return string
+     *   Token replacement.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    protected function replaceFeatureToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    {
+        $replacement = $token;
+        $featureFile = $this->beforeStepScope->getFeature()->getFile();
+        if ($featureFile) {
+            $replacement = basename($featureFile, '.feature');
+        }
+
+        return $replacement;
+    }
+
+    /**
      * Replace {ext} token.
      *
      * @param string       $token     Original token.
@@ -399,12 +439,14 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @return string
      *   Token replacement.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function replaceExtToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         $ext = 'html';
-        if (isset($data['ext']) && $data['ext'] !== '') {
-            $ext = 'png';
+        if (isset($data['ext']) && is_string($data['ext']) && $data['ext'] !== '') {
+            $ext = $data['ext'];
         }
 
         return $ext;
@@ -421,18 +463,19 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @return string
      *   Token replacement.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function replaceStepToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         switch ($qualifier) {
             case 'line':
+                $line = $this->beforeStepScope->getStep()->getLine();
                 if ($format) {
-                    $line = $this->beforeStepScope->getStep()->getLine();
-
                     return sprintf($format, $line);
                 }
 
-                return $this->stepLine;
+                return (string) $line;
             case 'name':
             default:
                 return $this->beforeStepScope->getStep()->getText();
@@ -450,6 +493,8 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @return string
      *   Token replacement.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function replaceDatetimeToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
@@ -475,6 +520,9 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * @throws DriverException
      * @throws UnsupportedDriverActionException
      * @throws \Exception
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function replaceUrlToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
@@ -515,6 +563,8 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @return string
      *   Token replacement.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function replaceFailToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
