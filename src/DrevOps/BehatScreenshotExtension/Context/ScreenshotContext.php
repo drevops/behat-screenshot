@@ -22,44 +22,51 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext, ScreenshotAwareContext
 {
-
-    /**
-     * Screenshot step filename.
-     *
-     * @var string
-     */
-    protected $featureFile;
-
     /**
      * Screenshot step line.
-     *
-     * @var int
      */
-    protected $stepLine;
+    protected string $stepLine;
 
     /**
      * Makes screenshot when fail.
      */
-    private bool $fail = false;
+    protected bool $fail = false;
 
     /**
      * Screenshot directory name.
      */
-    private string $dir = '';
+    protected string $dir = '';
 
     /**
      * Prefix for failed screenshot files.
      */
-    private string $failPrefix = '';
+    protected string $failPrefix = '';
+
+    /**
+     * Before step scope.
+     */
+    protected BeforeStepScope $beforeStepScope;
+
+    /**
+     * Filename pattern.
+     */
+    protected string $filenamePattern;
+
+    /**
+     * Filename pattern failed.
+     */
+    protected string $filenamePatternFailed;
 
     /**
      * {@inheritdoc}
      */
-    public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix): static
+    public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix, string $filenamePattern, string $filenamePatternFailed): static
     {
         $this->dir = $dir;
         $this->fail = $fail;
         $this->failPrefix = $failPrefix;
+        $this->filenamePattern = $filenamePattern;
+        $this->filenamePatternFailed = $filenamePatternFailed;
 
         return $this;
     }
@@ -108,14 +115,16 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         if (!$featureFile) {
             throw new \RuntimeException('Feature file not found.');
         }
-        $this->featureFile = $featureFile;
-        $this->stepLine = $scope->getStep()->getLine();
+        $this->beforeStepScope = $scope;
     }
 
     /**
      * After scope event handler to print last response on error.
      *
      * @param AfterStepScope $event After scope event.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
      *
      * @AfterStep
      */
@@ -135,14 +144,16 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *                              test.
      * @param string|null $filename File name.
      *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
+     *
      * @When save screenshot
      * @When I save screenshot
      */
-    public function iSaveScreenshot($fail = false, $filename = null): void
+    public function iSaveScreenshot(bool $fail = false, string $filename = null): void
     {
         $driver = $this->getSession()->getDriver();
-
-        $fileName = $this->makeFileName('html', $fail ? $this->failPrefix : '', $filename);
+        $fileName = $this->makeFileName('html', $filename, $fail);
 
         try {
             $data = $driver->getContent();
@@ -161,7 +172,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             $data = $driver->getScreenshot();
             // Preserve filename, but change the extension - this is to group
             // content and screenshot files together by name.
-            $fileName = substr($fileName, 0, -1 * strlen('html')).'png';
+            $fileName = $this->makeFileName('png', $filename, $fail);
             $this->saveScreenshotData($fileName, $data);
         } catch (UnsupportedDriverActionException) {
             // Nothing to do here - drivers without support for screenshots
@@ -174,6 +185,9 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @param string $filename File name.
      *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
+     *
      * @When I save screenshot with name :filename
      */
     public function iSaveScreenshotWithName(string $filename): void
@@ -184,8 +198,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * Save screenshot with specific dimensions.
      *
-     * @param int $width  Width to resize browser to.
-     * @param int $height Height to resize browser to.
+     * @param string|int $width  Width to resize browser to.
+     * @param string|int $height Height to resize browser to.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
      *
      * @When save :width x :height screenshot
      * @When I save :width x :height screenshot
@@ -231,17 +248,276 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * Format: microseconds.featurefilename_linenumber.ext
      *
      * @param string      $ext      File extension without dot.
-     * @param string      $prefix   Optional file name prefix for a filed test.
      * @param string|null $filename Optional file name.
+     * @param bool        $fail     Make filename for fail case.
      *
      * @return string Unique file name.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
      */
-    protected function makeFileName(string $ext, string $prefix = '', string $filename = null): string
+    protected function makeFileName(string $ext, string $filename = null, bool $fail = false): string
     {
         if (!empty($filename)) {
-            return sprintf('%s.%s', $filename, $ext);
+            return $this->replaceToken($filename, ['ext' => $ext]);
         }
 
-        return sprintf('%01.2f.%s%s_%s.%s', microtime(true), $prefix, basename($this->featureFile), $this->stepLine, $ext);
+        $filename = $this->filenamePattern;
+        if ($fail) {
+            $filename = $this->filenamePatternFailed;
+        }
+
+        return $this->replaceToken($filename, ['ext' => $ext]);
+    }
+
+    /**
+     * Replace tokens from the text.
+     *
+     * @param string       $text Text may contain tokens.
+     * @param array<mixed> $data Extra data to provide context to replace token.
+     *
+     * @return string
+     *   String after replace tokens.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
+     */
+    protected function replaceToken(string $text, array $data = []): string
+    {
+        $tokens = $this->scanTokens($text);
+        $tokenReplacements = $this->buildTokenReplacements($tokens, $data);
+        if (!empty($tokenReplacements)) {
+            return str_replace(array_keys($tokenReplacements), array_values($tokenReplacements), $text);
+        }
+
+        return $text;
+    }
+
+    /**
+     * Scan tokens of specific text.
+     *
+     * @param string $text
+     *   The text to scan tokens.
+     * @return string[]
+     *   The tokens.
+     */
+    protected function scanTokens(string $text): array
+    {
+        $pattern = '/\{(.*?)\}/';
+        preg_match_all($pattern, $text, $matches);
+        $result = [];
+        foreach ($matches[1] as $match) {
+            $result[] = $match;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Build replacements tokens.
+     *
+     * @param string[]     $tokens Token.
+     * @param array<mixed> $data   Extra data to provide context to replace token.
+     *
+     * @return array<string, string>
+     *   Replacements has key as token and value as token replacement.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
+     */
+    protected function buildTokenReplacements(array $tokens, array $data): array
+    {
+        $replacements = [];
+        foreach ($tokens as $token) {
+            $tokenParts = explode(':', $token);
+            $qualifier = null;
+            $format = null;
+            $nameQualifier = $tokenParts[0];
+            if (isset($tokenParts[1])) {
+                $format = $tokenParts[1];
+            }
+            $nameQualifierParts = explode('_', $nameQualifier);
+            $name = array_shift($nameQualifierParts);
+            if (!empty($nameQualifierParts)) {
+                $qualifier = implode('_', $nameQualifierParts);
+            }
+            $replacements[$token] = $this->buildTokenReplacement($token, $name, $qualifier, $format, $data);
+        }
+
+        return $replacements;
+    }
+
+    /**
+     * Build replacement for a token.
+     *
+     * @param string       $token     Original token.
+     * @param string       $name      Token name.
+     * @param string|null  $qualifier Token qualifier.
+     * @param string|null  $format    Token format.
+     * @param array<mixed> $data      Extra data to provide context to replace token.
+     *
+     * @return string
+     *   Token replacement.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
+     */
+    protected function buildTokenReplacement(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    {
+        $replacement = $token;
+        switch ($name) {
+            case 'url':
+                $replacement = $this->replaceUrlToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'datetime':
+                $replacement = $this->replaceDatetimeToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'step':
+                $replacement = $this->replaceStepToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'fail':
+                $replacement = $this->replaceFailToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'ext':
+                $replacement = $this->replaceExtToken($token, $name, $qualifier, $format, $data);
+                break;
+            default:
+                break;
+        }
+
+        return $replacement;
+    }
+
+    /**
+     * Replace {ext} token.
+     *
+     * @param string       $token     Original token.
+     * @param string       $name      Token name.
+     * @param string|null  $qualifier Token qualifier.
+     * @param string|null  $format    Token format.
+     * @param array<mixed> $data      Extra data to provide context to replace token.
+     *
+     * @return string
+     *   Token replacement.
+     */
+    protected function replaceExtToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    {
+        $ext = 'html';
+        if (isset($data['ext']) && $data['ext'] !== '') {
+            $ext = 'png';
+        }
+
+        return $ext;
+    }
+
+    /**
+     * Replace {step} token.
+     *
+     * @param string       $token     Original token.
+     * @param string       $name      Token name.
+     * @param string|null  $qualifier Token qualifier.
+     * @param string|null  $format    Token format.
+     * @param array<mixed> $data      Extra data to provide context to replace token.
+     *
+     * @return string
+     *   Token replacement.
+     */
+    protected function replaceStepToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    {
+        switch ($qualifier) {
+            case 'line':
+                if ($format) {
+                    $line = $this->beforeStepScope->getStep()->getLine();
+
+                    return sprintf($format, $line);
+                }
+
+                return $this->stepLine;
+            case 'name':
+            default:
+                return $this->beforeStepScope->getStep()->getText();
+        }
+    }
+
+    /**
+     * Replace {datetime} token.
+     *
+     * @param string       $token     Original token.
+     * @param string       $name      Token name.
+     * @param string|null  $qualifier Token qualifier.
+     * @param string|null  $format    Token format.
+     * @param array<mixed> $data      Extra data to provide context to replace token.
+     *
+     * @return string
+     *   Token replacement.
+     */
+    protected function replaceDatetimeToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    {
+        if ($format) {
+            return date($format);
+        }
+
+        return date('Ymd_His');
+    }
+
+    /**
+     * Replace {url} token.
+     *
+     * @param string       $token     Original token.
+     * @param string       $name      Token name.
+     * @param string|null  $qualifier Token qualifier.
+     * @param string|null  $format    Token format.
+     * @param array<mixed> $data      Extra data to provide context to replace token.
+     *
+     * @return string
+     *   Token replacement.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
+     * @throws \Exception
+     */
+    protected function replaceUrlToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    {
+        $currentUrl = $this->getSession()->getDriver()->getCurrentUrl();
+        $currentUrlParts = parse_url($currentUrl);
+        if (!$currentUrlParts) {
+            throw new \Exception('Could not parse url.');
+        }
+        switch ($format) {
+            case 'origin':
+                return sprintf('%s://%s', $currentUrlParts['scheme'], $currentUrlParts['host']);
+            case 'relative':
+                $relative = $currentUrlParts['path'];
+                $relative = (isset($currentUrlParts['query'])) ? $relative.$currentUrlParts['query'] : $relative;
+
+                return (isset($currentUrlParts['fragment'])) ? $relative.$currentUrlParts['fragment'] : $relative;
+            case 'domain':
+                return $currentUrlParts['host'];
+            case 'path':
+                return $currentUrlParts['path'];
+            case 'query':
+                return (isset($currentUrlParts['query'])) ? $currentUrlParts['query'] : '';
+            case 'fragment':
+                return (isset($currentUrlParts['fragment'])) ? $currentUrlParts['fragment'] : '';
+            default:
+                return $currentUrl;
+        }
+    }
+
+    /**
+     * Replace {fail} token.
+     *
+     * @param string       $token     Original token.
+     * @param string       $name      Token name.
+     * @param string|null  $qualifier Token qualifier.
+     * @param string|null  $format    Token format.
+     * @param array<mixed> $data      Extra data to provide context to replace token.
+     *
+     * @return string
+     *   Token replacement.
+     */
+    protected function replaceFailToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    {
+        return $this->failPrefix;
     }
 }
