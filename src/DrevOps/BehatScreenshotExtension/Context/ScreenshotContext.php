@@ -471,7 +471,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
                 return (string) $line;
             case 'name':
             default:
-                return $this->beforeStepScope->getStep()->getText();
+                return strtolower($this->beforeStepScope->getStep()->getText());
         }
     }
 
@@ -524,9 +524,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         if (!$currentUrlParts) {
             throw new \Exception('Could not parse url.');
         }
-        switch ($format) {
+        switch ($qualifier) {
             case 'origin':
-                return sprintf('%s://%s', $currentUrlParts['scheme'], $currentUrlParts['host']);
+                $origin = sprintf('%s://%s', $currentUrlParts['scheme'], $currentUrlParts['host']);
+
+                return urlencode($origin);
             case 'relative':
                 $relative = $currentUrlParts['path'];
                 $relative = (isset($currentUrlParts['query'])) ? $relative.$currentUrlParts['query'] : $relative;
@@ -535,13 +537,13 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             case 'domain':
                 return $currentUrlParts['host'];
             case 'path':
-                return $currentUrlParts['path'];
+                return trim($currentUrlParts['path'], '/');
             case 'query':
                 return (isset($currentUrlParts['query'])) ? $currentUrlParts['query'] : '';
             case 'fragment':
                 return (isset($currentUrlParts['fragment'])) ? $currentUrlParts['fragment'] : '';
             default:
-                return $currentUrl;
+                return urlencode($currentUrl);
         }
     }
 
