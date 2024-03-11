@@ -530,18 +530,25 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
 
                 return urlencode($origin);
             case 'relative':
-                $relative = $currentUrlParts['path'];
-                $relative = (isset($currentUrlParts['query'])) ? $relative.$currentUrlParts['query'] : $relative;
+                $relative = trim($currentUrlParts['path'], '/');
+                $relative = (isset($currentUrlParts['query'])) ? $relative.'?'.$currentUrlParts['query'] : $relative;
+                $relative = (isset($currentUrlParts['fragment'])) ? $relative.'#'.$currentUrlParts['fragment'] : $relative;
 
-                return (isset($currentUrlParts['fragment'])) ? $relative.$currentUrlParts['fragment'] : $relative;
+                return urlencode($relative);
             case 'domain':
                 return $currentUrlParts['host'];
             case 'path':
-                return trim($currentUrlParts['path'], '/');
+                $path = trim($currentUrlParts['path'], '/');
+
+                return urlencode($path);
             case 'query':
-                return (isset($currentUrlParts['query'])) ? $currentUrlParts['query'] : '';
+                $query = (isset($currentUrlParts['query'])) ? $currentUrlParts['query'] : '';
+
+                return urlencode($query);
             case 'fragment':
-                return (isset($currentUrlParts['fragment'])) ? $currentUrlParts['fragment'] : '';
+                $fragment = (isset($currentUrlParts['fragment'])) ? $currentUrlParts['fragment'] : '';
+
+                return urlencode($fragment);
             default:
                 return urlencode($currentUrl);
         }

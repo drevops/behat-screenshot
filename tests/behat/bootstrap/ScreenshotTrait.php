@@ -40,10 +40,20 @@ trait ScreenshotTrait
      *
      * @Given /^(?:|I )am on (?:|the )screenshot test page$/
      * @Given /^(?:|I )go to (?:|the )screenshot test page$/
+     * @Given /^(?:|I )am on (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/
+     * @Given /^(?:|I )go to (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/
      */
-    public function goToScreenshotTestPage(): void
+    public function goToScreenshotTestPage(string $query = '', string $fragment = ''): void
     {
-        $this->visitPath('screenshot.html');
+        $path = 'screenshot.html';
+        if (!empty($query)) {
+            $path = $path.'?'.$query;
+        }
+        if (!empty($fragment)) {
+            $path = $path.'#'.$fragment;
+        }
+
+        $this->visitPath($path);
     }
 
     /**
