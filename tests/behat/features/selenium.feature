@@ -54,3 +54,17 @@ Feature: Selenium screenshots
     And I save screenshot with name "{datetime:U}.{url_relative}.{ext}"
     Then file wildcard "*.screenshot.html%3Ffoo%3Dtest-foo%23foo-fragment.png" should exist
     Then file wildcard "*.screenshot.html%3Ffoo%3Dtest-foo%23foo-fragment.html" should exist
+
+  @phpserver @javascript
+  Scenario: Capture a screenshot with name using Selenium driver
+    When I am on the screenshot test page with query "foo=test-foo" and fragment "foo-fragment"
+    And I save screenshot with name "{datetime:U}.{url}.{ext}"
+    Then file wildcard "*.http%3A%2F%2Fphpserver%3A8888%2Fscreenshot.html%3Ffoo%3Dtest-foo%23foo-fragment.png" should exist
+    Then file wildcard "*.http%3A%2F%2Fphpserver%3A8888%2Fscreenshot.html%3Ffoo%3Dtest-foo%23foo-fragment.html" should exist
+
+  @phpserver @javascript
+  Scenario: Capture a screenshot with name using Selenium driver
+    When I am on the screenshot test page with query "foo=test-foo" and fragment "foo-fragment"
+    And I save screenshot with name "{datetime:U}.{step_line}.{step_name}.{ext}"
+    Then file wildcard "*.I_save_screenshot_with_name_{datetime:U}.{step_line}.{step_name}.{ext}.png" should exist
+    Then file wildcard "*.I_save_screenshot_with_name_{datetime:U}.{step_line}.{step_name}.{ext}.html" should exist

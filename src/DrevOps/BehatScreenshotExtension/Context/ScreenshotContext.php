@@ -292,6 +292,20 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         $tokenReplacements = $this->buildTokenReplacements($tokens, $data);
 
         if (!empty($tokenReplacements)) {
+            // If token replacements have {step_name} token.
+            // We need move {step_name} token to the last position,
+            // because {step_name} token may contain other tokens.
+            foreach ($tokenReplacements as $token => $replacement) {
+                if ('{step_name}' === $token) {
+                    $element = [$token => $replacement];
+                    unset($tokenReplacements[$token]);
+                    break;
+                }
+            }
+            if (isset($element)) {
+                $tokenReplacements = array_merge($tokenReplacements, $element);
+            }
+
             $replacement = str_replace(array_keys($tokenReplacements), array_values($tokenReplacements), $text);
         }
 
@@ -380,14 +394,14 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             case 'datetime':
                 $replacement = $this->replaceDatetimeToken($token, $name, $qualifier, $format, $data);
                 break;
-            case 'step':
-                $replacement = $this->replaceStepToken($token, $name, $qualifier, $format, $data);
-                break;
             case 'fail':
                 $replacement = $this->replaceFailToken($token, $name, $qualifier, $format, $data);
                 break;
             case 'ext':
                 $replacement = $this->replaceExtToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'step':
+                $replacement = $this->replaceStepToken($token, $name, $qualifier, $format, $data);
                 break;
             default:
                 break;
@@ -471,7 +485,9 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
                 return (string) $line;
             case 'name':
             default:
-                return strtolower($this->beforeStepScope->getStep()->getText());
+                $stepText = $this->beforeStepScope->getStep()->getText();
+
+                return str_replace([' ', '"'], ['_', ''], $stepText);
         }
     }
 
