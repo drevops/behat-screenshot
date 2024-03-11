@@ -259,19 +259,12 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      */
     protected function makeFileName(string $ext, string $filename = null, bool $fail = false): string
     {
-        if (!empty($filename)) {
-            // Make sure {ext} token is on filename.
-            if (!str_ends_with($filename, '.{ext}')) {
-                $filename .= '.{ext}';
-            }
-
-            return $this->replaceToken($filename, ['ext' => $ext]);
-        }
-
-        $filename = $this->filenamePattern;
         if ($fail) {
             $filename = $this->filenamePatternFailed;
+        } elseif (empty($filename)) {
+            $filename = $this->filenamePattern;
         }
+
         // Make sure {ext} token is on filename.
         if (!str_ends_with($filename, '.{ext}')) {
             $filename .= '.{ext}';
