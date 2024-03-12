@@ -9,12 +9,13 @@ declare(strict_types = 1);
 
 namespace DrevOps\BehatScreenshotExtension;
 
-use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Behat\Hook\Scope\StepScope;
 use Behat\Mink\Session;
 
 /**
  * Handler token replacements.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Tokenizer
 {
@@ -74,82 +75,6 @@ class Tokenizer
         }
 
         return $result;
-    }
-
-    /**
-     * Build replacements tokens.
-     *
-     * @param string[]     $tokens Token.
-     * @param array<mixed> $data   Extra data to provide context to replace token.
-     *
-     * @return array<string, string>
-     *   Replacements has key as token and value as token replacement.
-     *
-     * @throws \Exception
-     */
-    protected function buildTokenReplacements(array $tokens, array $data): array
-    {
-        $replacements = [];
-        foreach ($tokens as $originalToken => $token) {
-            $tokenParts = explode(':', $token);
-            $qualifier = null;
-            $format = null;
-            $nameQualifier = $tokenParts[0];
-            if (isset($tokenParts[1])) {
-                $format = $tokenParts[1];
-            }
-            $nameQualifierParts = explode('_', $nameQualifier);
-            $name = array_shift($nameQualifierParts);
-            if (!empty($nameQualifierParts)) {
-                $qualifier = implode('_', $nameQualifierParts);
-            }
-            $replacements[$originalToken] = $this->buildTokenReplacement($originalToken, $name, $qualifier, $format, $data);
-        }
-
-        return $replacements;
-    }
-
-    /**
-     * Build replacement for a token.
-     *
-     * @param string       $token     Original token.
-     * @param string       $name      Token name.
-     * @param string|null  $qualifier Token qualifier.
-     * @param string|null  $format    Token format.
-     * @param array<mixed> $data      Extra data to provide context to replace token.
-     *
-     * @return string
-     *   Token replacement.
-     *
-     * @throws \Exception
-     */
-    protected function buildTokenReplacement(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
-    {
-        $replacement = $token;
-        switch ($name) {
-            case 'feature':
-                $replacement = $this->replaceFeatureToken($token, $name, $qualifier, $format, $data);
-                break;
-            case 'url':
-                $replacement = $this->replaceUrlToken($token, $name, $qualifier, $format, $data);
-                break;
-            case 'datetime':
-                $replacement = $this->replaceDatetimeToken($token, $name, $qualifier, $format, $data);
-                break;
-            case 'fail':
-                $replacement = $this->replaceFailToken($token, $name, $qualifier, $format, $data);
-                break;
-            case 'ext':
-                $replacement = $this->replaceExtToken($token, $name, $qualifier, $format, $data);
-                break;
-            case 'step':
-                $replacement = $this->replaceStepToken($token, $name, $qualifier, $format, $data);
-                break;
-            default:
-                break;
-        }
-
-        return $replacement;
     }
 
     /**
@@ -352,6 +277,83 @@ class Tokenizer
         $replacement = $token;
         if (!empty($data['fail_prefix']) && is_string($data['fail_prefix'])) {
             $replacement = $data['fail_prefix'];
+        }
+
+        return $replacement;
+    }
+
+
+    /**
+     * Build replacements tokens.
+     *
+     * @param string[]     $tokens Token.
+     * @param array<mixed> $data   Extra data to provide context to replace token.
+     *
+     * @return array<string, string>
+     *   Replacements has key as token and value as token replacement.
+     *
+     * @throws \Exception
+     */
+    protected function buildTokenReplacements(array $tokens, array $data): array
+    {
+        $replacements = [];
+        foreach ($tokens as $originalToken => $token) {
+            $tokenParts = explode(':', $token);
+            $qualifier = null;
+            $format = null;
+            $nameQualifier = $tokenParts[0];
+            if (isset($tokenParts[1])) {
+                $format = $tokenParts[1];
+            }
+            $nameQualifierParts = explode('_', $nameQualifier);
+            $name = array_shift($nameQualifierParts);
+            if (!empty($nameQualifierParts)) {
+                $qualifier = implode('_', $nameQualifierParts);
+            }
+            $replacements[$originalToken] = $this->buildTokenReplacement($originalToken, $name, $qualifier, $format, $data);
+        }
+
+        return $replacements;
+    }
+
+    /**
+     * Build replacement for a token.
+     *
+     * @param string       $token     Original token.
+     * @param string       $name      Token name.
+     * @param string|null  $qualifier Token qualifier.
+     * @param string|null  $format    Token format.
+     * @param array<mixed> $data      Extra data to provide context to replace token.
+     *
+     * @return string
+     *   Token replacement.
+     *
+     * @throws \Exception
+     */
+    protected function buildTokenReplacement(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    {
+        $replacement = $token;
+        switch ($name) {
+            case 'feature':
+                $replacement = $this->replaceFeatureToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'url':
+                $replacement = $this->replaceUrlToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'datetime':
+                $replacement = $this->replaceDatetimeToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'fail':
+                $replacement = $this->replaceFailToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'ext':
+                $replacement = $this->replaceExtToken($token, $name, $qualifier, $format, $data);
+                break;
+            case 'step':
+                $replacement = $this->replaceStepToken($token, $name, $qualifier, $format, $data);
+                break;
+            default:
+                break;
         }
 
         return $replacement;
