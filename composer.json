@@ -36,6 +36,14 @@
             "DrevOps\\BehatScreenshot": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "DrevOps\\BehatScreenshot\\Tests\\": "tests/phpunit"
+        },
+        "classmap": [
+            "tests/phpunit"
+        ]
+    },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
@@ -53,6 +61,7 @@
             "phpcbf"
         ],
         "test": [
+            "phpunit",
             "behat"
         ]
     }

@@ -15,6 +15,7 @@ use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
+use DrevOps\BehatScreenshotExtension\Tokenizer;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -47,7 +48,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * Before step scope.
      */
-    protected BeforeStepScope $stepScope;
+    protected BeforeStepScope $beforeStepScope;
 
     /**
      * Filename pattern.
@@ -256,6 +257,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @throws DriverException
      * @throws UnsupportedDriverActionException
+     * @throws \Exception
      */
     protected function makeFileName(string $ext, string $filename = null, bool $fail = false): string
     {
@@ -270,7 +272,15 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             $filename .= '.{ext}';
         }
 
-        return $this->replaceToken($filename, ['ext' => $ext]);
-    }
+        $tokenizer = new Tokenizer();
+        $data = [
+            'ext' => $ext,
+            'step_scope' => $this->beforeStepScope,
+            'session' => $this->getSession(),
+            'time' => time(),
+            'fail_prefix' => $this->failPrefix,
+        ];
 
+        return $tokenizer->replaceToken($filename, $data);
+    }
 }
