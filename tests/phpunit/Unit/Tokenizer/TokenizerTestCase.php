@@ -9,7 +9,6 @@ declare(strict_types = 1);
 
 namespace DrevOps\BehatScreenshot\Tests\Unit\Tokenizer;
 
-use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Behat\Hook\Scope\StepScope;
 use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Node\StepNode;
