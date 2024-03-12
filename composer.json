@@ -61,7 +61,7 @@
             "phpcbf"
         ],
         "test": [
-            "phpunit",
+            "if [ \"${XDEBUG_MODE}\" = 'coverage' ]; then phpunit; else phpunit --no-coverage; fi",
             "behat"
         ]
     }
