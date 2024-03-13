@@ -103,6 +103,35 @@ You may optionally specify size of browser window in the screenshot step:
   Remove all files from the screenshots directory on each test run. Useful during debugging of tests.
   Can be overridden with `BEHAT_SCREENSHOT_PURGE` environment variable set to `1` or `true`.
 
+- `filenamePattern:` `file-pattern` (default `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`)
+
+  File name pattern for successful.
+
+- `filenamePatternFailed:` `file-pattern` (default `{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}`)
+
+  File name pattern for failed.
+
+### Supported tokens
+
+| Token	             | Substituted with	                                                               | Example value(s)                                                                                         |
+|--------------------|---------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| `{ext}`            | The extension of the file captured                                              | `html` or `png`                                                                                          |
+| `{fail_prefix}`    | The value of fail_prefix from configuration                                     | `failed_`, `error_` (do include the `_` suffix, if required)                                             |
+| `{url}`            | Full URL                                                                        | `http_example_com_mypath_subpath__query__myquery_1_plus_2_plus_3_and_another1_4__fragment__somefragment` |
+| `{url_origin}`     | Scheme with domain                                                              | `http_example_com`                                                                                       |
+| `{url_relative}`   | Path + query + fragment                                                         | `mypath_subpath__query__myquery_1_plus_2_plus_3_and_another1_4__fragment__somefragment`                  |
+| `{url_domain}`     | Domain                                                                          | `example_com`                                                                                            |
+| `{url_path}`       | Path                                                                            | `mypath_subpath`                                                                                         |
+| `{url_query}`      | Query                                                                           | `myquery_1_plus_2_plus_3_and_another1_4`                                                                 |
+| `{url_fragment}`   | Fragment                                                                        | `somefragment`                                                                                           |
+| `{feature_file}`   | The filename of the `.feature` file currently being executed, without extension | `my_example.feature` -> `my_example`                                                                     |
+| `{step_line}`      | Step line number                                                                | `1`, `10`, `100`                                                                                         |
+| `{step_line:%03d}` | Step line number with leading zeros. Modifiers are from `sprintf()`.                                           | `001`, `010`, `100`                                                                                      |
+| `{step_name}`      | Step name without `Given/When/Then` and lower-cased.                            | `i_am_on_the_test_page`                                                                                  |
+| `{datetime}`       | Current date and time. defaults to `Ymd_His` format.                            | `20010310_171618`                                                                                        |
+| `{datetime:U}`     | Current date and time as microtime. Modifiers are from `date()`.                                            | `1697490961192498`                                                                                       |
+
+
 ## Maintenance
 
 ### Local development setup

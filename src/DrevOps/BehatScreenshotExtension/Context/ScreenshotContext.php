@@ -15,51 +15,61 @@ use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
+use DrevOps\BehatScreenshotExtension\Tokenizer;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Class ScreenshotContext.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContext, ScreenshotAwareContext
 {
-
-    /**
-     * Screenshot step filename.
-     *
-     * @var string
-     */
-    protected $featureFile;
-
     /**
      * Screenshot step line.
-     *
-     * @var int
      */
-    protected $stepLine;
+    protected string $stepLine;
 
     /**
      * Makes screenshot when fail.
      */
-    private bool $fail = false;
+    protected bool $fail = false;
 
     /**
      * Screenshot directory name.
      */
-    private string $dir = '';
+    protected string $dir = '';
 
     /**
      * Prefix for failed screenshot files.
      */
-    private string $failPrefix = '';
+    protected string $failPrefix = '';
+
+    /**
+     * Before step scope.
+     */
+    protected BeforeStepScope $beforeStepScope;
+
+    /**
+     * Filename pattern.
+     */
+    protected string $filenamePattern;
+
+    /**
+     * Filename pattern failed.
+     */
+    protected string $filenamePatternFailed;
 
     /**
      * {@inheritdoc}
      */
-    public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix): static
+    public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix, string $filenamePattern, string $filenamePatternFailed): static
     {
         $this->dir = $dir;
         $this->fail = $fail;
         $this->failPrefix = $failPrefix;
+        $this->filenamePattern = $filenamePattern;
+        $this->filenamePatternFailed = $filenamePatternFailed;
 
         return $this;
     }
@@ -108,14 +118,16 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
         if (!$featureFile) {
             throw new \RuntimeException('Feature file not found.');
         }
-        $this->featureFile = $featureFile;
-        $this->stepLine = $scope->getStep()->getLine();
+        $this->beforeStepScope = $scope;
     }
 
     /**
      * After scope event handler to print last response on error.
      *
      * @param AfterStepScope $event After scope event.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
      *
      * @AfterStep
      */
@@ -135,15 +147,16 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *                              test.
      * @param string|null $filename File name.
      *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
+     *
      * @When save screenshot
      * @When I save screenshot
      */
-    public function iSaveScreenshot($fail = false, $filename = null): void
+    public function iSaveScreenshot(bool $fail = false, string $filename = null): void
     {
         $driver = $this->getSession()->getDriver();
-
-        $fileName = $this->makeFileName('html', $fail ? $this->failPrefix : '', $filename);
-
+        $fileName = $this->makeFileName('html', $filename, $fail);
         try {
             $data = $driver->getContent();
         } catch (DriverException) {
@@ -161,7 +174,7 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             $data = $driver->getScreenshot();
             // Preserve filename, but change the extension - this is to group
             // content and screenshot files together by name.
-            $fileName = substr($fileName, 0, -1 * strlen('html')).'png';
+            $fileName = $this->makeFileName('png', $filename, $fail);
             $this->saveScreenshotData($fileName, $data);
         } catch (UnsupportedDriverActionException) {
             // Nothing to do here - drivers without support for screenshots
@@ -174,6 +187,9 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @param string $filename File name.
      *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
+     *
      * @When I save screenshot with name :filename
      */
     public function iSaveScreenshotWithName(string $filename): void
@@ -184,8 +200,11 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
     /**
      * Save screenshot with specific dimensions.
      *
-     * @param int $width  Width to resize browser to.
-     * @param int $height Height to resize browser to.
+     * @param string|int $width  Width to resize browser to.
+     * @param string|int $height Height to resize browser to.
+     *
+     * @throws DriverException
+     * @throws UnsupportedDriverActionException
      *
      * @When save :width x :height screenshot
      * @When I save :width x :height screenshot
@@ -231,17 +250,46 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      * Format: microseconds.featurefilename_linenumber.ext
      *
      * @param string      $ext      File extension without dot.
-     * @param string      $prefix   Optional file name prefix for a filed test.
      * @param string|null $filename Optional file name.
+     * @param bool        $fail     Make filename for fail case.
      *
      * @return string Unique file name.
+     *
+     * @throws \Exception
      */
-    protected function makeFileName(string $ext, string $prefix = '', string $filename = null): string
+    protected function makeFileName(string $ext, string $filename = null, bool $fail = false): string
     {
-        if (!empty($filename)) {
-            return sprintf('%s.%s', $filename, $ext);
+        if ($fail) {
+            $filename = $this->filenamePatternFailed;
+        } elseif (empty($filename)) {
+            $filename = $this->filenamePattern;
         }
 
-        return sprintf('%01.2f.%s%s_%s.%s', microtime(true), $prefix, basename($this->featureFile), $this->stepLine, $ext);
+        // Make sure {ext} token is on filename.
+        if (!str_ends_with($filename, '.{ext}')) {
+            $filename .= '.{ext}';
+        }
+
+        $feature = $this->beforeStepScope->getFeature();
+        $step = $this->beforeStepScope->getStep();
+
+
+        try {
+            $url = $this->getSession()->getCurrentUrl();
+        } catch (\Exception) {
+            $url = null;
+        }
+
+        $data = [
+            'ext' => $ext,
+            'step_name' => $step->getText(),
+            'step_line' => $step->getLine(),
+            'feature_file' => $feature->getFile(),
+            'url' => $url,
+            'time' => time(),
+            'fail_prefix' => $this->failPrefix,
+        ];
+
+        return Tokenizer::replaceTokens($filename, $data);
     }
 }
