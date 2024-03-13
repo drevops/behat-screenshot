@@ -9,9 +9,6 @@ declare(strict_types = 1);
 
 namespace DrevOps\BehatScreenshotExtension;
 
-use Behat\Behat\Hook\Scope\StepScope;
-use Behat\Mink\Session;
-
 /**
  * Handler token replacements.
  *
@@ -30,11 +27,11 @@ class Tokenizer
      *
      * @throws \Exception
      */
-    public function replaceToken(string $text, array $data = []): string
+    public static function replaceTokens(string $text, array $data = []): string
     {
         $replacement = $text;
-        $tokens = $this->scanTokens($text);
-        $tokenReplacements = $this->buildTokenReplacements($tokens, $data);
+        $tokens = self::scanTokens($text);
+        $tokenReplacements = self::extractTokens($tokens, $data);
 
         if (!empty($tokenReplacements)) {
             // If token replacements have {step_name} token.
@@ -51,7 +48,7 @@ class Tokenizer
                 $tokenReplacements = array_merge($tokenReplacements, $element);
             }
 
-            $replacement = str_replace(array_keys($tokenReplacements), array_values($tokenReplacements), $text);
+            $replacement = strtr($text, $tokenReplacements);
         }
 
         return $replacement;
@@ -63,18 +60,18 @@ class Tokenizer
      * @param string $text
      *   The text to scan tokens.
      * @return string[]
-     *   The tokens.
+     *   The tokens keyed by the token name.
      */
-    public function scanTokens(string $text): array
+    public static function scanTokens(string $text): array
     {
         $pattern = '/\{(.*?)\}/';
         preg_match_all($pattern, $text, $matches);
-        $result = [];
+        $tokens = [];
         foreach ($matches[0] as $key => $match) {
-            $result[$match] = $matches[1][$key];
+            $tokens[$match] = $matches[1][$key];
         }
 
-        return $result;
+        return $tokens;
     }
 
     /**
@@ -91,13 +88,12 @@ class Tokenizer
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function replaceFeatureToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    public static function replaceFeatureToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         $replacement = $token;
-        if (isset($data['step_scope']) && $data['step_scope'] instanceof StepScope) {
-            $stepScope = $data['step_scope'];
-            $featureFile = $stepScope->getFeature()->getFile();
-            if ($featureFile) {
+        if (isset($data['feature_file']) && is_string($data['feature_file'])) {
+            $featureFile = $data['feature_file'];
+            if (!empty($featureFile)) {
                 $replacement = basename($featureFile, '.feature');
             }
         }
@@ -119,7 +115,7 @@ class Tokenizer
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function replaceExtToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    public static function replaceExtToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         $ext = 'html';
         if (isset($data['ext']) && is_string($data['ext']) && $data['ext'] !== '') {
@@ -143,24 +139,25 @@ class Tokenizer
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function replaceStepToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    public static function replaceStepToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         $replacement = $token;
-        if (isset($data['step_scope']) && $data['step_scope'] instanceof StepScope) {
-            $stepScope = $data['step_scope'];
-            switch ($qualifier) {
-                case 'line':
-                    $replacement = (string) $stepScope->getStep()->getLine();
+        switch ($qualifier) {
+            case 'line':
+                if (isset($data['step_line']) && (is_string($data['step_line']) || is_int($data['step_line']))) {
+                    $replacement = (string) $data['step_line'];
                     if ($format) {
                         $replacement = sprintf($format, $replacement);
                     }
-                    break;
-                case 'name':
-                default:
-                    $stepText = $stepScope->getStep()->getText();
-                    $replacement = str_replace([' ', '"'], ['_', ''], $stepText);
-                    break;
-            }
+                }
+                break;
+            case 'name':
+            default:
+                if (isset($data['step_name']) && is_string($data['step_name'])) {
+                    $stepName = $data['step_name'];
+                    $replacement = str_replace([' ', '"'], ['_', ''], $stepName);
+                }
+                break;
         }
 
         return $replacement;
@@ -182,7 +179,7 @@ class Tokenizer
      *
      * @throws \Exception
      */
-    public function replaceDatetimeToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    public static function replaceDatetimeToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         $timestamp = null;
         if ($data['time']) {
@@ -216,40 +213,38 @@ class Tokenizer
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    public function replaceUrlToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    public static function replaceUrlToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         $replacement = $token;
-        if (isset($data['session']) && $data['session'] instanceof Session) {
-            $session = $data['session'];
-
-            $currentUrl = $session->getDriver()->getCurrentUrl();
-            $currentUrlParts = parse_url($currentUrl);
-            if (!$currentUrlParts) {
+        if (isset($data['url']) && is_string($data['url'])) {
+            $url = $data['url'];
+            $urlParts = parse_url($url);
+            if (!$urlParts) {
                 throw new \Exception('Could not parse url.');
             }
             switch ($qualifier) {
                 case 'origin':
-                    $replacement = sprintf('%s://%s', $currentUrlParts['scheme'], $currentUrlParts['host']);
+                    $replacement = sprintf('%s://%s', $urlParts['scheme'], $urlParts['host']);
                     break;
                 case 'relative':
-                    $replacement = trim($currentUrlParts['path'], '/');
-                    $replacement = (isset($currentUrlParts['query'])) ? $replacement.'?'.$currentUrlParts['query'] : $replacement;
-                    $replacement = (isset($currentUrlParts['fragment'])) ? $replacement.'#'.$currentUrlParts['fragment'] : $replacement;
+                    $replacement = trim($urlParts['path'], '/');
+                    $replacement = (isset($urlParts['query'])) ? $replacement.'?'.$urlParts['query'] : $replacement;
+                    $replacement = (isset($urlParts['fragment'])) ? $replacement.'#'.$urlParts['fragment'] : $replacement;
                     break;
                 case 'domain':
-                    $replacement = $currentUrlParts['host'];
+                    $replacement = $urlParts['host'];
                     break;
                 case 'path':
-                    $replacement = trim($currentUrlParts['path'], '/');
+                    $replacement = trim($urlParts['path'], '/');
                     break;
                 case 'query':
-                    $replacement = (isset($currentUrlParts['query'])) ? $currentUrlParts['query'] : '';
+                    $replacement = (isset($urlParts['query'])) ? $urlParts['query'] : '';
                     break;
                 case 'fragment':
-                    $replacement = (isset($currentUrlParts['fragment'])) ? $currentUrlParts['fragment'] : '';
+                    $replacement = (isset($urlParts['fragment'])) ? $urlParts['fragment'] : '';
                     break;
                 default:
-                    $replacement = $currentUrl;
+                    $replacement = $url;
                     break;
             }
             $replacement = urlencode($replacement);
@@ -272,7 +267,7 @@ class Tokenizer
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function replaceFailToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    public static function replaceFailToken(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         $replacement = $token;
         if (!empty($data['fail_prefix']) && is_string($data['fail_prefix'])) {
@@ -294,7 +289,7 @@ class Tokenizer
      *
      * @throws \Exception
      */
-    protected function buildTokenReplacements(array $tokens, array $data): array
+    public static function extractTokens(array $tokens, array $data): array
     {
         $replacements = [];
         foreach ($tokens as $originalToken => $token) {
@@ -310,7 +305,7 @@ class Tokenizer
             if (!empty($nameQualifierParts)) {
                 $qualifier = implode('_', $nameQualifierParts);
             }
-            $replacements[$originalToken] = $this->buildTokenReplacement($originalToken, $name, $qualifier, $format, $data);
+            $replacements[$originalToken] = self::buildTokenReplacement($originalToken, $name, $qualifier, $format, $data);
         }
 
         return $replacements;
@@ -330,27 +325,27 @@ class Tokenizer
      *
      * @throws \Exception
      */
-    protected function buildTokenReplacement(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
+    public static function buildTokenReplacement(string $token, string $name, string $qualifier = null, string $format = null, array $data = []): string
     {
         $replacement = $token;
         switch ($name) {
             case 'feature':
-                $replacement = $this->replaceFeatureToken($token, $name, $qualifier, $format, $data);
+                $replacement = self::replaceFeatureToken($token, $name, $qualifier, $format, $data);
                 break;
             case 'url':
-                $replacement = $this->replaceUrlToken($token, $name, $qualifier, $format, $data);
+                $replacement = self::replaceUrlToken($token, $name, $qualifier, $format, $data);
                 break;
             case 'datetime':
-                $replacement = $this->replaceDatetimeToken($token, $name, $qualifier, $format, $data);
+                $replacement = self::replaceDatetimeToken($token, $name, $qualifier, $format, $data);
                 break;
             case 'fail':
-                $replacement = $this->replaceFailToken($token, $name, $qualifier, $format, $data);
+                $replacement = self::replaceFailToken($token, $name, $qualifier, $format, $data);
                 break;
             case 'ext':
-                $replacement = $this->replaceExtToken($token, $name, $qualifier, $format, $data);
+                $replacement = self::replaceExtToken($token, $name, $qualifier, $format, $data);
                 break;
             case 'step':
-                $replacement = $this->replaceStepToken($token, $name, $qualifier, $format, $data);
+                $replacement = self::replaceStepToken($token, $name, $qualifier, $format, $data);
                 break;
             default:
                 break;

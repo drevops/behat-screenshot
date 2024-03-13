@@ -255,8 +255,6 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
      *
      * @return string Unique file name.
      *
-     * @throws DriverException
-     * @throws UnsupportedDriverActionException
      * @throws \Exception
      */
     protected function makeFileName(string $ext, string $filename = null, bool $fail = false): string
@@ -272,15 +270,26 @@ class ScreenshotContext extends RawMinkContext implements SnippetAcceptingContex
             $filename .= '.{ext}';
         }
 
-        $tokenizer = new Tokenizer();
+        $feature = $this->beforeStepScope->getFeature();
+        $step = $this->beforeStepScope->getStep();
+
+
+        try {
+            $url = $this->getSession()->getCurrentUrl();
+        } catch (\Exception) {
+            $url = null;
+        }
+
         $data = [
             'ext' => $ext,
-            'step_scope' => $this->beforeStepScope,
-            'session' => $this->getSession(),
+            'step_name' => $step->getText(),
+            'step_line' => $step->getLine(),
+            'feature_file' => $feature->getFile(),
+            'url' => $url,
             'time' => time(),
             'fail_prefix' => $this->failPrefix,
         ];
 
-        return $tokenizer->replaceToken($filename, $data);
+        return Tokenizer::replaceTokens($filename, $data);
     }
 }
