@@ -11,18 +11,18 @@ use Behat\MinkExtension\Context\MinkContext;
 /**
  * Defines application features from the specific context.
  */
-class FeatureContext extends MinkContext implements Context
-{
+class FeatureContext extends MinkContext implements Context {
 
-    use ScreenshotTrait;
+  use ScreenshotTrait;
 
-    /**
-     * FeatureContext constructor.
-     *
-     * @param array<string> $parameters Array of parameters from config.
-     */
-    public function __construct(array $parameters)
-    {
-        $this->screenshotInitParams($parameters);
-    }
+  /**
+   * FeatureContext constructor.
+   *
+   * @param array<string> $parameters
+   *   Array of parameters from config.
+   */
+  public function __construct(array $parameters) {
+    $this->screenshotInitParams($parameters);
+  }
+
 }
