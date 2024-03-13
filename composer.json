@@ -19,16 +19,19 @@
         "symfony/http-client": "^6.0 || ^7.0"
     },
     "require-dev": {
+        "bamarni/composer-bin-plugin": "^1.8",
         "behat/mink-browserkit-driver": "^2.2",
         "behat/mink-selenium2-driver": "^1.7",
         "dealerdirect/phpcodesniffer-composer-installer": "^1",
         "drevops/behat-phpserver": "^1.2",
+        "drupal/coder": "^8.3",
         "escapestudios/symfony2-coding-standard": "^3",
+        "mikey179/vfsstream": "^1.6",
+        "opis/closure": "^3.6",
         "phpmd/phpmd": "^2.13",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^11.0",
+        "phpunit/phpunit": "^10",
         "rector/rector": "^1.0.0",
-        "squizlabs/php_codesniffer": "^3",
         "symfony/process": "^6.4 || ^7.0"
     },
     "autoload": {
@@ -43,6 +46,7 @@
     },
     "config": {
         "allow-plugins": {
+            "bamarni/composer-bin-plugin": true,
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
     },

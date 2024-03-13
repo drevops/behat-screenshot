@@ -8,9 +8,21 @@ parameters:
 
   paths:
     - src
+    - tests/phpunit
     - tests/behat/bootstrap
 
   excludePaths:
     - vendor/*
     - node_modules/*
-    - tests/behat/bootstrap/BehatCliContext.php
+
+  ignoreErrors:
+    -
+      # Since tests and data providers do not have to have parameter docblocks,
+      # it is not possible to specify the type of the parameter, so we ignore
+      # this error.
+      message: '#.*no value type specified in iterable type array.#'
+      path: tests/phpunit/*
+      reportUnmatched: false
+    -
+      message: '#.*#'
+      path: tests/behat/bootstrap/BehatCliContext.php
