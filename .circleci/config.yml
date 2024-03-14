@@ -25,15 +25,30 @@ jobs:
           name: Lint code
           command: docker compose exec phpserver composer lint
       - run:
-          name: Run tests
-          command: docker compose exec phpserver composer test
-      - run:
-          name: Copy artifacts
+          name: Run tests with PHPUnit
           command: |
-            mkdir -p "/tmp/test_results" && docker compose cp phpserver:/app/.logs/test_results/. "/tmp/test_results/"
-            mkdir -p "/tmp/artifacts" && docker compose cp phpserver:/app/.logs/. "/tmp/artifacts/"
+            XDEBUG_ENABLE=true docker compose up -d phpserver
+            docker compose exec -T -e XDEBUG_MODE=coverage phpserver vendor/bin/phpunit
+            docker compose up -d phpserver
+      - run:
+          name: Run tests with Behat
+          command: docker compose exec phpserver vendor/bin/behat
+      - run:
+          name: Process test logs and artifacts
+          command: |
+            mkdir -p /tmp/test_results
+            mkdir -p /tmp/artifacts
+            if docker compose ps --services --filter "status=running" | grep -q phpserver && docker compose exec phpserver test -d /app/.logs; then
+              docker compose cp phpserver:/app/.logs/. "/tmp/artifacts/"
+              if docker compose exec -T phpserver sh -c 'test -d /app/.logs/test_results'; then
+                 docker compose cp phpserver:/app/.logs/test_results/. "/tmp/test_results/"
+              fi
+            fi
           when: always
       - store_test_results:
           path: /tmp/test_results
       - store_artifacts:
           path: /tmp/artifacts
+      - run:
+          name: Upload code coverage reports to Codecov
+          command: if [ -d /tmp/artifacts/coverage ]; then codecov -Z -s /tmp/artifacts/coverage; fi
