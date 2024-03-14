@@ -10,6 +10,7 @@
 [![GitHub Issues](https://img.shields.io/github/issues/drevops/behat-screenshot.svg)](https://github.com/drevops/behat-screenshot/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/drevops/behat-screenshot.svg)](https://github.com/drevops/behat-screenshot/pulls)
 [![CircleCI](https://circleci.com/gh/drevops/behat-screenshot.svg?style=shield)](https://circleci.com/gh/drevops/behat-screenshot)
+[![codecov](https://codecov.io/gh/drevops/behat-screenshot/graph/badge.svg?token=UN930S8FGC)](https://codecov.io/gh/drevops/behat-screenshot)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/drevops/behat-screenshot)
 ![LICENSE](https://img.shields.io/github/license/drevops/behat-screenshot)
 ![Renovate](https://img.shields.io/badge/renovate-enabled-green?logo=renovatebot)

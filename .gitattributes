@@ -1,14 +1,18 @@
 # Ignore files for distribution archives.
 
-/.circleci           export-ignore
-/.editorconfig       export-ignore
-/.gitattributes      export-ignore
-/.github             export-ignore
-/.gitignore          export-ignore
-/behat.yml           export-ignore
-/docker-compose.yml  export-ignore
-/docs                export-ignore
-/phpcs.xml           export-ignore
-/phpmd.xml           export-ignore
-/phpstan.neon        export-ignore
-/tests               export-ignore
+/.circleci                            export-ignore
+/.editorconfig                        export-ignore
+/.gitattributes                       export-ignore
+/.github                              export-ignore
+/.gitignore                           export-ignore
+/behat.yml                            export-ignore
+/docker-compose.override.default.yml  export-ignore
+/docker-compose.yml                   export-ignore
+/docs                                 export-ignore
+/phpcs.xml                            export-ignore
+/phpmd.xml                            export-ignore
+/phpstan.neon                         export-ignore
+/phpunit.xml                          export-ignore
+/rector.php                           export-ignore
+/renovate.json                        export-ignore
+/tests                                export-ignore
