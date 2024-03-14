@@ -35,3 +35,16 @@ default:
       dir: '%paths.base%/.logs/screenshots'
       fail: true
       purge: true
+    DVDoug\Behat\CodeCoverage\Extension:
+      filter:
+        include:
+          directories:
+            'src': ~
+      reports:
+        text:
+          showColors: true
+          showOnlySummary: true
+        html:
+          target: .logs/coverage/behat/.coverage-html
+        cobertura:
+          target: .logs/coverage/behat/cobertura.xml

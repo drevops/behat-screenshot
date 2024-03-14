@@ -25,14 +25,14 @@ jobs:
           name: Lint code
           command: docker compose exec phpserver composer lint
       - run:
+          name: Restart server with Xdebug enabled
+          command: XDEBUG_ENABLE=true docker compose up -d phpserver
+      - run:
           name: Run tests with PHPUnit
-          command: |
-            XDEBUG_ENABLE=true docker compose up -d phpserver
-            docker compose exec -T -e XDEBUG_MODE=coverage phpserver vendor/bin/phpunit
-            docker compose up -d phpserver
+          command: docker compose exec -T -e XDEBUG_MODE=coverage phpserver vendor/bin/phpunit
       - run:
           name: Run tests with Behat
-          command: docker compose exec phpserver vendor/bin/behat
+          command: docker compose exec -T -e XDEBUG_MODE=coverage phpserver vendor/bin/behat
       - run:
           name: Process test logs and artifacts
           command: |
