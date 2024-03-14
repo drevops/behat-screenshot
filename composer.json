@@ -25,6 +25,7 @@
         "dealerdirect/phpcodesniffer-composer-installer": "^1",
         "drevops/behat-phpserver": "^1.2",
         "drupal/coder": "^8.3",
+        "dvdoug/behat-code-coverage": "^5.3",
         "escapestudios/symfony2-coding-standard": "^3",
         "mikey179/vfsstream": "^1.6",
         "opis/closure": "^3.6",
@@ -45,6 +46,7 @@
         }
     },
     "config": {
+        "sort-packages": true,
         "allow-plugins": {
             "bamarni/composer-bin-plugin": true,
             "dealerdirect/phpcodesniffer-composer-installer": true
