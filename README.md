@@ -163,3 +163,6 @@ To disable, run
 ```bash
 docker compose up -d phpserver
 ```
+
+---
+Repository created using https://getscaffold.dev/ project scaffold template
