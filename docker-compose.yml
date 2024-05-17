@@ -1,6 +1,6 @@
 services:
   phpserver:
-    image: uselagoon/php-8.2-cli:24.5.0
+    image: uselagoon/php-8.2-cli:24.5.1
     volumes:
       - .:/app:delegated
     environment:
