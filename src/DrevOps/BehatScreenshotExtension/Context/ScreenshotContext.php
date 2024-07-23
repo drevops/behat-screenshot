@@ -269,8 +269,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $filename .= '.{ext}';
     }
 
-    $feature = $this->beforeStepScope->getFeature();
-    $step = $this->beforeStepScope->getStep();
+    $feature = $this->getBeforeStepScope()->getFeature();
+    $step = $this->getBeforeStepScope()->getStep();
 
     try {
       $url = $this->getSession()->getCurrentUrl();
@@ -290,6 +290,16 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     ];
 
     return Tokenizer::replaceTokens($filename, $data);
+  }
+
+  /**
+   * Get before step scope.
+   *
+   * @return \Behat\Behat\Hook\Scope\BeforeStepScope
+   *   The before step scope.
+   */
+  public function getBeforeStepScope(): BeforeStepScope {
+    return $this->beforeStepScope;
   }
 
 }
