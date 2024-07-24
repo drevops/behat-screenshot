@@ -18,6 +18,7 @@ use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -81,7 +82,7 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotParameters(
-      '/tmp',
+      sys_get_temp_dir(),
       TRUE,
       'failed_',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
@@ -89,7 +90,7 @@ class ScreenshotContextTest extends TestCase {
     );
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['iSaveScreenshot']);
     $screenshot_context->setScreenshotParameters(
-      '/tmp',
+      sys_get_temp_dir(),
       TRUE,
       'failed_',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
@@ -149,6 +150,197 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context->expects($this->never())->method('saveScreenshotData');
     $screenshot_context->iSaveScreenshot();
+  }
+
+  #[DataProvider('saveScreenshotDataDataProvider')]
+  public function testSaveScreenshotData(string $filename, string $data): void {
+    $screenshot_context = new ScreenshotContext();
+    $screenshot_context->setScreenshotParameters(
+      sys_get_temp_dir(),
+      TRUE,
+      'failed_',
+      '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
+      '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+    );
+    $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
+    $method = $screenshot_context_reflection->getMethod('saveScreenshotData');
+    $method->setAccessible(TRUE);
+    $method->invokeArgs($screenshot_context, [$filename, $data]);
+    $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
+    $this->assertFileExists($filepath);
+    $this->assertEquals(file_get_contents($filepath), $data);
+
+    unlink($filepath);
+  }
+
+  /**
+   * Data provider for testSaveScreenshotData method.
+   */
+  public static function saveScreenshotDataDataProvider(): array {
+    return [
+      ['test-save-screenshot-1.txt', 'test-data-1'],
+      ['test-save-screenshot-2.txt', 'test-data-2'],
+    ];
+  }
+
+  /**
+   * Test make file name.
+   *
+   * @param string $ext
+   *   Ext.
+   * @param mixed $filename
+   *   Filename.
+   * @param bool $fail
+   *   Fail.
+   * @param mixed $url
+   *   URL.
+   * @param int $current_time
+   *   Current time.
+   * @param string $step_text
+   *   Step text.
+   * @param int $step_line
+   *   Step line.
+   * @param string $feature_file
+   *   Feature file.
+   * @param string $fail_prefix
+   *   Fail prefix.
+   * @param string $file_name_pattern
+   *   File name pattern.
+   * @param string $file_name_pattern_failed
+   *   File name pattern failed.
+   * @param string $filename_expected
+   *   File name expected.
+   *
+   * @throws \PHPUnit\Framework\MockObject\Exception
+   * @throws \ReflectionException
+   */
+  #[DataProvider('makeFileNameProvider')]
+  public function testMakeFileName(
+    string $ext,
+    mixed $filename,
+    bool $fail,
+    mixed $url,
+    int $current_time,
+    string $step_text,
+    int $step_line,
+    string $feature_file,
+    string $fail_prefix,
+    string $file_name_pattern,
+    string $file_name_pattern_failed,
+    string $filename_expected,
+  ): void {
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
+      'getBeforeStepScope',
+      'getSession',
+      'getCurrentTime',
+    ]);
+    $session = $this->createMock(Session::class);
+    if ($url instanceof \Exception) {
+      $session->method('getCurrentUrl')->willThrowException($url);
+    }
+    else {
+      $session->method('getCurrentUrl')->willReturn($url);
+    }
+
+    $screenshot_context->method('getCurrentTime')->willReturn($current_time);
+    $screenshot_context->method('getSession')->willReturn($session);
+    $env = $this->createMock(Environment::class);
+    $feature_node = $this->createMock(FeatureNode::class);
+    $step_node = $this->createMock(StepNode::class);
+    $step_node->method('getText')->willReturn($step_text);
+    $step_node->method('getLine')->willReturn($step_line);
+    $feature_node->method('getFile')->willReturn($feature_file);
+    $scope = new BeforeStepScope($env, $feature_node, $step_node);
+    $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
+
+    $screenshot_context->setScreenshotParameters(
+      'test-dir',
+      $fail,
+      $fail_prefix,
+      $file_name_pattern,
+      $file_name_pattern_failed,
+    );
+
+    $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
+    $method = $screenshot_context_reflection->getMethod('makeFileName');
+    $method->setAccessible(TRUE);
+    $filename_processed = $method->invokeArgs($screenshot_context, [$ext, $filename, $fail]);
+    $this->assertEquals($filename_expected, $filename_processed);
+  }
+
+  public static function makeFileNameProvider(): array {
+    return [
+      [
+        'html',
+        NULL,
+        FALSE,
+        'test-url',
+        1721791661,
+        'test-step-name',
+        12,
+        'test-feature-file',
+        'failed_',
+        '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '1721791661.test-feature-file.feature_12.html',
+      ],
+      [
+        'png',
+        '{datetime:U}.{feature_file}.feature_{step_name}.feature_{step_line}.{ext}',
+        FALSE,
+        'test-url',
+        1721791661,
+        'test-step-name',
+        12,
+        'test-feature-file',
+        'failed_',
+        '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
+      ],
+      [
+        'png',
+        '{datetime:U}.{feature_file}.feature_{step_name}.feature_{step_line}',
+        FALSE,
+        'test-url',
+        1721791661,
+        'test-step-name',
+        12,
+        'test-feature-file',
+        'failed_',
+        '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
+      ],
+      [
+        'png',
+        '{datetime:U}.{feature_file}.feature_{step_name}.feature_{step_line}',
+        TRUE,
+        'test-url',
+        1721791661,
+        'test-step-name',
+        12,
+        'test-feature-file',
+        'failed_',
+        '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '1721791661.failed_test-feature-file.feature_12.png',
+      ],
+      [
+        'png',
+        '{datetime:U}.{feature_file}.feature_{step_name}.feature_{step_line}',
+        FALSE,
+        new \Exception('test'),
+        1721791661,
+        'test-step-name',
+        12,
+        'test-feature-file',
+        'failed_',
+        '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
+      ],
+    ];
   }
 
 }

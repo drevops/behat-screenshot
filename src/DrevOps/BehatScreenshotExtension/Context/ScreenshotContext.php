@@ -216,6 +216,26 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
+   * Get before step scope.
+   *
+   * @return \Behat\Behat\Hook\Scope\BeforeStepScope
+   *   The before step scope.
+   */
+  public function getBeforeStepScope(): BeforeStepScope {
+    return $this->beforeStepScope;
+  }
+
+  /**
+   * Get current timestamp.
+   *
+   * @return int
+   *   Current timestamp.
+   */
+  public function getCurrentTime(): int {
+    return time();
+  }
+
+  /**
    * Save screenshot data into a file.
    *
    * @param string $filename
@@ -285,21 +305,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       'step_line' => $step->getLine(),
       'feature_file' => $feature->getFile(),
       'url' => $url,
-      'time' => time(),
+      'time' => $this->getCurrentTime(),
       'fail_prefix' => $this->failPrefix,
     ];
 
     return Tokenizer::replaceTokens($filename, $data);
-  }
-
-  /**
-   * Get before step scope.
-   *
-   * @return \Behat\Behat\Hook\Scope\BeforeStepScope
-   *   The before step scope.
-   */
-  public function getBeforeStepScope(): BeforeStepScope {
-    return $this->beforeStepScope;
   }
 
 }
