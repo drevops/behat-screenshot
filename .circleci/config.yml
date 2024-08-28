@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /root/project
     docker:
-      - image: drevops/ci-runner:24.7.0
+      - image: drevops/ci-runner:24.8.0
         environment:
           COMPOSER_ALLOW_SUPERUSER: 1
     steps:
