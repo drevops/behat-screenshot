@@ -89,7 +89,7 @@ class Tokenizer {
    *
    * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
-  public static function replaceFeatureToken(string $token, string $name, string $qualifier = NULL, string $format = NULL, array $data = []): string {
+  public static function replaceFeatureToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
     if (isset($data['feature_file']) && is_string($data['feature_file'])) {
       $featureFile = $data['feature_file'];
@@ -120,7 +120,7 @@ class Tokenizer {
    *
    * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
-  public static function replaceExtToken(string $token, string $name, string $qualifier = NULL, string $format = NULL, array $data = []): string {
+  public static function replaceExtToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $ext = 'html';
     if (isset($data['ext']) && is_string($data['ext']) && $data['ext'] !== '') {
       $ext = $data['ext'];
@@ -148,7 +148,7 @@ class Tokenizer {
    *
    * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
-  public static function replaceStepToken(string $token, string $name, string $qualifier = NULL, string $format = NULL, array $data = []): string {
+  public static function replaceStepToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
     switch ($qualifier) {
       case 'line':
@@ -193,7 +193,7 @@ class Tokenizer {
    *
    * @throws \Exception
    */
-  public static function replaceDatetimeToken(string $token, string $name, string $qualifier = NULL, string $format = NULL, array $data = []): string {
+  public static function replaceDatetimeToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $timestamp = NULL;
     if ($data['time']) {
       if (!is_int($data['time'])) {
@@ -231,7 +231,7 @@ class Tokenizer {
    * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    * @SuppressWarnings(PHPMD.CyclomaticComplexity)
    */
-  public static function replaceUrlToken(string $token, string $name, string $qualifier = NULL, string $format = NULL, array $data = []): string {
+  public static function replaceUrlToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
     if (isset($data['url']) && is_string($data['url'])) {
       $url = $data['url'];
@@ -295,7 +295,7 @@ class Tokenizer {
    *
    * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
-  public static function replaceFailToken(string $token, string $name, string $qualifier = NULL, string $format = NULL, array $data = []): string {
+  public static function replaceFailToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
     if (!empty($data['fail_prefix']) && is_string($data['fail_prefix'])) {
       $replacement = $data['fail_prefix'];
@@ -357,7 +357,7 @@ class Tokenizer {
    *
    * @throws \Exception
    */
-  public static function buildTokenReplacement(string $token, string $name, string $qualifier = NULL, string $format = NULL, array $data = []): string {
+  public static function buildTokenReplacement(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
     switch ($name) {
       case 'feature':

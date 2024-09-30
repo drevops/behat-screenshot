@@ -146,7 +146,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @When save screenshot
    * @When I save screenshot
    */
-  public function iSaveScreenshot(bool $fail = FALSE, string $filename = NULL): void {
+  public function iSaveScreenshot(bool $fail = FALSE, ?string $filename = NULL): void {
     $driver = $this->getSession()->getDriver();
     $fileName = $this->makeFileName('html', $filename, $fail);
     try {
@@ -276,7 +276,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @throws \Exception
    */
-  protected function makeFileName(string $ext, string $filename = NULL, bool $fail = FALSE): string {
+  protected function makeFileName(string $ext, ?string $filename = NULL, bool $fail = FALSE): string {
     if ($fail) {
       $filename = $this->filenamePatternFailed;
     }
