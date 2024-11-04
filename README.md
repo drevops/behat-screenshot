@@ -165,4 +165,4 @@ docker compose up -d phpserver
 ```
 
 ---
-Repository created using https://getscaffold.dev/ project scaffold template
+_Repository created using https://getscaffold.dev/ project scaffold template_
