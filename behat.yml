@@ -27,10 +27,22 @@ default:
       files_path: "%paths.base%/tests/behat/features/fixtures"
       browser_name: chrome
       base_url: http://phpserver:8888
+      javascript_session: selenium2
       selenium2:
         wd_host: "http://chrome:4444/wd/hub"
-        capabilities: { "browser": "chrome", "version": "*", "marionette": true }
-      javascript_session: selenium2
+        capabilities:
+          browser: chrome
+          extra_capabilities:
+            "goog:chromeOptions":
+              args:
+                - '--disable-gpu'            # Disables hardware acceleration required in containers and cloud-based instances (like CI runners) where GPU is not available.
+                # Options to increase stability and speed.
+                - '--disable-extensions'     # Disables all installed Chrome extensions. Useful in testing environments to avoid interference from extensions.
+                - '--disable-infobars'       # Hides the infobar that Chrome displays for various notifications, like warnings when opening multiple tabs.
+                - '--disable-popup-blocking' # Disables the popup blocker, allowing all popups to appear. Useful in testing scenarios where popups are expected.
+                - '--disable-translate'      # Disables the built-in translation feature, preventing Chrome from offering to translate pages.
+                - '--no-first-run'           # Skips the initial setup screen that Chrome typically shows when running for the first time.
+                - '--test-type'              # Disables certain security features and UI components that are unnecessary for automated testing, making Chrome more suitable for test environments.
     DrevOps\BehatScreenshotExtension:
       dir: '%paths.base%/.logs/screenshots'
       fail: true
