@@ -129,7 +129,6 @@ You may optionally specify size of browser window in the screenshot step:
 ### Local development setup
 
 ```bash
-cp docker-compose.override.default.yml docker-compose.override.yml
 docker compose up -d
 docker compose exec phpserver composer install --ansi
 ```
