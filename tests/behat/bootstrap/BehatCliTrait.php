@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
@@ -16,7 +18,7 @@ trait BehatCliTrait {
   /**
    * @BeforeScenario
    */
-  public function behatCliBeforeScenario(BeforeScenarioScope $scope) {
+  public function behatCliBeforeScenario(BeforeScenarioScope $scope): void {
     if ($scope->getFeature()->hasTag('behatcli')) {
       $traits = [
         'tests/behat/bootstrap/ScreenshotTrait.php' => 'ScreenshotTrait',
@@ -28,15 +30,13 @@ trait BehatCliTrait {
   /**
    * @AfterScenario
    */
-  public function behatCliAfterScenarioPrintOutput(AfterScenarioScope $scope) {
-    if ($scope->getFeature()->hasTag('behatcli')) {
-      if (static::behatCliIsDebug()) {
-        print "-------------------- OUTPUT START --------------------" . PHP_EOL;
-        print PHP_EOL;
-        print $this->getOutput();
-        print PHP_EOL;
-        print "-------------------- OUTPUT FINISH -------------------" . PHP_EOL;
-      }
+  public function behatCliAfterScenarioPrintOutput(AfterScenarioScope $scope): void {
+    if ($scope->getFeature()->hasTag('behatcli') && static::behatCliIsDebug()) {
+      print "-------------------- OUTPUT START --------------------" . PHP_EOL;
+      print PHP_EOL;
+      print $this->getOutput();
+      print PHP_EOL;
+      print "-------------------- OUTPUT FINISH -------------------" . PHP_EOL;
     }
   }
 
@@ -49,7 +49,7 @@ trait BehatCliTrait {
    * @return string
    *   Path to written file.
    */
-  public function behatCliWriteFeatureContextFile(array $traits = []) {
+  public function behatCliWriteFeatureContextFile(array $traits = []): string {
     $tokens = [
       '{{USE_DECLARATION}}' => '',
       '{{USE_IN_CLASS}}' => '',
@@ -127,7 +127,7 @@ EOL;
   /**
    * @Given /^scenario steps(?: tagged with "([^"]*)")?:$/
    */
-  public function behatCliWriteScenarioSteps(PyStringNode $content, $tags = '') {
+  public function behatCliWriteScenarioSteps(PyStringNode $content, $tags = ''): void {
     $content = strtr((string) $content, ["'''" => '"""']);
 
     // Make sure that indentation in provided content is accurate.
@@ -164,7 +164,7 @@ EOL;
   /**
    * @Given some behat configuration
    */
-  public function behatCliWriteBehatYml() {
+  public function behatCliWriteBehatYml(): void {
     $content = <<<'EOL'
 default:
   suites:
@@ -194,7 +194,7 @@ EOL;
   /**
    * @Given screenshot context behat configuration with value:
    */
-  public function behatCliWriteScreenshotContextBehatYml(PyStringNode $value) {
+  public function behatCliWriteScreenshotContextBehatYml(PyStringNode $value): void {
     $content = <<<'EOL'
 default:
   suites:
@@ -226,7 +226,7 @@ EOL;
   /**
    * @Given screenshot fixture
    */
-  public function behatCliWriteScreenshotFixture() {
+  public function behatCliWriteScreenshotFixture(): void {
     $filename = 'tests/behat/features/fixtures/screenshot.html';
 
     $content = <<<'EOL'
@@ -246,7 +246,7 @@ EOL;
   /**
    * @Then it should fail with an error:
    */
-  public function behatCliAssertFailWithError(PyStringNode $message) {
+  public function behatCliAssertFailWithError(PyStringNode $message): void {
     $this->itShouldFail('fail');
     Assert::assertStringContainsString(trim((string) $message), $this->getOutput());
     // Enforce \Exception for all assertion exceptions. Non-assertion
@@ -258,7 +258,7 @@ EOL;
   /**
    * @Then it should fail with an exception:
    */
-  public function behatCliAssertFailWithException(PyStringNode $message) {
+  public function behatCliAssertFailWithException(PyStringNode $message): void {
     $this->itShouldFail('fail');
     Assert::assertStringContainsString(trim((string) $message), $this->getOutput());
     // Enforce \RuntimeException for all non-assertion exceptions. Assertion
@@ -271,25 +271,25 @@ EOL;
    *
    * @When :name environment variable is set to :value
    */
-  public function behatCliSetEnvironmentVariable($name, $value) {
+  public function behatCliSetEnvironmentVariable($name, $value): void {
     $this->env[$name] = $value;
   }
 
   /**
    * Helper to print file comments.
    */
-  protected static function behatCliPrintFileContents($filename, $title = '') {
+  protected static function behatCliPrintFileContents(string $filename, $title = '') {
     if (!is_readable($filename)) {
       throw new \RuntimeException(sprintf('Unable to access file "%s"', $filename));
     }
 
     $content = file_get_contents($filename);
 
-    print "-------------------- $title START --------------------" . PHP_EOL;
+    print sprintf('-------------------- %s START --------------------', $title) . PHP_EOL;
     print $filename . PHP_EOL;
     print_r($content);
     print PHP_EOL;
-    print "-------------------- $title FINISH --------------------" . PHP_EOL;
+    print sprintf('-------------------- %s FINISH --------------------', $title) . PHP_EOL;
   }
 
   /**
@@ -298,7 +298,7 @@ EOL;
    * @return bool
    *   TRUE to see debug messages for this trait.
    */
-  protected static function behatCliIsDebug() {
+  protected static function behatCliIsDebug(): string|false {
     return getenv('BEHAT_CLI_DEBUG');
   }
 
@@ -310,7 +310,7 @@ EOL;
    *
    * @Given /^behat cli file wildcard "([^"]*)" should exist$/
    */
-  public function behatCliAssertFileShouldExist($wildcard) {
+  public function behatCliAssertFileShouldExist($wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 
@@ -329,7 +329,7 @@ EOL;
    *
    * @Given /^behat cli file wildcard "([^"]*)" should not exist$/
    */
-  public function behatCliAssertFileShouldNotExist($wildcard) {
+  public function behatCliAssertFileShouldNotExist($wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 

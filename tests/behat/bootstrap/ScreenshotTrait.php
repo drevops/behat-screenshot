@@ -1,9 +1,6 @@
 <?php
 
-/**
- * @file
- * Feature context Behat testing.
- */
+declare(strict_types=1);
 
 /**
  * Additional screenshot helpers.

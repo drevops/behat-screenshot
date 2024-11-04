@@ -1,9 +1,6 @@
 <?php
 
-/**
- * @file
- * Feature context Behat testing.
- */
+declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
@@ -18,8 +15,6 @@ class FeatureContext extends MinkContext implements Context {
 
   /**
    * Base URL for JavaScript scenarios.
-   *
-   * @var string
    */
   protected string $javascriptBaseUrl;
 

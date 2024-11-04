@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DrevOps\BehatScreenshotExtension\ServiceContainer;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
