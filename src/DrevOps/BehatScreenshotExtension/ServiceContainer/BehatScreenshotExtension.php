@@ -43,19 +43,36 @@ class BehatScreenshotExtension implements ExtensionInterface {
    * {@inheritdoc}
    */
   public function configure(ArrayNodeDefinition $builder): void {
-    $definitionChildren = $builder->children();
+    // @phpcs:disable Drupal.WhiteSpace.ObjectOperatorIndent.Indent
+    // @formatter:off
     // @phpstan-ignore-next-line
-    $definitionChildren
-      ->scalarNode('dir')->cannotBeEmpty()->defaultValue('%paths.base%/screenshots')->end()
-      ->scalarNode('fail')->cannotBeEmpty()->defaultValue(TRUE)->end()
-      ->scalarNode('fail_prefix')->cannotBeEmpty()->defaultValue('failed_')->end()
-      ->scalarNode('purge')->cannotBeEmpty()->defaultValue(FALSE)->end()
+    $builder->children()
+      ->scalarNode('dir')
+        ->cannotBeEmpty()
+        ->defaultValue('%paths.base%/screenshots')
+      ->end()
+      ->scalarNode('fail')
+        ->cannotBeEmpty()
+        ->defaultValue(TRUE)
+      ->end()
+      ->scalarNode('fail_prefix')
+        ->cannotBeEmpty()
+        ->defaultValue('failed_')
+      ->end()
+      ->scalarNode('purge')
+        ->cannotBeEmpty()
+        ->defaultValue(FALSE)
+      ->end()
       ->scalarNode('filenamePattern')
-      ->cannotBeEmpty()
-      ->defaultValue('{datetime:U}.{feature_file}.feature_{step_line}.{ext}')->end()
+        ->cannotBeEmpty()
+        ->defaultValue('{datetime:U}.{feature_file}.feature_{step_line}.{ext}')
+      ->end()
       ->scalarNode('filenamePatternFailed')
-      ->cannotBeEmpty()
-      ->defaultValue('{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}')->end();
+        ->cannotBeEmpty()
+        ->defaultValue('{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}')
+      ->end();
+    // @formatter:on
+    // @phpcs:enable Drupal.WhiteSpace.ObjectOperatorIndent.Indent
   }
 
   /**

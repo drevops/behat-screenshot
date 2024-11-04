@@ -22,7 +22,7 @@ Feature: Behat CLI context
         */
         public function goToPhpServerTestPage()
         {
-            $this->getSession()->visit('http://phpserver:8888/screenshot.html');
+            $this->getSession()->visit('http://0.0.0.0:8888/screenshot.html');
         }
 
         /**
@@ -41,14 +41,14 @@ Feature: Behat CLI context
             contexts:
               - FeatureContextTest
               - DrevOps\BehatPhpServer\PhpServerContext:
-                -
-                  docroot: "%paths.base%/tests/behat/features/fixtures"
-                  host: "phpserver"
+                - docroot: "%paths.base%/tests/behat/features/fixtures"
+                  host: "0.0.0.0"
+                  port: 8888
         extensions:
           Behat\MinkExtension:
             browserkit_http: ~
             selenium2: ~
-            base_url: http://nginx:8080
+            base_url: http://0.0.0.0:8888
       """
       And a file named "tests/behat/features/fixtures/screenshot.html" with:
       """

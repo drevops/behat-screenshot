@@ -98,7 +98,7 @@ class FeatureContextTest extends MinkContext implements Context {
     */
    public function goToPhpServerTestPage()
    {
-       $this->getSession()->visit('http://phpserver:8888/screenshot.html');
+       $this->getSession()->visit('http://0.0.0.0:8888/screenshot.html');
    }
 
    /**
@@ -171,12 +171,11 @@ default:
     default:
       contexts:
         - FeatureContextTest:
-          -
-            screenshot_dir: "%paths.base%/screenshots"
+          - screenshot_dir: "%paths.base%/screenshots"
         - DrevOps\BehatPhpServer\PhpServerContext:
-          -
-            docroot: "%paths.base%/tests/behat/features/fixtures"
-            host: "phpserver"
+          - docroot: "%paths.base%/tests/behat/features/fixtures"
+            host: "0.0.0.0"
+            port: 8888
   extensions:
     Behat\MinkExtension:
       browserkit_http: ~
@@ -202,18 +201,17 @@ default:
     default:
       contexts:
         - FeatureContextTest:
-          -
-            screenshot_dir: "%paths.base%/screenshots"
+          - screenshot_dir: "%paths.base%/screenshots"
         - DrevOps\BehatPhpServer\PhpServerContext:
-          -
-            docroot: "%paths.base%/tests/behat/features/fixtures"
-            host: "phpserver"
+          - docroot: "%paths.base%/tests/behat/features/fixtures"
+            host: "0.0.0.0"
+            port: 8888
         - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
   extensions:
     Behat\MinkExtension:
       browserkit_http: ~
       selenium2: ~
-      base_url: http://nginx:8080
+      base_url: http://0.0.0.0:8888
 EOL;
 
     $content .= PHP_EOL . '    ' . trim((string) $value);

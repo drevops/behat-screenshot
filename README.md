@@ -128,39 +128,35 @@ You may optionally specify size of browser window in the screenshot step:
 
 ### Local development setup
 
+### Install dependencies.
+
 ```bash
-docker compose up -d
-docker compose exec phpserver composer install --ansi
+composer install
+```
+
+### Start Chrome container.
+
+```bash
+docker run -d -p 4444:4444 selenium/standalone-chromium:130.0
 ```
 
 ### Lint code
 
 ```bash
-docker compose exec phpserver composer lint
+composer lint
 ```
 
-### Lint fix
+### Fix code style
 
 ```bash
-docker compose exec phpserver composer lint-fix
+composer lint-fix
 ```
 
 ### Run tests
 
 ```bash
-docker compose exec phpserver composer test
-```
-
-### Enable Xdebug
-
-```bash
-XDEBUG_ENABLE=true docker compose up -d phpserver
-```
-
-To disable, run
-
-```bash
-docker compose up -d phpserver
+composer test-unit # Run unit tests.
+composer test-bdd  # Run BDD tests.
 ```
 
 ---
