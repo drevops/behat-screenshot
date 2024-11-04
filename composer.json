@@ -1,8 +1,8 @@
 {
     "name": "drevops/behat-screenshot",
-    "type": "library",
     "description": "Behat extension and step definitions to create HTML and image screenshots on demand or when tests fail",
     "license": "GPL-2.0-or-later",
+    "type": "library",
     "authors": [
         {
             "name": "Alex Skrypnyk",
@@ -26,6 +26,7 @@
         "drevops/behat-phpserver": "^1.2",
         "drupal/coder": "^8.3",
         "dvdoug/behat-code-coverage": "^5.3",
+        "ergebnis/composer-normalize": "^2.44",
         "escapestudios/symfony2-coding-standard": "^3",
         "mikey179/vfsstream": "^1.6",
         "opis/closure": "^3.6",
@@ -46,11 +47,12 @@
         }
     },
     "config": {
-        "sort-packages": true,
         "allow-plugins": {
             "bamarni/composer-bin-plugin": true,
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        }
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "ergebnis/composer-normalize": true
+        },
+        "sort-packages": true
     },
     "scripts": {
         "lint": [
