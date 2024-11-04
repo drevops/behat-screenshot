@@ -24,6 +24,8 @@ class BehatScreenshotExtension implements ExtensionInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @codeCoverageIgnore
    */
   public function process(ContainerBuilder $container): void {
   }
@@ -37,6 +39,8 @@ class BehatScreenshotExtension implements ExtensionInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @codeCoverageIgnore
    */
   public function initialize(ExtensionManager $extensionManager): void {
   }
