@@ -21,6 +21,7 @@
     "require-dev": {
         "bamarni/composer-bin-plugin": "^1.8",
         "behat/mink-browserkit-driver": "^2.2",
+        "dantleech/gherkin-lint": "^0.2.3",
         "dealerdirect/phpcodesniffer-composer-installer": "^1",
         "drevops/behat-phpserver": "^1.2",
         "drupal/coder": "^8.3",
@@ -60,7 +61,8 @@
             "phpcs",
             "phpmd --exclude vendor,tests . text phpmd.xml",
             "phpstan",
-            "rector --clear-cache --dry-run"
+            "rector --clear-cache --dry-run",
+            "gherkinlint lint tests/behat/features"
         ],
         "lint-fix": [
             "rector --clear-cache",
