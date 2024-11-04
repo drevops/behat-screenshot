@@ -1,6 +1,5 @@
 # Ignore files for distribution archives.
 
-/.circleci                            export-ignore
 /.editorconfig                        export-ignore
 /.gitattributes                       export-ignore
 /.github                              export-ignore
