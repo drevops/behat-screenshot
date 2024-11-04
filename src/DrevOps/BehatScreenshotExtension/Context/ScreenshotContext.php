@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DrevOps\BehatScreenshotExtension\Context;
 
 use Behat\Behat\Hook\Scope\AfterStepScope;

@@ -2,9 +2,13 @@
 <ruleset name="custom">
     <description>Custom PHPCS standard.</description>
 
-    <!-- Coding standard. -->
+    <!-- Using Drupal coding standard as a base-fix. -->
     <rule ref="Drupal">
         <exclude name="Drupal.Commenting.ClassComment.Short"/>
+    </rule>
+    <!-- Checks that the strict_types has been declared. -->
+    <rule ref="Generic.PHP.RequireStrictTypes">
+        <exclude-pattern>BehatCliContext\.php</exclude-pattern>
     </rule>
 
     <!-- Show sniff codes in all reports -->
@@ -12,7 +16,6 @@
     <!-- Show progress of the run. -->
     <arg value="p"/>
     <arg name="colors"/>
-
 
     <file>src</file>
     <file>tests/phpunit</file>
@@ -30,8 +33,9 @@
         <exclude-pattern>*.Test\.php</exclude-pattern>
         <exclude-pattern>*.TestCase\.php</exclude-pattern>
         <exclude-pattern>*.test</exclude-pattern>
-    </rule>    <!-- Allow missing function names in tests. -->
+    </rule>
 
+    <!-- Allow missing function names in tests. -->
     <rule ref="Drupal.Commenting.DocComment.MissingShort">
         <exclude-pattern>tests/behat/bootstrap/BehatCliTrait.php</exclude-pattern>
     </rule>
