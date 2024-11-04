@@ -173,10 +173,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $fileName = $this->makeFileName('png', $filename, $fail);
       $this->saveScreenshotData($fileName, $data);
     }
+    // @codeCoverageIgnoreStart
     catch (UnsupportedDriverActionException) {
       // Nothing to do here - drivers without support for screenshots
       // simply do not have them created.
     }
+    // @codeCoverageIgnoreEnd
   }
 
   /**
@@ -233,6 +235,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @return int
    *   Current timestamp.
+   *
+   * @codeCoverageIgnore
    */
   public function getCurrentTime(): int {
     return time();
@@ -303,10 +307,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     }
 
     if (!empty($url) && !empty(getenv('BEHAT_SCREENSHOT_TOKEN_HOST'))) {
+      // @codeCoverageIgnoreStart
       $host = parse_url($url, PHP_URL_HOST);
       if ($host) {
         $url = str_replace($host, getenv('BEHAT_SCREENSHOT_TOKEN_HOST'), $url);
       }
+      // @codeCoverageIgnoreEnd
     }
 
     $data = [

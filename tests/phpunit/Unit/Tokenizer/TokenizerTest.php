@@ -300,6 +300,16 @@ class TokenizerTest extends TestCase {
         $data,
         '20240312_045703.foo-fail_foo-file.feature_6_Foo_step_name.png',
       ],
+      [
+        '{url}.{ext}',
+        $data,
+        'http%3A%2F%2Fexample.com%2Ffoo%3Ffoo%3Dfoo-value%23hello-fragment.png',
+      ],
+      [
+        '{nontoken}.{ext}',
+        $data,
+        '{nontoken}.png',
+      ],
     ];
   }
 

@@ -32,6 +32,8 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *   File name pattern failed.
    * @param bool $needsPurging
    *   Check if need to actually purge.
+   *
+   * @codeCoverageIgnore
    */
   public function __construct(protected string $dir, protected bool $fail, private readonly string $failPrefix, protected bool $purge, protected string $filenamePattern, protected string $filenamePatternFailed, protected bool $needsPurging = TRUE) {
   }
