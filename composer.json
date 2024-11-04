@@ -66,9 +66,8 @@
             "rector --clear-cache",
             "phpcbf"
         ],
-        "test": [
-            "if [ \"${XDEBUG_MODE}\" = 'coverage' ]; then phpunit; else phpunit --no-coverage; fi",
-            "behat"
-        ]
+        "reset": "rm -Rf vendor vendor-bin composer.lock",
+        "test-bdd": "behat --colors",
+        "test-unit": "phpunit"
     }
 }

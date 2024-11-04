@@ -18,6 +18,7 @@ use Symfony\Component\Filesystem\Filesystem;
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContextInterface {
+
   /**
    * Screenshot step line.
    */
@@ -87,13 +88,13 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
         }
         catch (\Exception $exception) {
           throw new \RuntimeException(
-                sprintf(
-                    'Please make sure that Selenium server is running. %s',
-                    $exception->getMessage(),
-                ),
-                $exception->getCode(),
-                $exception,
-                    );
+            sprintf(
+              'Please make sure that Selenium server is running. %s',
+              $exception->getMessage(),
+            ),
+            $exception->getCode(),
+            $exception,
+          );
         }
       }
     }
@@ -297,6 +298,13 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     }
     catch (\Exception) {
       $url = NULL;
+    }
+
+    if (!empty($url) && !empty(getenv('BEHAT_SCREENSHOT_TOKEN_HOST'))) {
+      $host = parse_url($url, PHP_URL_HOST);
+      if ($host) {
+        $url = str_replace($host, getenv('BEHAT_SCREENSHOT_TOKEN_HOST'), $url);
+      }
     }
 
     $data = [
