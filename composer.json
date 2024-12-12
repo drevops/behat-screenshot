@@ -35,7 +35,7 @@
         "phpmd/phpmd": "^2.13",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^11",
-        "rector/rector": "^1.0.0",
+        "rector/rector": "^2.0.0",
         "symfony/process": "^6.4 || ^7.0"
     },
     "autoload": {
