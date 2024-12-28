@@ -31,7 +31,7 @@
         "lullabot/mink-selenium2-driver": "^1.7",
         "lullabot/php-webdriver": "^2.0.4",
         "mikey179/vfsstream": "^1.6",
-        "opis/closure": "^3.6",
+        "opis/closure": "^4.0",
         "phpmd/phpmd": "^2.13",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^11",
