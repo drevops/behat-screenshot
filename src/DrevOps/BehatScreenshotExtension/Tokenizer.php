@@ -6,8 +6,6 @@ namespace DrevOps\BehatScreenshotExtension;
 
 /**
  * Handler token replacements.
- *
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Tokenizer {
 
@@ -86,8 +84,6 @@ class Tokenizer {
    *
    * @return string
    *   Token replacement.
-   *
-   * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
   public static function replaceFeatureToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
@@ -117,8 +113,6 @@ class Tokenizer {
    *
    * @return string
    *   Token replacement.
-   *
-   * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
   public static function replaceExtToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $ext = 'html';
@@ -145,8 +139,6 @@ class Tokenizer {
    *
    * @return string
    *   Token replacement.
-   *
-   * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
   public static function replaceStepToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
@@ -189,8 +181,6 @@ class Tokenizer {
    * @return string
    *   Token replacement.
    *
-   * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-   *
    * @throws \Exception
    */
   public static function replaceDatetimeToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
@@ -227,9 +217,6 @@ class Tokenizer {
    *   Token replacement.
    *
    * @throws \Exception
-   *
-   * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-   * @SuppressWarnings(PHPMD.CyclomaticComplexity)
    */
   public static function replaceUrlToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
@@ -292,8 +279,6 @@ class Tokenizer {
    *
    * @return string
    *   Token replacement.
-   *
-   * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
   public static function replaceFailToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;

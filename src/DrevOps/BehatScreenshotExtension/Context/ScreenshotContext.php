@@ -16,8 +16,6 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Class ScreenshotContext.
- *
- * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContextInterface {
 
