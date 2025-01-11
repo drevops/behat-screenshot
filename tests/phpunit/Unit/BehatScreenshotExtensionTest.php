@@ -31,6 +31,7 @@ class BehatScreenshotExtensionTest extends TestCase {
       'purge' => FALSE,
       'filenamePattern' => '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       'filenamePatternFailed' => '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+      'show_path' => FALSE,
     ];
 
     $extension = new BehatScreenshotExtension();
@@ -48,6 +49,7 @@ class BehatScreenshotExtensionTest extends TestCase {
         $config['purge'],
         $config['filenamePattern'],
         $config['filenamePatternFailed'],
+        $config['show_path'],
       ],
       $definition->getArguments()
     );
@@ -59,7 +61,7 @@ class BehatScreenshotExtensionTest extends TestCase {
     $extension = new BehatScreenshotExtension();
     $extension->configure($builder);
 
-    $this->assertCount(6, $builder->getChildNodeDefinitions());
+    $this->assertCount(7, $builder->getChildNodeDefinitions());
   }
 
 }

@@ -24,9 +24,11 @@ interface ScreenshotAwareContextInterface extends Context {
    *   File name pattern.
    * @param string $filenamePatternFailed
    *   File name pattern failed.
+   * @param bool $showPath
+   *   Show path in the screenshot.
    *
    * @return $this
    */
-  public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix, string $filenamePattern, string $filenamePatternFailed): static;
+  public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix, string $filenamePattern, string $filenamePatternFailed, bool $showPath): static;
 
 }

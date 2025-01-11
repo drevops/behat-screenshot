@@ -30,12 +30,14 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *   File name pattern.
    * @param string $filenamePatternFailed
    *   File name pattern failed.
+   * @param bool $showPath
+   *   Show current path in screenshots.
    * @param bool $needsPurging
    *   Check if need to actually purge.
    *
    * @codeCoverageIgnore
    */
-  public function __construct(protected string $dir, protected bool $fail, private readonly string $failPrefix, protected bool $purge, protected string $filenamePattern, protected string $filenamePatternFailed, protected bool $needsPurging = TRUE) {
+  public function __construct(protected string $dir, protected bool $fail, private readonly string $failPrefix, protected bool $purge, protected string $filenamePattern, protected string $filenamePatternFailed, protected bool $showPath = FALSE, protected bool $needsPurging = TRUE) {
   }
 
   /**
@@ -44,7 +46,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
   public function initializeContext(Context $context): void {
     if ($context instanceof ScreenshotAwareContextInterface) {
       $dir = $this->resolveScreenshotDir();
-      $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix, $this->filenamePattern, $this->filenamePatternFailed);
+      $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix, $this->filenamePattern, $this->filenamePatternFailed, $this->showPath);
       if ($this->shouldPurge() && $this->needsPurging) {
         $this->purgeFilesInDir($dir);
         $this->needsPurging = FALSE;

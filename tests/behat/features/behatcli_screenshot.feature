@@ -260,3 +260,41 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_7\.html" should exist
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should not exist
+
+  Scenario: Test Screenshot context with 'show_path' set to 'true' will output current path to screenshot files.
+    Given screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension:
+            purge: true
+            show_path: true
+      """
+    And scenario steps tagged with "@phpserver":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 404
+      """
+    When I run "behat --no-colors --strict"
+    Then it should fail
+    And behat screenshot file matching "screenshots/*.failed_stub.feature_6\.html" should contain:
+      """
+      Current path: http://0.0.0.0:8888/screenshot.html
+      """
+
+  Scenario: Test Screenshot context with 'show_path' set to 'false' will not output current path to screenshot files.
+    Given screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension:
+            purge: true
+            show_path: false
+      """
+    And scenario steps tagged with "@phpserver":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 404
+      """
+    When I run "behat --no-colors --strict"
+    Then it should fail
+    And behat screenshot file matching "screenshots/*.failed_stub.feature_6\.html" should not contain:
+      """
+      Current path: http://0.0.0.0:8888/screenshot.html
+      """

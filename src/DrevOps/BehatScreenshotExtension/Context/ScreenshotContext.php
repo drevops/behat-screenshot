@@ -40,6 +40,18 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected string $failPrefix = '';
 
   /**
+   * Show the path in the screenshot.
+   */
+  protected bool $showPath = FALSE;
+
+  /**
+   * Debug information to be outputted in screenshot.
+   *
+   * @var array<string, string>
+   */
+  protected array $debugInformation = [];
+
+  /**
    * Before step scope.
    */
   protected BeforeStepScope $beforeStepScope;
@@ -57,12 +69,13 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix, string $filenamePattern, string $filenamePatternFailed): static {
+  public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix, string $filenamePattern, string $filenamePatternFailed, bool $showPath): static {
     $this->dir = $dir;
     $this->fail = $fail;
     $this->failPrefix = $failPrefix;
     $this->filenamePattern = $filenamePattern;
     $this->filenamePatternFailed = $filenamePatternFailed;
+    $this->showPath = $showPath;
 
     return $this;
   }
@@ -126,7 +139,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function printLastResponseOnError(AfterStepScope $event): void {
     if ($this->fail && !$event->getTestResult()->isPassed()) {
-      $this->iSaveScreenshot(TRUE);
+      $this->iSaveScreenshot(TRUE, NULL);
     }
   }
 
@@ -148,10 +161,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @When I save screenshot
    */
   public function iSaveScreenshot(bool $fail = FALSE, ?string $filename = NULL): void {
-    $driver = $this->getSession()->getDriver();
     $fileName = $this->makeFileName('html', $filename, $fail);
     try {
-      $data = $driver->getContent();
+      $data = $this->getResponseHtml();
     }
     catch (DriverException) {
       // Do not do anything if the driver does not have any content - most
@@ -165,6 +177,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // driver that is shipped with Behat, throw exception. For such drivers,
     // screenshot stored as an HTML page (without referenced assets).
     try {
+      $driver = $this->getSession()->getDriver();
       $data = $driver->getScreenshot();
       // Preserve filename, but change the extension - this is to group
       // content and screenshot files together by name.
@@ -238,6 +251,51 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function getCurrentTime(): int {
     return time();
+  }
+
+  /**
+   * Gets the debug information for screenshot.
+   *
+   * @return string
+   *   Information to prepend to screenshot
+   */
+  protected function getDebugInformation(): string {
+    return implode("\n", array_map(
+      fn($key, $value): string => sprintf('%s: %s', $key, $value),
+      array_keys($this->debugInformation),
+      $this->debugInformation,
+    ));
+  }
+
+  /**
+   * Gets last response content with any debug information.
+   *
+   * @return string
+   *   Response content with debug information.
+   *
+   * @throws \Behat\Mink\Exception\DriverException
+   * @throws \Behat\Mink\Exception\UnsupportedDriverActionException
+   */
+  protected function getResponseHtml(): string {
+    if ($this->showPath) {
+      $this->addDebugInformation('Current path', $this->getSession()->getCurrentUrl());
+    }
+
+    $driver = $this->getSession()->getDriver();
+
+    return $this->getDebugInformation() . $driver->getContent();
+  }
+
+  /**
+   * Adds debug information to context.
+   *
+   * @param string $label
+   *   Debug information label.
+   * @param string $value
+   *   Debug information value.
+   */
+  public function addDebugInformation(string $label, string $value): void {
+    $this->debugInformation[$label] = $value;
   }
 
   /**
