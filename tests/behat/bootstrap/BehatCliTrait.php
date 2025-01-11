@@ -320,6 +320,60 @@ EOL;
   }
 
   /**
+   * Checks whether a screenshot file matching pattern exists and contains text.
+   *
+   * @param string $wildcard
+   *   File name with a wildcard.
+   * @param \Behat\Gherkin\Node\PyStringNode $text
+   *   Text in the file.
+   *
+   * @Given /^behat screenshot file matching "([^"]*)" should contain:$/
+   */
+  public function behatCliAssertFileShouldContain($wildcard, PyStringNode $text): void {
+    $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
+    $matches = glob($wildcard);
+    if (empty($matches)) {
+      throw new \Exception(sprintf("Unable to find screenshot file matching wildcard '%s'.", $wildcard));
+    }
+    $path = $matches[0];
+    $file_content = trim(file_get_contents($path));
+
+    // Normalize the line endings in the output.
+    if ("\n" !== PHP_EOL) {
+      $file_content = str_replace(PHP_EOL, "\n", $file_content);
+    }
+
+    Assert::assertStringContainsString($this->getExpectedOutput($text), $file_content);
+  }
+
+  /**
+   * Checks whether a screenshot file exists and does not contain given text.
+   *
+   * @param string $wildcard
+   *   File name with a wildcard.
+   * @param \Behat\Gherkin\Node\PyStringNode $text
+   *   Text in the file.
+   *
+   * @Given /^behat screenshot file matching "([^"]*)" should not contain:$/
+   */
+  public function behatCliAssertFileNotShouldContain($wildcard, PyStringNode $text): void {
+    $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
+    $matches = glob($wildcard);
+    if (empty($matches)) {
+      throw new \Exception(sprintf("Unable to find screenshot file matching wildcard '%s'.", $wildcard));
+    }
+    $path = $matches[0];
+    $file_content = trim(file_get_contents($path));
+
+    // Normalize the line endings in the output.
+    if ("\n" !== PHP_EOL) {
+      $file_content = str_replace(PHP_EOL, "\n", $file_content);
+    }
+
+    Assert::assertStringNotContainsString($this->getExpectedOutput($text), $file_content);
+  }
+
+  /**
    * Checks whether a file wildcard at provided path does not exist.
    *
    * @param string $wildcard

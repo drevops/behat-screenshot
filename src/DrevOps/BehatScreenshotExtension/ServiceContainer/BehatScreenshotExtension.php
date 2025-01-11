@@ -76,6 +76,10 @@ class BehatScreenshotExtension implements ExtensionInterface {
       ->scalarNode('filenamePatternFailed')
         ->cannotBeEmpty()
         ->defaultValue('{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}')
+      ->end()
+      ->scalarNode('show_path')
+      ->cannotBeEmpty()
+      ->defaultValue(FALSE)
       ->end();
     // @formatter:on
     // @phpcs:enable Drupal.WhiteSpace.ObjectOperatorIndent.Indent
@@ -92,6 +96,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
       $config['purge'],
       $config['filenamePattern'],
       $config['filenamePatternFailed'],
+      $config['show_path'],
     ]);
     $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
     $container->setDefinition('drevops_screenshot.screenshot_context_initializer', $definition);
