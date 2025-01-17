@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\BehatScreenshotExtension;
 
 /**
- * Handler token replacements.
+ * Handles token replacements.
  */
 class Tokenizer {
 
@@ -23,29 +23,26 @@ class Tokenizer {
    * @throws \Exception
    */
   public static function replaceTokens(string $text, array $data = []): string {
-    $replacement = $text;
     $tokens = self::scanTokens($text);
-    $tokenReplacements = self::extractTokens($tokens, $data);
 
-    if (!empty($tokenReplacements)) {
-      // If token replacements have {step_name} token.
-      // We need move {step_name} token to the last position,
-      // because {step_name} token may contain other tokens.
-      foreach ($tokenReplacements as $token => $replacement) {
-        if ('{step_name}' === $token) {
-          $element = [$token => $replacement];
-          unset($tokenReplacements[$token]);
-          break;
-        }
-      }
-      if (isset($element)) {
-        $tokenReplacements = array_merge($tokenReplacements, $element);
-      }
-
-      $replacement = strtr($text, $tokenReplacements);
+    if (empty($tokens)) {
+      return $text;
     }
 
-    return $replacement;
+    $replacements = self::extractTokens($tokens, $data);
+
+    // Move {step_name} token to the last position as it may contain other
+    // tokens.
+    foreach ($replacements as $name => $value) {
+      if ($name === '{step_name}') {
+        $replaced = [$name => $value];
+        unset($replacements[$name]);
+        $replacements = array_merge($replacements, $replaced);
+        break;
+      }
+    }
+
+    return strtr($text, $replacements);
   }
 
   /**
@@ -58,235 +55,16 @@ class Tokenizer {
    *   The tokens keyed by the token name.
    */
   public static function scanTokens(string $text): array {
-    $pattern = '/\{(.*?)\}/';
+    $pattern = '/\{(.*?)}/';
+
     preg_match_all($pattern, $text, $matches);
+
     $tokens = [];
-    foreach ($matches[0] as $key => $match) {
-      $tokens[$match] = $matches[1][$key];
+    foreach ($matches[0] as $key => $name) {
+      $tokens[$name] = $matches[1][$key];
     }
 
     return $tokens;
-  }
-
-  /**
-   * Replace {feature} token.
-   *
-   * @param string $token
-   *   Original token.
-   * @param string $name
-   *   Token name.
-   * @param string|null $qualifier
-   *   Token qualifier.
-   * @param string|null $format
-   *   Token format.
-   * @param array<mixed> $data
-   *   Extra data to provide context to replace token.
-   *
-   * @return string
-   *   Token replacement.
-   */
-  public static function replaceFeatureToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    $replacement = $token;
-    if (isset($data['feature_file']) && is_string($data['feature_file'])) {
-      $featureFile = $data['feature_file'];
-      if (!empty($featureFile)) {
-        $replacement = basename($featureFile, '.feature');
-      }
-    }
-
-    return $replacement;
-  }
-
-  /**
-   * Replace {ext} token.
-   *
-   * @param string $token
-   *   Original token.
-   * @param string $name
-   *   Token name.
-   * @param string|null $qualifier
-   *   Token qualifier.
-   * @param string|null $format
-   *   Token format.
-   * @param array<mixed> $data
-   *   Extra data to provide context to replace token.
-   *
-   * @return string
-   *   Token replacement.
-   */
-  public static function replaceExtToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    $ext = 'html';
-    if (isset($data['ext']) && is_string($data['ext']) && $data['ext'] !== '') {
-      $ext = $data['ext'];
-    }
-
-    return $ext;
-  }
-
-  /**
-   * Replace {step} token.
-   *
-   * @param string $token
-   *   Original token.
-   * @param string $name
-   *   Token name.
-   * @param string|null $qualifier
-   *   Token qualifier.
-   * @param string|null $format
-   *   Token format.
-   * @param array<mixed> $data
-   *   Extra data to provide context to replace token.
-   *
-   * @return string
-   *   Token replacement.
-   */
-  public static function replaceStepToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    $replacement = $token;
-    switch ($qualifier) {
-      case 'line':
-        if (isset($data['step_line']) && (is_string($data['step_line']) || is_int($data['step_line']))) {
-          $replacement = (string) $data['step_line'];
-          if ($format) {
-            $replacement = sprintf($format, $replacement);
-          }
-        }
-        break;
-
-      case 'name':
-      default:
-        if (isset($data['step_name']) && is_string($data['step_name'])) {
-          $stepName = $data['step_name'];
-          $replacement = str_replace([' ', '"'], ['_', ''], $stepName);
-        }
-        break;
-    }
-
-    return $replacement;
-  }
-
-  /**
-   * Replace {datetime} token.
-   *
-   * @param string $token
-   *   Original token.
-   * @param string $name
-   *   Token name.
-   * @param string|null $qualifier
-   *   Token qualifier.
-   * @param string|null $format
-   *   Token format.
-   * @param array<mixed> $data
-   *   Extra data to provide context to replace token.
-   *
-   * @return string
-   *   Token replacement.
-   *
-   * @throws \Exception
-   */
-  public static function replaceDatetimeToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    $timestamp = NULL;
-    if ($data['time']) {
-      if (!is_int($data['time'])) {
-        throw new \Exception('Time must be an integer.');
-      }
-      $timestamp = $data['time'];
-    }
-
-    if ($format) {
-      return date($format, $timestamp);
-    }
-
-    return date('Ymd_His', $timestamp);
-  }
-
-  /**
-   * Replace {url} token.
-   *
-   * @param string $token
-   *   Original token.
-   * @param string $name
-   *   Token name.
-   * @param string|null $qualifier
-   *   Token qualifier.
-   * @param string|null $format
-   *   Token format.
-   * @param array<mixed> $data
-   *   Extra data to provide context to replace token.
-   *
-   * @return string
-   *   Token replacement.
-   *
-   * @throws \Exception
-   */
-  public static function replaceUrlToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    $replacement = $token;
-    if (isset($data['url']) && is_string($data['url'])) {
-      $url = $data['url'];
-      $urlParts = parse_url($url);
-      if (!$urlParts) {
-        throw new \Exception('Could not parse url.');
-      }
-      switch ($qualifier) {
-        case 'origin':
-          $replacement = sprintf('%s://%s', $urlParts['scheme'], $urlParts['host']);
-          break;
-
-        case 'relative':
-          $replacement = trim($urlParts['path'], '/');
-          $replacement = (isset($urlParts['query'])) ? $replacement . '?' . $urlParts['query'] : $replacement;
-          $replacement = (isset($urlParts['fragment'])) ? $replacement . '#' . $urlParts['fragment'] : $replacement;
-          break;
-
-        case 'domain':
-          $replacement = $urlParts['host'];
-          break;
-
-        case 'path':
-          $replacement = trim($urlParts['path'], '/');
-          break;
-
-        case 'query':
-          $replacement = (isset($urlParts['query'])) ? $urlParts['query'] : '';
-          break;
-
-        case 'fragment':
-          $replacement = (isset($urlParts['fragment'])) ? $urlParts['fragment'] : '';
-          break;
-
-        default:
-          $replacement = $url;
-          break;
-      }
-      $replacement = urlencode($replacement);
-    }
-
-    return $replacement;
-  }
-
-  /**
-   * Replace {fail} token.
-   *
-   * @param string $token
-   *   Original token.
-   * @param string $name
-   *   Token name.
-   * @param string|null $qualifier
-   *   Token qualifier.
-   * @param string|null $format
-   *   Token format.
-   * @param array<mixed> $data
-   *   Extra data to provide context to replace token.
-   *
-   * @return string
-   *   Token replacement.
-   */
-  public static function replaceFailToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    $replacement = $token;
-    if (!empty($data['fail_prefix']) && is_string($data['fail_prefix'])) {
-      $replacement = $data['fail_prefix'];
-    }
-
-    return $replacement;
   }
 
   /**
@@ -299,25 +77,24 @@ class Tokenizer {
    *
    * @return array<string, string>
    *   Replacements has key as token and value as token replacement.
-   *
-   * @throws \Exception
    */
-  public static function extractTokens(array $tokens, array $data): array {
+  protected static function extractTokens(array $tokens, array $data): array {
     $replacements = [];
-    foreach ($tokens as $originalToken => $token) {
-      $tokenParts = explode(':', $token);
+
+    foreach ($tokens as $original_token => $token) {
+      $parts = explode(':', $token);
+
       $qualifier = NULL;
-      $format = NULL;
-      $nameQualifier = $tokenParts[0];
-      if (isset($tokenParts[1])) {
-        $format = $tokenParts[1];
+      $format = $parts[1] ?? NULL;
+
+      $name_qualifier = $parts[0];
+      $name_qualifier_parts = explode('_', $name_qualifier);
+      $name = array_shift($name_qualifier_parts);
+      if (!empty($name_qualifier_parts)) {
+        $qualifier = implode('_', $name_qualifier_parts);
       }
-      $nameQualifierParts = explode('_', $nameQualifier);
-      $name = array_shift($nameQualifierParts);
-      if (!empty($nameQualifierParts)) {
-        $qualifier = implode('_', $nameQualifierParts);
-      }
-      $replacements[$originalToken] = self::buildTokenReplacement($originalToken, $name, $qualifier, $format, $data);
+
+      $replacements[$original_token] = self::buildTokenReplacement($original_token, $name, $qualifier, $format, $data);
     }
 
     return $replacements;
@@ -339,41 +116,124 @@ class Tokenizer {
    *
    * @return string
    *   Token replacement.
-   *
-   * @throws \Exception
    */
-  public static function buildTokenReplacement(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
+  protected static function buildTokenReplacement(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
+    $method = 'replace' . ucfirst($name) . 'Token';
+
+    if (is_callable([self::class, $method])) {
+      $token = self::$method($token, $name, $qualifier, $format, $data);
+    }
+
+    return $token;
+  }
+
+  /**
+   * Replace {feature} token.
+   */
+  protected static function replaceFeatureToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
+    return !empty($data['feature_file']) && is_string($data['feature_file']) ? basename($data['feature_file'], '.feature') : $token;
+  }
+
+  /**
+   * Replace {ext} token.
+   */
+  protected static function replaceExtToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
+    return isset($data['ext']) && is_string($data['ext']) && $data['ext'] !== '' ? $data['ext'] : 'html';
+  }
+
+  /**
+   * Replace {step} token.
+   */
+  protected static function replaceStepToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
+    if ($qualifier == 'line' && isset($data['step_line']) && (is_string($data['step_line']) || is_int($data['step_line']))) {
+      return $format ? sprintf($format, intval($data['step_line'])) : strval($data['step_line']);
+    }
+
+    if (isset($data['step_name']) && is_string($data['step_name'])) {
+      return str_replace([' ', '"'], ['_', ''], $data['step_name']);
+    }
+
+    return $token;
+  }
+
+  /**
+   * Replace {datetime} token.
+   */
+  protected static function replaceDatetimeToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
+    $timestamp = NULL;
+
+    if (isset($data['timestamp'])) {
+      if (!is_scalar($data['timestamp'])) {
+        throw new \InvalidArgumentException('Timestamp must be numeric.');
+      }
+
+      $timestamp = intval($data['timestamp']);
+
+      if ($timestamp < 1) {
+        throw new \InvalidArgumentException('Timestamp must be greater than 0.');
+      }
+    }
+
+    return $timestamp ? date($format ?: 'Ymd_His', $timestamp) : $token;
+  }
+
+  /**
+   * Replace {url} token.
+   */
+  protected static function replaceUrlToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $replacement = $token;
-    switch ($name) {
-      case 'feature':
-        $replacement = self::replaceFeatureToken($token, $name, $qualifier, $format, $data);
-        break;
 
-      case 'url':
-        $replacement = self::replaceUrlToken($token, $name, $qualifier, $format, $data);
-        break;
+    if (isset($data['url']) && is_string($data['url'])) {
+      $url = $data['url'];
+      $url_parts = parse_url($url);
 
-      case 'datetime':
-        $replacement = self::replaceDatetimeToken($token, $name, $qualifier, $format, $data);
-        break;
+      if (!$url_parts) {
+        throw new \RuntimeException(sprintf('Could not parse URL "%s".', $url));
+      }
 
-      case 'fail':
-        $replacement = self::replaceFailToken($token, $name, $qualifier, $format, $data);
-        break;
+      switch ($qualifier) {
+        case 'origin':
+          $replacement = sprintf('%s://%s', $url_parts['scheme'], $url_parts['host']);
+          break;
 
-      case 'ext':
-        $replacement = self::replaceExtToken($token, $name, $qualifier, $format, $data);
-        break;
+        case 'relative':
+          $replacement = trim($url_parts['path'], '/');
+          $replacement = isset($url_parts['query']) ? $replacement . '?' . $url_parts['query'] : $replacement;
+          $replacement = isset($url_parts['fragment']) ? $replacement . '#' . $url_parts['fragment'] : $replacement;
+          break;
 
-      case 'step':
-        $replacement = self::replaceStepToken($token, $name, $qualifier, $format, $data);
-        break;
+        case 'domain':
+          $replacement = $url_parts['host'];
+          break;
 
-      default:
-        break;
+        case 'path':
+          $replacement = trim($url_parts['path'], '/');
+          break;
+
+        case 'query':
+          $replacement = $url_parts['query'] ?: '';
+          break;
+
+        case 'fragment':
+          $replacement = $url_parts['fragment'] ?: '';
+          break;
+
+        default:
+          $replacement = $url;
+          break;
+      }
+
+      $replacement = urlencode($replacement);
     }
 
     return $replacement;
+  }
+
+  /**
+   * Replace {fail} token.
+   */
+  protected static function replaceFailToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
+    return !empty($data['fail_prefix']) && is_string($data['fail_prefix']) ? $data['fail_prefix'] : $token;
   }
 
 }

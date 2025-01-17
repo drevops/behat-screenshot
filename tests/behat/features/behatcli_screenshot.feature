@@ -261,7 +261,8 @@ Feature: Screenshot context
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should not exist
 
-  Scenario: Test Screenshot context with 'show_path' set to 'true' will output current path to screenshot files.
+  @wip1
+  Scenario: Test Screenshot context with 'show_path' set to 'true' will output current URL to screenshot files.
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
@@ -277,10 +278,10 @@ Feature: Screenshot context
     Then it should fail
     And behat screenshot file matching "screenshots/*.failed_stub.feature_6\.html" should contain:
       """
-      Current path: http://0.0.0.0:8888/screenshot.html
+      Current URL: http://0.0.0.0:8888/screenshot.html
       """
 
-  Scenario: Test Screenshot context with 'show_path' set to 'false' will not output current path to screenshot files.
+  Scenario: Test Screenshot context with 'show_path' set to 'false' will not output current URL to screenshot files.
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
@@ -296,5 +297,5 @@ Feature: Screenshot context
     Then it should fail
     And behat screenshot file matching "screenshots/*.failed_stub.feature_6\.html" should not contain:
       """
-      Current path: http://0.0.0.0:8888/screenshot.html
+      Current URL: http://0.0.0.0:8888/screenshot.html
       """

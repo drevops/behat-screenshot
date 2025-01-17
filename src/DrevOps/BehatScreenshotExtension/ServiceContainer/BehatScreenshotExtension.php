@@ -78,8 +78,8 @@ class BehatScreenshotExtension implements ExtensionInterface {
         ->defaultValue('{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}')
       ->end()
       ->scalarNode('show_path')
-      ->cannotBeEmpty()
-      ->defaultValue(FALSE)
+        ->cannotBeEmpty()
+        ->defaultValue(FALSE)
       ->end();
     // @formatter:on
     // @phpcs:enable Drupal.WhiteSpace.ObjectOperatorIndent.Indent

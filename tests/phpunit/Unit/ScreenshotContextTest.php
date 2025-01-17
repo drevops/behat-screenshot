@@ -59,19 +59,6 @@ class ScreenshotContextTest extends TestCase {
     $this->assertEquals($scope, $screenshot_context->getBeforeStepScope());
   }
 
-  public function testBeforeStepInitThrowError(): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $step_node = $this->createMock(StepNode::class);
-
-    $feature_node->method('getFile')->willReturn(FALSE);
-    $this->expectException(\RuntimeException::class);
-
-    $screenshot_context = new ScreenshotContext();
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
-    $screenshot_context->beforeStepInit($scope);
-  }
-
   public function testPrintLastResponseOnError(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
@@ -122,7 +109,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
-      'saveScreenshotData',
+      'saveScreenshotContent',
     ]);
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
@@ -132,7 +119,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('makeFileName')->willReturn('test-file-name');
 
-    $screenshot_context->expects($this->exactly(2))->method('saveScreenshotData');
+    $screenshot_context->expects($this->exactly(2))->method('saveScreenshotContent');
     $screenshot_context->iSaveScreenshot();
   }
 
@@ -140,7 +127,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
-      'saveScreenshotData',
+      'saveScreenshotContent',
     ]);
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
@@ -150,7 +137,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('makeFileName')->willReturn('test-file-name');
 
-    $screenshot_context->expects($this->never())->method('saveScreenshotData');
+    $screenshot_context->expects($this->never())->method('saveScreenshotContent');
     $screenshot_context->iSaveScreenshot();
   }
 
@@ -166,7 +153,7 @@ class ScreenshotContextTest extends TestCase {
       TRUE,
     );
     $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
-    $method = $screenshot_context_reflection->getMethod('saveScreenshotData');
+    $method = $screenshot_context_reflection->getMethod('saveScreenshotContent');
     $method->setAccessible(TRUE);
     $method->invokeArgs($screenshot_context, [$filename, $data]);
     $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;

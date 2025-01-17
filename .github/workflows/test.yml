@@ -60,7 +60,7 @@ jobs:
         continue-on-error: ${{ vars.CI_LINT_IGNORE_FAILURE == '1' }}
 
       - name: Run unit tests
-        run: composer test-unit
+        run: composer test-coverage
         continue-on-error: ${{ vars.CI_TEST_UNIT_IGNORE_FAILURE == '1' }}
 
       - name: Run BDD tests
