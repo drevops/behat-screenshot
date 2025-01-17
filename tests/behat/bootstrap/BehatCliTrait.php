@@ -171,11 +171,10 @@ default:
     default:
       contexts:
         - FeatureContextTest:
-          - screenshot_dir: "%paths.base%/screenshots"
+          - screenshot_dir: '%paths.base%/screenshots'
         - DrevOps\BehatPhpServer\PhpServerContext:
-          - docroot: "%paths.base%/tests/behat/features/fixtures"
-            host: "0.0.0.0"
-            port: 8888
+            webroot: '%paths.base%/tests/behat/fixtures'
+            host: 0.0.0.0
   extensions:
     Behat\MinkExtension:
       browserkit_http: ~
@@ -201,11 +200,10 @@ default:
     default:
       contexts:
         - FeatureContextTest:
-          - screenshot_dir: "%paths.base%/screenshots"
+          - screenshot_dir: '%paths.base%/screenshots'
         - DrevOps\BehatPhpServer\PhpServerContext:
-          - docroot: "%paths.base%/tests/behat/features/fixtures"
-            host: "0.0.0.0"
-            port: 8888
+            webroot: '%paths.base%/tests/behat/fixtures'
+            host: 0.0.0.0
         - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
   extensions:
     Behat\MinkExtension:
@@ -227,7 +225,7 @@ EOL;
    * @Given screenshot fixture
    */
   public function behatCliWriteScreenshotFixture(): void {
-    $filename = 'tests/behat/features/fixtures/screenshot.html';
+    $filename = 'tests/behat/fixtures/screenshot.html';
 
     $content = <<<'EOL'
 <!DOCTYPE html>

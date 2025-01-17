@@ -23,7 +23,7 @@
         "behat/mink-browserkit-driver": "^2.2",
         "dantleech/gherkin-lint": "^0.2.3",
         "dealerdirect/phpcodesniffer-composer-installer": "^1",
-        "drevops/behat-phpserver": "^1.2",
+        "drevops/behat-phpserver": "^2.0",
         "drupal/coder": "^8.3",
         "dvdoug/behat-code-coverage": "^5.3",
         "ergebnis/composer-normalize": "^2.44",
