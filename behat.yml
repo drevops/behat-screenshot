@@ -9,14 +9,13 @@ default:
         - BehatCliContext
         - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
         - DrevOps\BehatPhpServer\PhpServerContext:
-            - docroot: "%paths.base%/tests/behat/features/fixtures"
-              host: "0.0.0.0"
-              port: 8888
+            webroot: "%paths.base%/tests/behat/fixtures"
+            host: 0.0.0.0
 
   extensions:
     Behat\MinkExtension:
       browserkit_http: ~
-      files_path: "%paths.base%/tests/behat/features/fixtures"
+      files_path: "%paths.base%/tests/behat/fixtures"
       base_url: http://0.0.0.0:8888
       browser_name: chrome
       javascript_session: selenium2

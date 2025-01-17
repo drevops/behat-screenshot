@@ -41,16 +41,15 @@ Feature: Behat CLI context
             contexts:
               - FeatureContextTest
               - DrevOps\BehatPhpServer\PhpServerContext:
-                - docroot: "%paths.base%/tests/behat/features/fixtures"
-                  host: "0.0.0.0"
-                  port: 8888
+                  webroot: '%paths.base%/tests/behat/fixtures'
+                  host: 0.0.0.0
         extensions:
           Behat\MinkExtension:
             browserkit_http: ~
             selenium2: ~
             base_url: http://0.0.0.0:8888
       """
-      And a file named "tests/behat/features/fixtures/screenshot.html" with:
+      And a file named "tests/behat/fixtures/screenshot.html" with:
       """
       <!DOCTYPE html>
         <html>

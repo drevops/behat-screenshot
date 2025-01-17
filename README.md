@@ -134,12 +134,6 @@ You may optionally specify size of browser window in the screenshot step:
 composer install
 ```
 
-### Start Chrome container.
-
-```bash
-docker run -d -p 4444:4444 selenium/standalone-chromium:130.0
-```
-
 ### Lint code
 
 ```bash
@@ -156,6 +150,8 @@ composer lint-fix
 
 ```bash
 composer test-unit # Run unit tests.
+
+docker run -d -p 4444:4444 selenium/standalone-chromium
 composer test-bdd  # Run BDD tests.
 ```
 
