@@ -98,7 +98,7 @@ You may optionally specify size of browser window in the screenshot step:
 | Name                    | Default value                                                        | Description                                                                                                 |
 |-------------------------|----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
 | `dir`                   | `%paths.base%/screenshots`                                           | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. |
-| `fail`                  | `true`                                                               | Capture screenshots for failed tests.                                                                       |
+| `fail`                  | `true`                                                               | Capture screenshot on test failure.                                                                         |
 | `fail_prefix`           | `failed_`                                                            | Prefix failed screenshots with `fail_` string. Useful to distinguish failed and intended screenshots.       |
 | `purge`                 | `false`                                                              | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.         |
 | `filenamePattern`       | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`              | File name pattern for successful assertions.                                                                |

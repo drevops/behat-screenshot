@@ -16,12 +16,17 @@ use Symfony\Component\Finder\Finder;
 class ScreenshotContextInitializer implements ContextInitializer {
 
   /**
+   * Flag to purge files in the directory.
+   */
+  protected bool $needsPurging = TRUE;
+
+  /**
    * ScreenshotContextInitializer constructor.
    *
    * @param string $dir
    *   Screenshot dir.
    * @param bool $fail
-   *   Screenshot when fail.
+   *   Create screenshot on test failure.
    * @param string $failPrefix
    *   File name prefix for a failed test.
    * @param bool $purge
@@ -31,13 +36,19 @@ class ScreenshotContextInitializer implements ContextInitializer {
    * @param string $filenamePatternFailed
    *   File name pattern failed.
    * @param bool $showPath
-   *   Show current path in screenshots.
-   * @param bool $needsPurging
-   *   Check if need to actually purge.
+   *   Show current URL in screenshots.
    *
    * @codeCoverageIgnore
    */
-  public function __construct(protected string $dir, protected bool $fail, private readonly string $failPrefix, protected bool $purge, protected string $filenamePattern, protected string $filenamePatternFailed, protected bool $showPath = FALSE, protected bool $needsPurging = TRUE) {
+  public function __construct(
+    protected string $dir,
+    protected bool $fail,
+    private readonly string $failPrefix,
+    protected bool $purge,
+    protected string $filenamePattern,
+    protected string $filenamePatternFailed,
+    protected bool $showPath = FALSE,
+  ) {
   }
 
   /**
@@ -46,11 +57,20 @@ class ScreenshotContextInitializer implements ContextInitializer {
   public function initializeContext(Context $context): void {
     if ($context instanceof ScreenshotAwareContextInterface) {
       $dir = $this->resolveScreenshotDir();
-      $context->setScreenshotParameters($dir, $this->fail, $this->failPrefix, $this->filenamePattern, $this->filenamePatternFailed, $this->showPath);
+
       if ($this->shouldPurge() && $this->needsPurging) {
         $this->purgeFilesInDir($dir);
         $this->needsPurging = FALSE;
       }
+
+      $context->setScreenshotParameters(
+        $dir,
+        $this->fail,
+        $this->failPrefix,
+        $this->filenamePattern,
+        $this->filenamePatternFailed,
+        $this->showPath
+      );
     }
   }
 

@@ -20,19 +20,9 @@ use Symfony\Component\Filesystem\Filesystem;
 class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContextInterface {
 
   /**
-   * Screenshot step line.
-   */
-  protected string $stepLine;
-
-  /**
    * Makes screenshot when fail.
    */
   protected bool $fail = FALSE;
-
-  /**
-   * Screenshot directory name.
-   */
-  protected string $dir = '';
 
   /**
    * Prefix for failed screenshot files.
@@ -40,21 +30,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected string $failPrefix = '';
 
   /**
-   * Show the path in the screenshot.
+   * Screenshot directory name.
    */
-  protected bool $showPath = FALSE;
-
-  /**
-   * Debug information to be outputted in screenshot.
-   *
-   * @var array<string, string>
-   */
-  protected array $debugInformation = [];
-
-  /**
-   * Before step scope.
-   */
-  protected BeforeStepScope $beforeStepScope;
+  protected string $dir = '';
 
   /**
    * Filename pattern.
@@ -65,6 +43,23 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * Filename pattern failed.
    */
   protected string $filenamePatternFailed;
+
+  /**
+   * Show the path in the screenshot.
+   */
+  protected bool $showPath = FALSE;
+
+  /**
+   * Debug information to be added to a screenshot.
+   *
+   * @var array<string, string>
+   */
+  protected array $debugInformation = [];
+
+  /**
+   * Before step scope.
+   */
+  protected BeforeStepScope $beforeStepScope;
 
   /**
    * {@inheritdoc}
@@ -81,7 +76,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Init values required for snapshots.
+   * Init values required for screenshots.
    *
    * @param \Behat\Behat\Hook\Scope\BeforeScenarioScope $scope
    *   Scenario scope.
@@ -114,20 +109,16 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Init values required for snapshot.
+   * Init values required for a screenshot.
    *
    * @BeforeStep
    */
   public function beforeStepInit(BeforeStepScope $scope): void {
-    $featureFile = $scope->getFeature()->getFile();
-    if (!$featureFile) {
-      throw new \RuntimeException('Feature file not found.');
-    }
     $this->beforeStepScope = $scope;
   }
 
   /**
-   * After scope event handler to print last response on error.
+   * After step handler to print last response on error.
    *
    * @param \Behat\Behat\Hook\Scope\AfterStepScope $event
    *   After scope event.
@@ -138,17 +129,15 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @AfterStep
    */
   public function printLastResponseOnError(AfterStepScope $event): void {
-    if ($this->fail && !$event->getTestResult()->isPassed()) {
-      $this->iSaveScreenshot(TRUE, NULL);
+    if (!$event->getTestResult()->isPassed() && $this->fail) {
+      $this->iSaveScreenshot(TRUE);
     }
   }
 
   /**
-   * Save debug screenshot.
+   * Save screenshot content into a file.
    *
-   * Handles different driver types.
-   *
-   * @param bool $fail
+   * @param bool $is_failure
    *   Denotes if this was called in a context of the failed
    *   test.
    * @param string|null $filename
@@ -160,29 +149,34 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @When save screenshot
    * @When I save screenshot
    */
-  public function iSaveScreenshot(bool $fail = FALSE, ?string $filename = NULL): void {
-    $fileName = $this->makeFileName('html', $filename, $fail);
+  public function iSaveScreenshot(bool $is_failure = FALSE, ?string $filename = NULL): void {
+    $file_name = $this->makeFileName('html', $filename, $is_failure);
+
     try {
-      $data = $this->getResponseHtml();
+      $driver = $this->getSession()->getDriver();
+      $content = $driver->getContent();
+
+      $info = $this->renderDebugInformation();
+      $content = empty($info) ? $content : $info . '<br />' . $content;
     }
     catch (DriverException) {
-      // Do not do anything if the driver does not have any content - most
+      // Do nothing if the driver does not have any content - most
       // likely the page has not been loaded yet.
       return;
     }
 
-    $this->saveScreenshotData($fileName, $data);
+    $this->saveScreenshotContent($file_name, $content);
 
     // Drivers that do not support making screenshots, including Goutte
     // driver that is shipped with Behat, throw exception. For such drivers,
     // screenshot stored as an HTML page (without referenced assets).
     try {
       $driver = $this->getSession()->getDriver();
-      $data = $driver->getScreenshot();
+      $content = $driver->getScreenshot();
       // Preserve filename, but change the extension - this is to group
       // content and screenshot files together by name.
-      $fileName = $this->makeFileName('png', $filename, $fail);
-      $this->saveScreenshotData($fileName, $data);
+      $file_name = $this->makeFileName('png', $filename, $is_failure);
+      $this->saveScreenshotContent($file_name, $content);
     }
     // @codeCoverageIgnoreStart
     catch (UnsupportedDriverActionException) {
@@ -223,11 +217,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function iSaveSizedScreenshot(string|int $width = 1440, string|int $height = 900): void {
     try {
-      $this->getSession()->resizeWindow((int) $width, (int) $height, 'current');
+      $this->getSession()->resizeWindow(intval($width), intval($height), 'current');
     }
     catch (UnsupportedDriverActionException) {
       // Nothing to do here - drivers without resize support may proceed.
     }
+
     $this->iSaveScreenshot();
   }
 
@@ -239,6 +234,36 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function getBeforeStepScope(): BeforeStepScope {
     return $this->beforeStepScope;
+  }
+
+  /**
+   * Adds debug information to context.
+   *
+   * @param string $label
+   *   Debug information label.
+   * @param string $value
+   *   Debug information value.
+   */
+  public function appendDebugInformation(string $label, string $value): void {
+    $this->debugInformation[$label] = $value;
+  }
+
+  /**
+   * Render debug information.
+   *
+   * @return string
+   *   Rendered debug information.
+   */
+  public function renderDebugInformation(): string {
+    if ($this->showPath) {
+      $this->appendDebugInformation('Current URL', $this->getSession()->getCurrentUrl());
+    }
+
+    return implode("\n", array_map(
+      fn($key, $value): string => sprintf('%s: %s', $key, $value),
+      array_keys($this->debugInformation),
+      $this->debugInformation,
+    ));
   }
 
   /**
@@ -254,61 +279,19 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Gets the debug information for screenshot.
-   *
-   * @return string
-   *   Information to prepend to screenshot
-   */
-  protected function getDebugInformation(): string {
-    return implode("\n", array_map(
-      fn($key, $value): string => sprintf('%s: %s', $key, $value),
-      array_keys($this->debugInformation),
-      $this->debugInformation,
-    ));
-  }
-
-  /**
-   * Gets last response content with any debug information.
-   *
-   * @return string
-   *   Response content with debug information.
-   *
-   * @throws \Behat\Mink\Exception\DriverException
-   * @throws \Behat\Mink\Exception\UnsupportedDriverActionException
-   */
-  protected function getResponseHtml(): string {
-    if ($this->showPath) {
-      $this->addDebugInformation('Current path', $this->getSession()->getCurrentUrl());
-    }
-
-    $driver = $this->getSession()->getDriver();
-
-    return $this->getDebugInformation() . $driver->getContent();
-  }
-
-  /**
-   * Adds debug information to context.
-   *
-   * @param string $label
-   *   Debug information label.
-   * @param string $value
-   *   Debug information value.
-   */
-  public function addDebugInformation(string $label, string $value): void {
-    $this->debugInformation[$label] = $value;
-  }
-
-  /**
-   * Save screenshot data into a file.
+   * Save screenshot content into a file.
    *
    * @param string $filename
    *   File name to write.
-   * @param string $data
-   *   Data to write into a file.
+   * @param string $content
+   *   Content to write into a file.
    */
-  protected function saveScreenshotData(string $filename, string $data): void {
+  protected function saveScreenshotContent(string $filename, string $content): void {
     $this->prepareDir($this->dir);
-    file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $data);
+    $success = file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $content);
+    if ($success === FALSE) {
+      throw new \RuntimeException(sprintf('Failed to save screenshot to %s', $filename));
+    }
   }
 
   /**
@@ -318,8 +301,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   Name of preparing directory.
    */
   protected function prepareDir(string $dir): void {
-    $fs = new Filesystem();
-    $fs->mkdir($dir, 0755);
+    (new Filesystem())->mkdir($dir, 0755);
   }
 
   /**
@@ -331,7 +313,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   File extension without dot.
    * @param string|null $filename
    *   Optional file name.
-   * @param bool $fail
+   * @param bool $is_failure
    *   Make filename for fail case.
    *
    * @return string
@@ -339,8 +321,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @throws \Exception
    */
-  protected function makeFileName(string $ext, ?string $filename = NULL, bool $fail = FALSE): string {
-    if ($fail) {
+  protected function makeFileName(string $ext, ?string $filename = NULL, bool $is_failure = FALSE): string {
+    if ($is_failure) {
       $filename = $this->filenamePatternFailed;
     }
     elseif (empty($filename)) {
@@ -377,7 +359,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       'step_line' => $step->getLine(),
       'feature_file' => $feature->getFile(),
       'url' => $url,
-      'time' => $this->getCurrentTime(),
+      'timestamp' => $this->getCurrentTime(),
       'fail_prefix' => $this->failPrefix,
     ];
 

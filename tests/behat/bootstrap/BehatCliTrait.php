@@ -332,9 +332,11 @@ EOL;
   public function behatCliAssertFileShouldContain($wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
+
     if (empty($matches)) {
       throw new \Exception(sprintf("Unable to find screenshot file matching wildcard '%s'.", $wildcard));
     }
+
     $path = $matches[0];
     $file_content = trim(file_get_contents($path));
 
@@ -358,10 +360,12 @@ EOL;
    */
   public function behatCliAssertFileNotShouldContain($wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
+
     $matches = glob($wildcard);
     if (empty($matches)) {
       throw new \Exception(sprintf("Unable to find screenshot file matching wildcard '%s'.", $wildcard));
     }
+
     $path = $matches[0];
     $file_content = trim(file_get_contents($path));
 
