@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -28,10 +30,29 @@ trait BehatCliTrait {
   }
 
   /**
-   * @AfterScenario
+   * @AfterScenario @behatcli
    */
   public function behatCliAfterScenarioPrintOutput(AfterScenarioScope $scope): void {
-    if ($scope->getFeature()->hasTag('behatcli') && static::behatCliIsDebug()) {
+    // Copy the screenshots to the working directory.
+    $context = $scope->getEnvironment()->getContext(ScreenshotContext::class);
+    if ($context instanceof ScreenshotContext) {
+      $src = $this->workingDir . DIRECTORY_SEPARATOR . 'screenshots';
+      if (is_dir($src)) {
+        $dst = $context->getDir() . '/behatcli_screenshots';
+        if (!is_readable($dst)) {
+          mkdir($dst, 0777, TRUE);
+        }
+
+        $finder = new Finder();
+        $fs = new Filesystem();
+
+        foreach ($finder->in($src)->files() as $file) {
+          $fs->copy($file->getRealPath(), $dst . DIRECTORY_SEPARATOR . $file->getFilename());
+        }
+      }
+    }
+
+    if (static::behatCliIsDebug()) {
       print "-------------------- OUTPUT START --------------------" . PHP_EOL;
       print PHP_EOL;
       print $this->getOutput();
@@ -127,7 +148,7 @@ EOL;
   /**
    * @Given /^scenario steps(?: tagged with "([^"]*)")?:$/
    */
-  public function behatCliWriteScenarioSteps(PyStringNode $content, $tags = ''): void {
+  public function behatCliWriteScenarioSteps(PyStringNode $content, string $tags = ''): void {
     $content = strtr((string) $content, ["'''" => '"""']);
 
     // Make sure that indentation in provided content is accurate.
@@ -144,7 +165,7 @@ EOL;
 
     $content = <<<'EOL'
 @behatcli
-Feature: Stub feature';
+Feature: Stub feature
   {{ADDITIONAL_TAGS}}
   Scenario: Stub scenario title
 {{SCENARIO_CONTENT}}
@@ -269,7 +290,7 @@ EOL;
    *
    * @When :name environment variable is set to :value
    */
-  public function behatCliSetEnvironmentVariable($name, $value): void {
+  public function behatCliSetEnvironmentVariable(string $name, string $value): void {
     $this->env[$name] = $value;
   }
 
@@ -308,7 +329,7 @@ EOL;
    *
    * @Given /^behat cli file wildcard "([^"]*)" should exist$/
    */
-  public function behatCliAssertFileShouldExist($wildcard): void {
+  public function behatCliAssertFileShouldExist(string $wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 
@@ -329,7 +350,7 @@ EOL;
    *
    * @Given /^behat screenshot file matching "([^"]*)" should contain:$/
    */
-  public function behatCliAssertFileShouldContain($wildcard, PyStringNode $text): void {
+  public function behatCliAssertFileShouldContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 
@@ -358,7 +379,7 @@ EOL;
    *
    * @Given /^behat screenshot file matching "([^"]*)" should not contain:$/
    */
-  public function behatCliAssertFileNotShouldContain($wildcard, PyStringNode $text): void {
+  public function behatCliAssertFileNotShouldContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
 
     $matches = glob($wildcard);
@@ -385,7 +406,7 @@ EOL;
    *
    * @Given /^behat cli file wildcard "([^"]*)" should not exist$/
    */
-  public function behatCliAssertFileShouldNotExist($wildcard): void {
+  public function behatCliAssertFileShouldNotExist(string $wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 

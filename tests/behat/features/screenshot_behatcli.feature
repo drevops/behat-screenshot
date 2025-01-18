@@ -262,12 +262,16 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should not exist
 
   @wip1
-  Scenario: Test Screenshot context with 'show_path' set to 'true' will output current URL to screenshot files.
+  Scenario: Test Screenshot context with 'info_types' set to 'true' will output current URL to screenshot files.
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
             purge: true
-            show_path: true
+            info_types:
+              - url
+              - feature
+              - step
+              - datetime
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -280,13 +284,25 @@ Feature: Screenshot context
       """
       Current URL: http://0.0.0.0:8888/screenshot.html
       """
+    And behat screenshot file matching "screenshots/*.failed_stub.feature_6\.html" should contain:
+      """
+      Feature: Stub feature
+      """
+    And behat screenshot file matching "screenshots/*.failed_stub.feature_6\.html" should contain:
+      """
+      Step: the response status code should be 404 (line 6)
+      """
+    And behat screenshot file matching "screenshots/*.failed_stub.feature_6\.html" should contain:
+      """
+      Datetime:
+      """
 
-  Scenario: Test Screenshot context with 'show_path' set to 'false' will not output current URL to screenshot files.
+  @wip22
+  Scenario: Test Screenshot context with 'info_types' set to 'false' will not output current URL to screenshot files.
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
             purge: true
-            show_path: false
       """
     And scenario steps tagged with "@phpserver":
       """

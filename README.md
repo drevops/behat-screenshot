@@ -95,14 +95,16 @@ You may optionally specify size of browser window in the screenshot step:
 
 ## Options
 
-| Name                    | Default value                                                        | Description                                                                                                 |
-|-------------------------|----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| `dir`                   | `%paths.base%/screenshots`                                           | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. |
-| `fail`                  | `true`                                                               | Capture screenshot on test failure.                                                                         |
-| `fail_prefix`           | `failed_`                                                            | Prefix failed screenshots with `fail_` string. Useful to distinguish failed and intended screenshots.       |
-| `purge`                 | `false`                                                              | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.         |
-| `filenamePattern`       | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`              | File name pattern for successful assertions.                                                                |
-| `filenamePatternFailed` | `{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                    |
+| Name                    | Default value                                                        | Description                                                                                                                                        |
+|-------------------------|----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dir`                   | `%paths.base%/screenshots`                                           | Path to directory to save screenshots. Directory structure will be created if the directory does not exist.                                        |
+| `fail`                  | `true`                                                               | Capture screenshot on test failure.                                                                                                                |
+| `fail_prefix`           | `failed_`                                                            | Prefix failed screenshots with `fail_` string. Useful to distinguish failed and intended screenshots.                                              |
+| `purge`                 | `false`                                                              | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                |
+| `info_types`            | `url`, `feature`, `step`, `datetime`                                 | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed. |
+| `filenamePattern`       | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`              | File name pattern for successful assertions.                                                                                                       |
+| `filenamePatternFailed` | `{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                           |
+| `filenamePatternFailed` | `{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                           |
 
 ### Supported tokens
 
@@ -153,6 +155,8 @@ composer test-unit # Run unit tests.
 
 docker run -d -p 4444:4444 selenium/standalone-chromium
 composer test-bdd  # Run BDD tests.
+
+BEHAT_CLI_DEBUG=1 composer test-bdd  # Run BDD tests with debug output.
 ```
 
 ---

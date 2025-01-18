@@ -39,6 +39,11 @@ default:
       dir: '%paths.base%/.logs/screenshots'
       fail: true
       purge: true
+      info_types:
+        - url
+        - feature
+        - step
+        - datetime
 
     DVDoug\Behat\CodeCoverage\Extension:
       filter:

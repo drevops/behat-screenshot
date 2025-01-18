@@ -45,16 +45,18 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected string $filenamePatternFailed;
 
   /**
-   * Show the path in the screenshot.
+   * Information types to be added to a screenshot.
+   *
+   * @var array<int,string>
    */
-  protected bool $showPath = FALSE;
+  protected array $infoTypes = [];
 
   /**
-   * Debug information to be added to a screenshot.
+   * Information to be added to a screenshot.
    *
    * @var array<string, string>
    */
-  protected array $debugInformation = [];
+  protected array $info = [];
 
   /**
    * Before step scope.
@@ -64,13 +66,13 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function setScreenshotParameters(string $dir, bool $fail, string $failPrefix, string $filenamePattern, string $filenamePatternFailed, bool $showPath): static {
+  public function setScreenshotParameters(string $dir, bool $fail, string $fail_prefix, string $filename_pattern, string $filename_pattern_failed, array $info_types): static {
     $this->dir = $dir;
     $this->fail = $fail;
-    $this->failPrefix = $failPrefix;
-    $this->filenamePattern = $filenamePattern;
-    $this->filenamePatternFailed = $filenamePatternFailed;
-    $this->showPath = $showPath;
+    $this->failPrefix = $fail_prefix;
+    $this->filenamePattern = $filename_pattern;
+    $this->filenamePatternFailed = $filename_pattern_failed;
+    $this->infoTypes = $info_types;
 
     return $this;
   }
@@ -156,8 +158,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $driver = $this->getSession()->getDriver();
       $content = $driver->getContent();
 
-      $info = $this->renderDebugInformation();
-      $content = empty($info) ? $content : $info . '<br />' . $content;
+      $info = $this->renderInfo();
+      $content = empty($info) ? $content : nl2br($info) . "<hr/>\n" . $content;
     }
     catch (DriverException) {
       // Do nothing if the driver does not have any content - most
@@ -237,33 +239,63 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Adds debug information to context.
+   * Adds information to context.
    *
    * @param string $label
    *   Debug information label.
    * @param string $value
    *   Debug information value.
    */
-  public function appendDebugInformation(string $label, string $value): void {
-    $this->debugInformation[$label] = $value;
+  public function appendInfo(string $label, string $value): void {
+    $this->info[$label] = $value;
   }
 
   /**
-   * Render debug information.
+   * Render information.
    *
    * @return string
    *   Rendered debug information.
    */
-  public function renderDebugInformation(): string {
-    if ($this->showPath) {
-      $this->appendDebugInformation('Current URL', $this->getSession()->getCurrentUrl());
-    }
+  public function renderInfo(): string {
+    $this->compileInfo();
 
+    // Use a non-HTML output to make this output universal.
     return implode("\n", array_map(
       fn($key, $value): string => sprintf('%s: %s', $key, $value),
-      array_keys($this->debugInformation),
-      $this->debugInformation,
+      array_keys($this->info),
+      $this->info,
     ));
+  }
+
+  /**
+   * Compile information.
+   */
+  protected function compileInfo(): void {
+    foreach ($this->infoTypes as $type) {
+      if ($type === 'url') {
+        $this->appendInfo('Current URL', $this->getSession()->getCurrentUrl());
+      }
+      if ($type === 'feature') {
+        $this->appendInfo('Feature', (string) $this->getBeforeStepScope()->getFeature()->getTitle());
+      }
+      if ($type === 'step') {
+        $step = $this->getBeforeStepScope()->getStep();
+        $this->appendInfo('Step', sprintf('%s (line %d)', $step->getText(), $step->getLine()));
+      }
+      if ($type === 'datetime') {
+        $this->appendInfo('Datetime', date('Y-m-d H:i:s'));
+      }
+    }
+  }
+
+  /**
+   * Get screenshot directory.
+   *
+   * @return string
+   *   Screenshot directory.
+   */
+  public function getDir(): string {
+    return $this->dir;
   }
 
   /**
