@@ -261,7 +261,6 @@ Feature: Screenshot context
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should not exist
 
-  @wip1
   Scenario: Test Screenshot context with 'info_types' set to 'true' will output current URL to screenshot files.
     Given screenshot context behat configuration with value:
       """
@@ -297,7 +296,6 @@ Feature: Screenshot context
       Datetime:
       """
 
-  @wip22
   Scenario: Test Screenshot context with 'info_types' set to 'false' will not output current URL to screenshot files.
     Given screenshot context behat configuration with value:
       """
@@ -315,3 +313,65 @@ Feature: Screenshot context
       """
       Current URL: http://0.0.0.0:8888/screenshot.html
       """
+
+  # Test for a headless browser using behat-chrome/behat-chrome-extension driver.
+  # @see https://gitlab.com/behat-chrome/behat-chrome-extension
+  # Install Chromium with brew: `brew cask install chromedriver`
+  # Launch chrome: /opt/homebrew/Caskroom/chromium/latest/chromium.wrapper.sh --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
+  @headless
+  Scenario: Test Screenshot context using behat-chrome/behat-chrome-extension
+    Given full behat configuration:
+      """
+      default:
+        suites:
+          default:
+            contexts:
+              - FeatureContextTest:
+                  - screenshot_dir: '%paths.base%/screenshots'
+              - DrevOps\BehatPhpServer\PhpServerContext:
+                  webroot: '%paths.base%/tests/behat/fixtures'
+                  host: 0.0.0.0
+              - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
+        extensions:
+          DMore\ChromeExtension\Behat\ServiceContainer\ChromeExtension: ~
+          Behat\MinkExtension:
+            browser_name: chrome
+            base_url: http://127.0.0.1:8888
+            sessions:
+              default:
+                chrome:
+                  api_url: "http://127.0.0.1:9222"
+                  download_behavior: allow
+                  download_path: /download
+                  validate_certificate: false
+
+          DrevOps\BehatScreenshotExtension:
+            dir: "%paths.base%/screenshots"
+            fail: true
+            purge: true
+            info_types:
+              - url
+              - feature
+              - step
+              - datetime
+      """
+    And scenario steps tagged with "@phpserver":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 200
+      And I save screenshot
+      """
+    When I run "behat --no-colors --strict"
+    Then it should pass
+    And behat cli file wildcard "screenshots/*.stub.feature_7\.html" should exist
+
+    And scenario steps tagged with "@phpserver":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 200
+      # Deliberately empty line to assert for a newly created screenshot file on re-run.
+      And I save screenshot
+      """
+    When I run "behat --no-colors --strict"
+    Then it should pass
+    And behat cli file wildcard "screenshots/*.stub.feature_8\.html" should exist

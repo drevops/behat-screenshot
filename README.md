@@ -41,7 +41,7 @@
 
 ## Installation
 
-```bash
+```shell
 composer require --dev drevops/behat-screenshot
 ```
 
@@ -81,16 +81,16 @@ default:
 
 In your feature:
 
-```
+```gherkin
   Given I am on "http://google.com"
-  Then I save screenshot
+Then I save screenshot
 ```
 
 You may optionally specify size of browser window in the screenshot step:
 
-```
+```gherkin
   Then I save 1440 x 900 screenshot
-  And I save 800 x 600 screenshot
+And I save 800 x 600 screenshot
 ```
 
 ## Options
@@ -132,28 +132,49 @@ You may optionally specify size of browser window in the screenshot step:
 
 ### Install dependencies.
 
-```bash
+```shell
 composer install
 ```
 
 ### Lint code
 
-```bash
+```shell
 composer lint
 ```
 
 ### Fix code style
 
-```bash
+```shell
 composer lint-fix
 ```
 
 ### Run tests
 
-```bash
-composer test-unit # Run unit tests.
+#### Unit tests
 
-docker run -d -p 4444:4444 selenium/standalone-chromium
+```shell
+composer test-unit # Run unit tests.
+```
+
+#### BDD tests
+
+We have tests for Selenium and Headless drivers. Selenium requires a Docker
+container and headless requires a Chromium browser (we will make this more
+streamlined in the future).
+
+```shell
+# Start Chromium in container for Selenium-based tests.
+docker run -d -p 4444:4444 -p 9222:9222 selenium/standalone-chromium
+```
+
+```shell
+# Install Chromium with brew.
+brew cask install chromedriver
+# Launch Chromium with remote debugging.
+/opt/homebrew/Caskroom/chromium/latest/chromium.wrapper.sh --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
+```
+
+```shell
 composer test-bdd  # Run BDD tests.
 
 BEHAT_CLI_DEBUG=1 composer test-bdd  # Run BDD tests with debug output.

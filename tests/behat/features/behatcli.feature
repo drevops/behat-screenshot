@@ -56,7 +56,7 @@ Feature: Behat CLI context
         <head>
           <title>Test page</title>
         </head>
-        <body>
+        <body style="background-color: blue;">
         Test page
         </body>
       </html>

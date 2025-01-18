@@ -183,6 +183,18 @@ EOL;
   }
 
   /**
+   * @Given full behat configuration:
+   */
+  public function behatCliWriteFullBehatYml(PyStringNode $content): void {
+    $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
+    $this->createFile($filename, $content->getRaw());
+
+    if (static::behatCliIsDebug()) {
+      static::behatCliPrintFileContents($filename, 'Behat Config');
+    }
+  }
+
+  /**
    * @Given some behat configuration
    */
   public function behatCliWriteBehatYml(): void {
@@ -254,7 +266,7 @@ EOL;
   <head>
     <title>Test page</title>
   </head>
-  <body>
+  <body style="background-color: blue;">
   Test page
   </body>
 </html>

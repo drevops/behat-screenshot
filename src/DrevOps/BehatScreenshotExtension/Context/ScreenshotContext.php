@@ -7,7 +7,6 @@ namespace DrevOps\BehatScreenshotExtension\Context;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
-use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
@@ -86,27 +85,26 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @BeforeScenario
    */
   public function beforeScenarioInit(BeforeScenarioScope $scope): void {
-    if ($scope->getScenario()->hasTag('javascript')) {
-      $driver = $this->getSession()->getDriver();
-      if ($driver instanceof Selenium2Driver) {
-        try {
-          // Start driver's session manually if it is not already started.
-          if (!$driver->isStarted()) {
-            $driver->start();
-          }
-          $this->getSession()->resizeWindow(1440, 900, 'current');
-        }
-        catch (\Exception $exception) {
-          throw new \RuntimeException(
-            sprintf(
-              'Please make sure that Selenium server is running. %s',
-              $exception->getMessage(),
-            ),
-            $exception->getCode(),
-            $exception,
-          );
-        }
+    if (!$scope->getScenario()->hasTag('javascript')) {
+      return;
+    }
+
+    $driver = $this->getSession()->getDriver();
+
+    try {
+      // Start driver's session manually if it is not already started.
+      if (!$driver->isStarted()) {
+        $driver->start();
       }
+
+      $this->getSession()->resizeWindow(1440, 900, 'current');
+    }
+    catch (UnsupportedDriverActionException $exception) {
+      // Nothing to do here - drivers without support for visual screenshots
+      // simply do not have them created.
+    }
+    catch (DriverException $exception) {
+      throw new \RuntimeException(sprintf("Unable to connect to the driver's server: %s", $exception->getMessage()), $exception->getCode(), $exception);
     }
   }
 
