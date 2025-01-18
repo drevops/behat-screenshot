@@ -9,5 +9,10 @@ default:
       dir: %paths.base%/screenshots
       fail: true
       purge: false
+      info_types:
+        - url
+        - feature
+        - step
+        - datetime
       filenamePattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
       filenamePatternFailed: '{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}'

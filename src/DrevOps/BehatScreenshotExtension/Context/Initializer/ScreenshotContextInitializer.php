@@ -35,8 +35,8 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *   File name pattern.
    * @param string $filenamePatternFailed
    *   File name pattern failed.
-   * @param bool $showPath
-   *   Show current URL in screenshots.
+   * @param array<int,string> $infoTypes
+   *   Show these info types in the screenshot.
    *
    * @codeCoverageIgnore
    */
@@ -47,7 +47,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
     protected bool $purge,
     protected string $filenamePattern,
     protected string $filenamePatternFailed,
-    protected bool $showPath = FALSE,
+    protected array $infoTypes = [],
   ) {
   }
 
@@ -69,7 +69,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
         $this->failPrefix,
         $this->filenamePattern,
         $this->filenamePatternFailed,
-        $this->showPath
+        $this->infoTypes
       );
     }
   }
