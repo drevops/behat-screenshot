@@ -25,43 +25,43 @@ Feature: Selenium screenshots
   Scenario: Capture a screenshot with name using Selenium driver with a custom name containing URL domain and path tokens
     Given I am on the screenshot test page
     When I save screenshot with name "test.{url_domain}.{url_path}.{ext}"
-    Then file wildcard "*.example\.com.screenshot\.html\.png" should exist
-    And file wildcard "*.example\.com.screenshot\.html\.html" should exist
+    Then file wildcard "test.example_com.screenshot_html.html" should exist
+    And file wildcard "test.example_com.screenshot_html.png" should exist
 
   @phpserver @javascript
   Scenario: Capture a screenshot with name using Selenium driver with a custom name containing URL origin token
     Given I am on the screenshot test page
     When I save screenshot with name "test.{url_origin}.{ext}"
-    Then file wildcard "*.http%3A%2F%2Fexample\.com\.png" should exist
-    And file wildcard "*.http%3A%2F%2Fexample\.com\.html" should exist
+    Then file wildcard "test.http_example_com.html" should exist
+    And file wildcard "test.http_example_com.png" should exist
 
   @phpserver @javascript
   Scenario: Capture a screenshot with name using Selenium driver with a custom name containing URL string token
     Given I am on the screenshot test page
     When I save screenshot with name "test.{url}.{ext}"
-    Then file wildcard "*.http%3A%2F%2Fexample\.com%3A8888%2Fscreenshot.html.png" should exist
-    And file wildcard "*.http%3A%2F%2Fexample\.com%3A8888%2Fscreenshot.html.html" should exist
+    Then file wildcard "test.http_example_com_8888_screenshot_html.html" should exist
+    And file wildcard "test.http_example_com_8888_screenshot_html.png" should exist
 
   @phpserver @javascript
   Scenario: Capture a screenshot with name using Selenium driver with a custom name containing URL query and fragment tokens
     Given I am on the screenshot test page with query "foo=test-foo" and fragment "foo-fragment"
     When I save screenshot with name "test.{url_query}.{url_fragment}.{ext}"
-    Then file wildcard "*.foo%3Dtest-foo.foo-fragment.png" should exist
-    And file wildcard "*.foo%3Dtest-foo.foo-fragment.html" should exist
+    Then file wildcard "test.foo_test-foo.foo-fragment.html" should exist
+    And file wildcard "test.foo_test-foo.foo-fragment.png" should exist
 
   @phpserver @javascript
   Scenario: Capture a screenshot with name using Selenium driver with a custom name containing URL relative path token
     Given I am on the screenshot test page with query "foo=test-foo" and fragment "foo-fragment"
     When I save screenshot with name "test.{url_relative}.{ext}"
-    Then file wildcard "*.screenshot.html%3Ffoo%3Dtest-foo%23foo-fragment.png" should exist
-    And file wildcard "*.screenshot.html%3Ffoo%3Dtest-foo%23foo-fragment.html" should exist
+    Then file wildcard "test.screenshot_html_foo_test-foo_foo-fragment.html" should exist
+    And file wildcard "test.screenshot_html_foo_test-foo_foo-fragment.png" should exist
 
   @phpserver @javascript
   Scenario: Capture a screenshot with name using Selenium driver with a custom name containing URL query and fragment in a URL token
     Given I am on the screenshot test page with query "foo=test-foo" and fragment "foo-fragment"
     When I save screenshot with name "test.{url}.{ext}"
-    Then file wildcard "*.http%3A%2F%2Fexample\.com%3A8888%2Fscreenshot.html%3Ffoo%3Dtest-foo%23foo-fragment.png" should exist
-    And file wildcard "*.http%3A%2F%2Fexample\.com%3A8888%2Fscreenshot.html%3Ffoo%3Dtest-foo%23foo-fragment.html" should exist
+    Then file wildcard "test.http_example_com_8888_screenshot_html_foo_test-foo_foo-fragment.html" should exist
+    And file wildcard "test.http_example_com_8888_screenshot_html_foo_test-foo_foo-fragment.png" should exist
 
   @phpserver @javascript
   Scenario: Capture a screenshot with name using Selenium driver with a custom name containing step line and name tokens

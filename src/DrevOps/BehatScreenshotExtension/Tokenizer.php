@@ -188,7 +188,7 @@ class Tokenizer {
       $url_parts = parse_url($url);
 
       if (!$url_parts) {
-        throw new \RuntimeException(sprintf('Could not parse URL "%s".', $url));
+        return $token;
       }
 
       switch ($qualifier) {
@@ -223,7 +223,7 @@ class Tokenizer {
           break;
       }
 
-      $replacement = urlencode($replacement);
+      $replacement = preg_replace('/[^\w\-]+/', '_', $replacement) ?: $replacement;
     }
 
     return $replacement;

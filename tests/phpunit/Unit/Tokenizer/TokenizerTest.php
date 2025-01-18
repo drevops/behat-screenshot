@@ -144,47 +144,41 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceUrlToken')]
-  public function testReplaceUrlToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected, ?string $exception = NULL): void {
-    if ($exception) {
-      $this->expectException(\RuntimeException::class);
-      $this->expectExceptionMessage($exception);
-    }
-
+  public function testReplaceUrlToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
     $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceUrlToken', [$token, $name, $qualifier, $format, $data]);
     $this->assertEquals($expected, $replacement);
   }
 
   public static function dataProviderReplaceUrlToken(): array {
-    $url = 'http://example.com/foo?foo=foo-value#hello-fragment';
-
     return [
       ['{url}', 'url', NULL, NULL, [], '{url}'],
-      ['{url}', 'url', NULL, NULL, ['url' => $url], urlencode($url)],
-      ['{url}', 'url', NULL, 'relative', ['url' => $url], urlencode($url)],
-      ['{url}', 'url', NULL, NULL, ['url' => 'http:///example.com'], '', 'Could not parse URL "http:///example.com".'],
+      ['{url}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
 
-      ['{url_relative}', 'url', 'relative', NULL, ['url' => $url], urlencode('foo?foo=foo-value#hello-fragment')],
-      ['{url_relative}', 'url', NULL, NULL, ['url' => $url], urlencode($url)],
+      ['{url}', 'url', NULL, 'relative', ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      ['{url}', 'url', NULL, NULL, ['url' => 'http:///e.com/path?f1=f1-v1#frag'], '{url}'],
+
+      ['{url_relative}', 'url', 'relative', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], urlencode('path_f1_f1-v1_frag')],
+      ['{url_relative}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
       ['{url_relative}', 'url', NULL, NULL, [], '{url_relative}'],
 
-      ['{url_origin}', 'url', 'origin', NULL, ['url' => $url], urlencode('http://example.com')],
-      ['{url_origin}', 'url', NULL, NULL, ['url' => $url], urlencode($url)],
+      ['{url_origin}', 'url', 'origin', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com'],
+      ['{url_origin}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
       ['{url_origin}', 'url', NULL, NULL, [], '{url_origin}'],
 
-      ['{url_domain}', 'url', 'domain', NULL, ['url' => $url], urlencode('example.com')],
-      ['{url_domain}', 'url', NULL, NULL, ['url' => $url], urlencode($url)],
+      ['{url_domain}', 'url', 'domain', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'e_com'],
+      ['{url_domain}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
       ['{url_domain}', 'url', NULL, NULL, [], '{url_domain}'],
 
-      ['{url_path}', 'url', 'path', NULL, ['url' => 'http://example.com/foo?foo=foo-value#hello-fragment'], 'foo'],
-      ['{url_path}', 'url', NULL, NULL, ['url' => 'http://example.com/foo?foo=foo-value#hello-fragment'], urlencode($url)],
+      ['{url_path}', 'url', 'path', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'path'],
+      ['{url_path}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
       ['{url_path}', 'url', NULL, NULL, [], '{url_path}'],
 
-      ['{url_query}', 'url', 'query', NULL, ['url' => $url], urlencode('foo=foo-value')],
-      ['{url_query}', 'url', NULL, NULL, ['url' => $url], urlencode($url)],
+      ['{url_query}', 'url', 'query', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'f1_f1-v1'],
+      ['{url_query}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
       ['{url_query}', 'url', NULL, NULL, [], '{url_query}'],
 
-      ['{url_fragment}', 'url', 'fragment', NULL, ['url' => $url], 'hello-fragment'],
-      ['{url_fragment}', 'url', NULL, NULL, ['url' => $url], urlencode($url)],
+      ['{url_fragment}', 'url', 'fragment', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'frag'],
+      ['{url_fragment}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
       ['{url_fragment}', 'url', NULL, NULL, [], '{url_fragment}'],
     ];
   }
@@ -230,7 +224,7 @@ class TokenizerTest extends TestCase {
       [
         '{url}.{ext}',
         $data,
-        'http%3A%2F%2Fexample.com%2Ffoo%3Ffoo%3Dfoo-value%23hello-fragment.png',
+        'http_example_com_foo_foo_foo-value_hello-fragment.png',
       ],
       [
         '{nontoken}.{ext}',
