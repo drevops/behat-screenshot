@@ -56,10 +56,13 @@ class ScreenshotContextInitializer implements ContextInitializer {
    */
   public function initializeContext(Context $context): void {
     if ($context instanceof ScreenshotAwareContextInterface) {
-      $dir = $this->resolveScreenshotDir();
+      $dir = getenv('BEHAT_SCREENSHOT_DIR') ?: $this->dir;
 
-      if ($this->shouldPurge() && $this->needsPurging) {
-        $this->purgeFilesInDir($dir);
+      if ((getenv('BEHAT_SCREENSHOT_PURGE') || $this->purge) && $this->needsPurging) {
+        $fs = new Filesystem();
+        if ($fs->exists($dir)) {
+          $fs->remove((new Finder())->files()->in($dir));
+        }
         $this->needsPurging = FALSE;
       }
 
@@ -72,45 +75,6 @@ class ScreenshotContextInitializer implements ContextInitializer {
         $this->infoTypes
       );
     }
-  }
-
-  /**
-   * Remove files in directory.
-   *
-   * @param string $dir
-   *   Directory to purge files in.
-   */
-  protected function purgeFilesInDir(string $dir): void {
-    $fs = new Filesystem();
-    $finder = new Finder();
-    if ($fs->exists($dir)) {
-      $fs->remove($finder->files()->in($dir));
-    }
-  }
-
-  /**
-   * Resolve directory using one of supported paths.
-   *
-   * @return string
-   *   Path to the screenshots directory.
-   */
-  protected function resolveScreenshotDir(): string {
-    $dir = getenv('BEHAT_SCREENSHOT_DIR');
-    if (!empty($dir)) {
-      return $dir;
-    }
-
-    return $this->dir;
-  }
-
-  /**
-   * Decide if 'purge' flag was set.
-   *
-   * @return bool
-   *   TRUE if should purge, FALSE otherwise.
-   */
-  protected function shouldPurge(): bool {
-    return getenv('BEHAT_SCREENSHOT_PURGE') || $this->purge;
   }
 
 }

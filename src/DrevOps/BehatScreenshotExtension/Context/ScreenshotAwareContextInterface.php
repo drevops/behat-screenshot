@@ -31,4 +31,30 @@ interface ScreenshotAwareContextInterface extends Context {
    */
   public function setScreenshotParameters(string $dir, bool $fail, string $fail_prefix, string $filename_pattern, string $filename_pattern_failed, array $info_types): static;
 
+  /**
+   * Save screenshot content into a file.
+   *
+   * @param array<string,mixed> $options
+   *   Contextual options.
+   */
+  public function iSaveScreenshot(array $options): void;
+
+  /**
+   * Adds information to context.
+   *
+   * @param string $label
+   *   Debug information label.
+   * @param string $value
+   *   Debug information value.
+   */
+  public function appendInfo(string $label, string $value): void;
+
+  /**
+   * Render information.
+   *
+   * @return string
+   *   Rendered debug information.
+   */
+  public function renderInfo(): string;
+
 }
