@@ -20,7 +20,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
   /**
    * Extension configuration ID.
    */
-  const MOD_ID = 'drevops_screenshot';
+  const MOD_ID = 'drevops_behat_screenshot';
 
   /**
    * {@inheritdoc}
@@ -57,11 +57,11 @@ class BehatScreenshotExtension implements ExtensionInterface {
         ->cannotBeEmpty()
         ->defaultValue('%paths.base%/screenshots')
       ->end()
-      ->scalarNode('fail')
+      ->scalarNode('on_failed')
         ->cannotBeEmpty()
         ->defaultValue(TRUE)
       ->end()
-      ->scalarNode('fail_prefix')
+      ->scalarNode('failed_prefix')
         ->cannotBeEmpty()
         ->defaultValue('failed_')
       ->end()
@@ -69,13 +69,13 @@ class BehatScreenshotExtension implements ExtensionInterface {
         ->cannotBeEmpty()
         ->defaultValue(FALSE)
       ->end()
-      ->scalarNode('filenamePattern')
+      ->scalarNode('filename_pattern')
         ->cannotBeEmpty()
         ->defaultValue('{datetime:U}.{feature_file}.feature_{step_line}.{ext}')
       ->end()
-      ->scalarNode('filenamePatternFailed')
+      ->scalarNode('filename_pattern_failed')
         ->cannotBeEmpty()
-        ->defaultValue('{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}')
+        ->defaultValue('{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}')
       ->end()
       ->arrayNode('info_types')
         ->defaultValue([])
@@ -91,15 +91,15 @@ class BehatScreenshotExtension implements ExtensionInterface {
   public function load(ContainerBuilder $container, array $config): void {
     $definition = new Definition(ScreenshotContextInitializer::class, [
       $config['dir'],
-      $config['fail'],
-      $config['fail_prefix'],
+      $config['on_failed'],
+      $config['failed_prefix'],
       $config['purge'],
-      $config['filenamePattern'],
-      $config['filenamePatternFailed'],
+      $config['filename_pattern'],
+      $config['filename_pattern_failed'],
       $config['info_types'],
     ]);
     $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
-    $container->setDefinition('drevops_screenshot.screenshot_context_initializer', $definition);
+    $container->setDefinition(static::MOD_ID . '.screenshot_context_initializer', $definition);
   }
 
 }

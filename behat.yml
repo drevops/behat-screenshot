@@ -37,7 +37,7 @@ default:
 
     DrevOps\BehatScreenshotExtension:
       dir: '%paths.base%/.logs/screenshots'
-      fail: true
+      on_failed: true
       purge: true
       info_types:
         - url

@@ -7,12 +7,13 @@ default:
   extensions:
     DrevOps\BehatScreenshotExtension:
       dir: %paths.base%/screenshots
-      fail: true
+      on_failed: true
       purge: false
       info_types:
         - url
         - feature
         - step
         - datetime
-      filenamePattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
-      filenamePatternFailed: '{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}'
+      failed_prefix: failed_
+      filename_pattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
+      filename_pattern_failed: '{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'

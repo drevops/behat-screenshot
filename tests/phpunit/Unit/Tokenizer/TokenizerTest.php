@@ -36,10 +36,10 @@ class TokenizerTest extends TestCase {
         ],
       ],
       [
-        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         [
           '{datetime:U}' => 'datetime:U',
-          '{fail_prefix}' => 'fail_prefix',
+          '{failed_prefix}' => 'failed_prefix',
           '{feature_file}' => 'feature_file',
           '{step_line}' => 'step_line',
           '{ext}' => 'ext',
@@ -129,17 +129,17 @@ class TokenizerTest extends TestCase {
     ];
   }
 
-  #[DataProvider('dataProviderReplaceFailToken')]
-  public function testReplaceFailToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
-    $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceFailToken', [$token, $name, $qualifier, $format, $data]);
+  #[DataProvider('dataProviderReplaceFailedPrefixToken')]
+  public function testReplaceFailedPrefixToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
+    $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceFailedPrefixToken', [$token, $name, $qualifier, $format, $data]);
     $this->assertEquals($expected, $replacement);
   }
 
-  public static function dataProviderReplaceFailToken(): array {
+  public static function dataProviderReplaceFailedPrefixToken(): array {
     return [
-      ['{fail}', 'fail', NULL, NULL, [], '{fail}'],
-      ['{fail}', 'fail', NULL, NULL, ['fail_prefix' => ''], '{fail}'],
-      ['{fail}', 'fail', NULL, NULL, ['fail_prefix' => 'HelloFail_'], 'HelloFail_'],
+      ['{failed_prefix}', 'failed_prefix', NULL, NULL, [], '{failed_prefix}'],
+      ['{failed_prefix}', 'failed_prefix', NULL, NULL, ['failed_prefix' => ''], '{failed_prefix}'],
+      ['{failed_prefix}', 'failed_prefix', NULL, NULL, ['failed_prefix' => 'HelloFail_'], 'HelloFail_'],
     ];
   }
 
@@ -191,7 +191,7 @@ class TokenizerTest extends TestCase {
 
   public static function dataProviderReplaceTokens(): array {
     $data = [
-      'fail_prefix' => 'foo-fail_',
+      'failed_prefix' => 'foo-failed_',
       'timestamp' => 1710219423,
       'ext' => 'png',
       'url' => 'http://example.com/foo?foo=foo-value#hello-fragment',
@@ -207,19 +207,19 @@ class TokenizerTest extends TestCase {
         'somestring',
       ],
       [
-        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         $data,
-        '1710219423.foo-fail_foo-file.feature_6.png',
+        '1710219423.foo-failed_foo-file.feature_6.png',
       ],
       [
-        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}_{step_name}.{ext}',
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}_{step_name}.{ext}',
         $data,
-        '1710219423.foo-fail_foo-file.feature_6_Foo_step_name.png',
+        '1710219423.foo-failed_foo-file.feature_6_Foo_step_name.png',
       ],
       [
-        '{datetime}.{fail_prefix}{feature_file}.feature_{step_line}_{step_name}.{ext}',
+        '{datetime}.{failed_prefix}{feature_file}.feature_{step_line}_{step_name}.{ext}',
         $data,
-        '20240312_045703.foo-fail_foo-file.feature_6_Foo_step_name.png',
+        '20240312_045703.foo-failed_foo-file.feature_6_Foo_step_name.png',
       ],
       [
         '{url}.{ext}',

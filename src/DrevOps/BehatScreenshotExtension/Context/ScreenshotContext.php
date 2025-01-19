@@ -19,19 +19,19 @@ use Symfony\Component\Filesystem\Filesystem;
 class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContextInterface {
 
   /**
-   * Makes screenshot when fail.
+   * Screenshot directory path.
    */
-  protected bool $fail = FALSE;
+  protected string $dir = '';
+
+  /**
+   * Make screenshots on failed tests.
+   */
+  protected bool $onFailed = FALSE;
 
   /**
    * Prefix for failed screenshot files.
    */
-  protected string $failPrefix = '';
-
-  /**
-   * Screenshot directory name.
-   */
-  protected string $dir = '';
+  protected string $failedPrefix = '';
 
   /**
    * Filename pattern.
@@ -65,10 +65,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function setScreenshotParameters(string $dir, bool $fail, string $fail_prefix, string $filename_pattern, string $filename_pattern_failed, array $info_types): static {
+  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, string $filename_pattern, string $filename_pattern_failed, array $info_types): static {
     $this->dir = $dir;
-    $this->fail = $fail;
-    $this->failPrefix = $fail_prefix;
+    $this->onFailed = $on_failed;
+    $this->failedPrefix = $failed_prefix;
     $this->filenamePattern = $filename_pattern;
     $this->filenamePatternFailed = $filename_pattern_failed;
     $this->infoTypes = $info_types;
@@ -135,8 +135,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @AfterStep
    */
   public function printLastResponseOnError(AfterStepScope $event): void {
-    if (!$event->getTestResult()->isPassed() && $this->fail) {
-      $this->iSaveScreenshot(['is_failure' => TRUE]);
+    if (!$event->getTestResult()->isPassed() && $this->onFailed) {
+      $this->iSaveScreenshot(['is_failed' => TRUE]);
     }
   }
 
@@ -148,7 +148,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function iSaveScreenshot(array $options = []): void {
     $filename = isset($options['filename']) && is_scalar($options['filename']) ? strval($options['filename']) : NULL;
-    $is_failure = isset($options['is_failure']) && is_scalar($options['is_failure']) && $options['is_failure'];
+    $is_failed = isset($options['is_failed']) && is_scalar($options['is_failed']) && $options['is_failed'];
 
     $driver = $this->getSession()->getDriver();
     $info = $this->renderInfo();
@@ -163,7 +163,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
 
-    $filename_html = $this->makeFileName('html', $filename, $is_failure);
+    $filename_html = $this->makeFileName('html', $filename, $is_failed);
     $this->saveScreenshotContent($filename_html, $content);
 
     // Drivers that do not support making screenshots, including Goutte
@@ -181,7 +181,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // @codeCoverageIgnoreEnd
     // Re-create the filename with a different extension to group content
     // and screenshot files together by name.
-    $filename_png = $this->makeFileName('png', $filename, $is_failure);
+    $filename_png = $this->makeFileName('png', $filename, $is_failed);
     $this->saveScreenshotContent($filename_png, $content);
   }
 
@@ -279,15 +279,26 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected function compileInfo(): void {
     foreach ($this->infoTypes as $type) {
       if ($type === 'url') {
-        $this->appendInfo('Current URL', $this->getSession()->getCurrentUrl());
+        $current_url = 'not available';
+        try {
+          $current_url = $this->getSession()->getCurrentUrl();
+        }
+        catch (\Exception) {
+          // Do nothing.
+        }
+
+        $this->appendInfo('Current URL', $current_url);
       }
+
       if ($type === 'feature') {
         $this->appendInfo('Feature', (string) $this->getBeforeStepScope()->getFeature()->getTitle());
       }
+
       if ($type === 'step') {
         $step = $this->getBeforeStepScope()->getStep();
         $this->appendInfo('Step', sprintf('%s (line %d)', $step->getText(), $step->getLine()));
       }
+
       if ($type === 'datetime') {
         $this->appendInfo('Datetime', date('Y-m-d H:i:s'));
       }
@@ -315,7 +326,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   File extension without dot.
    * @param string|null $filename
    *   Optional file name.
-   * @param bool $is_failure
+   * @param bool $is_failed
    *   Make filename for fail case.
    *
    * @return string
@@ -323,8 +334,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @throws \Exception
    */
-  protected function makeFileName(string $ext, ?string $filename = NULL, bool $is_failure = FALSE): string {
-    if ($is_failure) {
+  protected function makeFileName(string $ext, ?string $filename = NULL, bool $is_failed = FALSE): string {
+    if ($is_failed) {
       $filename = $this->filenamePatternFailed;
     }
     elseif (empty($filename)) {
@@ -357,7 +368,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
     $data = [
       'ext' => $ext,
-      'fail_prefix' => $this->failPrefix,
+      'failed_prefix' => $this->failedPrefix,
       'feature_file' => $feature->getFile(),
       'step_line' => $step->getLine(),
       'step_name' => $step->getText(),
