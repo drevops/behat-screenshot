@@ -9,7 +9,7 @@ Feature: Screenshot context
       """
       DrevOps\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
-            fail: true
+            on_failed: true
             purge: true
       """
     And scenario steps tagged with "@phpserver":
@@ -37,11 +37,11 @@ Feature: Screenshot context
     Then it should pass
     And behat cli file wildcard "screenshots/*.stub.feature_7\.html" should exist
 
-  Scenario: Test Screenshot context with 'filenamePattern' override
+  Scenario: Test Screenshot context with 'filename_pattern' override
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
-            filenamePattern: "{datetime:U}.{feature_file}.feature_{step_line:%03d}.{ext}"
+            filename_pattern: "{datetime:U}.{feature_file}.feature_{step_line:%03d}.{ext}"
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -88,11 +88,11 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should exist
 
-  Scenario: Test Screenshot context with 'fail' set to 'true' which will save screenshot on fail
+  Scenario: Test Screenshot context with 'on_failed' set to 'true' which will save screenshot on fail
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
-            fail: true
+            on_failed: true
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -103,11 +103,25 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6\.html" should exist
 
-  Scenario: Test Screenshot context with 'fail' set to 'false' which will not save screenshot on fail
+  Scenario: Test Screenshot context with 'on_failed' set to 'true' and there is no session so no content to save
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
-            fail: false
+            on_failed: true
+      """
+    And scenario steps tagged with "@phpserver":
+      """
+      And the response status code should be 404
+      """
+    When I run "behat --no-colors --strict"
+    Then it should fail
+    And behat cli file wildcard "screenshots" should not exist
+
+  Scenario: Test Screenshot context with 'on_failed' set to 'false' which will not save screenshot on fail
+    Given screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension:
+            on_failed: false
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -118,12 +132,12 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6\.html" should not exist
 
-  Scenario: Test Screenshot context with 'filenamePatternFailed' override & save screenshot on fail
+  Scenario: Test Screenshot context with 'filename_pattern_failed' override & save screenshot on fail
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
-            fail: true
-            filenamePatternFailed: "{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line:%03d}.{ext}"
+            on_failed: true
+            filename_pattern_failed: "{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line:%03d}.{ext}"
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -134,12 +148,12 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots/*.failed_stub.feature_006\.html" should exist
 
-  Scenario: Test Screenshot context with 'filenamePatternFailed' override & not save screenshot on fail
+  Scenario: Test Screenshot context with 'filename_pattern_failed' override & not save screenshot on fail
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension:
-            fail: false
-            filenamePatternFailed: "{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line:%03d}.{ext}"
+            on_failed: false
+            filename_pattern_failed: "{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line:%03d}.{ext}"
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -231,7 +245,7 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6\.html" should not exist
 
   Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_PURGE set to '1' which will purge files between
-    runs and env variable BEHAT_SCREENSHOT_DIR set to 'screenshots_custom'.
+  runs and env variable BEHAT_SCREENSHOT_DIR set to 'screenshots_custom'.
     Given screenshot context behat configuration with value:
       """
       DrevOps\BehatScreenshotExtension: ~
@@ -347,7 +361,7 @@ Feature: Screenshot context
 
           DrevOps\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
-            fail: true
+            on_failed: true
             purge: true
             info_types:
               - url

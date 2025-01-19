@@ -73,7 +73,7 @@ class ScreenshotContextTest extends TestCase {
       TRUE,
       'failed_',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       []
     );
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['iSaveScreenshot']);
@@ -82,7 +82,7 @@ class ScreenshotContextTest extends TestCase {
       TRUE,
       'failed_',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
     );
     $screenshot_context->expects($this->once())->method('iSaveScreenshot');
@@ -149,7 +149,7 @@ class ScreenshotContextTest extends TestCase {
       TRUE,
       'failed_',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
     );
     $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
@@ -173,51 +173,20 @@ class ScreenshotContextTest extends TestCase {
     ];
   }
 
-  /**
-   * Test make file name.
-   *
-   * @param string $ext
-   *   Ext.
-   * @param mixed $filename
-   *   Filename.
-   * @param bool $fail
-   *   Fail.
-   * @param mixed $url
-   *   URL.
-   * @param int $current_time
-   *   Current time.
-   * @param string $step_text
-   *   Step text.
-   * @param int $step_line
-   *   Step line.
-   * @param string $feature_file
-   *   Feature file.
-   * @param string $fail_prefix
-   *   Fail prefix.
-   * @param string $file_name_pattern
-   *   File name pattern.
-   * @param string $file_name_pattern_failed
-   *   File name pattern failed.
-   * @param string $filename_expected
-   *   File name expected.
-   *
-   * @throws \PHPUnit\Framework\MockObject\Exception
-   * @throws \ReflectionException
-   */
   #[DataProvider('makeFileNameProvider')]
   public function testMakeFileName(
     string $ext,
     mixed $filename,
-    bool $fail,
+    bool $on_failed,
     mixed $url,
     int $current_time,
     string $step_text,
     int $step_line,
     string $feature_file,
-    string $fail_prefix,
-    string $file_name_pattern,
-    string $file_name_pattern_failed,
-    string $filename_expected,
+    string $failed_prefix,
+    string $filename_pattern,
+    string $filename_pattern_failed,
+    string $expected,
   ): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getBeforeStepScope',
@@ -225,6 +194,7 @@ class ScreenshotContextTest extends TestCase {
       'getCurrentTime',
     ]);
     $session = $this->createMock(Session::class);
+
     if ($url instanceof \Exception) {
       $session->method('getCurrentUrl')->willThrowException($url);
     }
@@ -245,18 +215,19 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context->setScreenshotParameters(
       'test-dir',
-      $fail,
-      $fail_prefix,
-      $file_name_pattern,
-      $file_name_pattern_failed,
+      $on_failed,
+      $failed_prefix,
+      $filename_pattern,
+      $filename_pattern_failed,
       [],
     );
 
     $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
     $method = $screenshot_context_reflection->getMethod('makeFileName');
     $method->setAccessible(TRUE);
-    $filename_processed = $method->invokeArgs($screenshot_context, [$ext, $filename, $fail]);
-    $this->assertEquals($filename_expected, $filename_processed);
+    $filename_processed = $method->invokeArgs($screenshot_context, [$ext, $filename, $on_failed]);
+
+    $this->assertEquals($expected, $filename_processed);
   }
 
   public static function makeFileNameProvider(): array {
@@ -272,7 +243,7 @@ class ScreenshotContextTest extends TestCase {
         'test-feature-file',
         'failed_',
         '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.test-feature-file.feature_12.html',
       ],
       [
@@ -286,7 +257,7 @@ class ScreenshotContextTest extends TestCase {
         'test-feature-file',
         'failed_',
         '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
       ],
       [
@@ -300,7 +271,7 @@ class ScreenshotContextTest extends TestCase {
         'test-feature-file',
         'failed_',
         '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
       ],
       [
@@ -314,7 +285,7 @@ class ScreenshotContextTest extends TestCase {
         'test-feature-file',
         'failed_',
         '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.failed_test-feature-file.feature_12.png',
       ],
       [
@@ -328,7 +299,7 @@ class ScreenshotContextTest extends TestCase {
         'test-feature-file',
         'failed_',
         '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-        '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
       ],
     ];

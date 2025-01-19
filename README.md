@@ -1,9 +1,9 @@
-<p align="center">
+<div align="center">
   <a href="" rel="noopener">
   <img width=200px height=200px src="https://placehold.jp/000000/ffffff/200x200.png?text=Behat+screenshot&css=%7B%22border-radius%22%3A%22%20100px%22%7D" alt="Behat screenshot logo"></a>
-</p>
+</div>
 
-<h1 align="center">Behat Screenshot Extension</h1>
+<h1 align="center">Behat extension to create screenshots</h1>
 
 <div align="center">
 
@@ -21,23 +21,14 @@
 
 ---
 
-<p align="center"> Behat extension and step definitions to create HTML and image screenshots on demand or when tests fail.
-    <br>
-</p>
-
 ## Features
 
-* Create a screenshot using `I save screenshot` or `save screenshot` step
-  definition.
-* Create a screenshot when test fails.
-* Screenshot is saved as HTML page for Goutte driver.
-* Screenshot is saved as both HTML and PNG image for Selenium driver.
-* Screenshot directory can be specified through environment
-  variable `BEHAT_SCREENSHOT_DIR` (useful for CI systems to override values
-  in `behat.yml`).
-* Screenshots can be purged after every test run by setting `purge: true` (
-  useful during test debugging) or setting environment
-  variable `BEHAT_SCREENSHOT_PURGE=1`.
+* Captures a screenshot using the `I save screenshot` step.
+* Automatically captures a screenshot when a test fails.
+* Supports both HTML and PNG screenshots.
+* Configurable screenshot directory.
+* Automatically purges screenshots after each test run.
+* Adds configurable additional information to screenshots.
 
 ## Installation
 
@@ -72,93 +63,140 @@ default:
   extensions:
     DrevOps\BehatScreenshotExtension:
       dir: '%paths.base%/screenshots'
-      fail: true
-      fail_prefix: 'failed_'
+      on_failed: true
       purge: false
-      filenamePattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
-      filenamePatternFailed: '{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}'
+      failed_prefix: 'failed_'
+      filename_pattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
+      filename_pattern_failed: '{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
 ```
 
 In your feature:
 
 ```gherkin
-  Given I am on "http://google.com"
+Given I am on "http://google.com"
 Then I save screenshot
 ```
 
-You may optionally specify size of browser window in the screenshot step:
+You may optionally specify the size of the browser window in the screenshot
+step:
 
 ```gherkin
-  Then I save 1440 x 900 screenshot
-And I save 800 x 600 screenshot
+Then I save 1440 x 900 screenshot
+```
+
+or a file name:
+
+```gherkin
+Then I save screenshot to "my_screenshot.png"
 ```
 
 ## Options
 
-| Name                    | Default value                                                        | Description                                                                                                                                        |
-|-------------------------|----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `dir`                   | `%paths.base%/screenshots`                                           | Path to directory to save screenshots. Directory structure will be created if the directory does not exist.                                        |
-| `fail`                  | `true`                                                               | Capture screenshot on test failure.                                                                                                                |
-| `fail_prefix`           | `failed_`                                                            | Prefix failed screenshots with `fail_` string. Useful to distinguish failed and intended screenshots.                                              |
-| `purge`                 | `false`                                                              | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                |
-| `info_types`            | `url`, `feature`, `step`, `datetime`                                 | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed. |
-| `filenamePattern`       | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`              | File name pattern for successful assertions.                                                                                                       |
-| `filenamePatternFailed` | `{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                           |
-| `filenamePatternFailed` | `{datetime:u}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                           |
+| Name                      | Default value                                                          | Description                                                                                                                                               |
+|---------------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dir`                     | `%paths.base%/screenshots`                                             | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. Override with `BEHAT_SCREENSHOT_DIR` env var. |
+| `on_failed`               | `true`                                                                 | Capture screenshot on failed test.                                                                                                                        |
+| `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                       |
+| `info_types`              | `url`, `feature`, `step`, `datetime`                                   | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed.        |
+| `failed_prefix`           | `failed_`                                                              | Prefix failed screenshots with `failed_` string. Useful to distinguish failed and intended screenshots.                                                   |
+| `filename_pattern`        | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`                | File name pattern for successful assertions.                                                                                                              |
+| `filename_pattern_failed` | `{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                                  |
 
-### Supported tokens
+### File name tokens
 
-| Token              | Substituted with                                                                | Example value(s)                                                                                         |
-|--------------------|---------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| `{ext}`            | The extension of the file captured                                              | `html` or `png`                                                                                          |
-| `{fail_prefix}`    | The value of fail_prefix from configuration                                     | `failed_`, `error_` (do include the `_` suffix, if required)                                             |
-| `{url}`            | Full URL                                                                        | `http_example_com_mypath_subpath__query__myquery_1_plus_2_plus_3_and_another1_4__fragment__somefragment` |
-| `{url_origin}`     | Scheme with domain                                                              | `http_example_com`                                                                                       |
-| `{url_relative}`   | Path + query + fragment                                                         | `mypath_subpath__query__myquery_1_plus_2_plus_3_and_another1_4__fragment__somefragment`                  |
-| `{url_domain}`     | Domain                                                                          | `example_com`                                                                                            |
-| `{url_path}`       | Path                                                                            | `mypath_subpath`                                                                                         |
-| `{url_query}`      | Query                                                                           | `myquery_1_plus_2_plus_3_and_another1_4`                                                                 |
-| `{url_fragment}`   | Fragment                                                                        | `somefragment`                                                                                           |
-| `{feature_file}`   | The filename of the `.feature` file currently being executed, without extension | `my_example.feature` -> `my_example`                                                                     |
-| `{step_line}`      | Step line number                                                                | `1`, `10`, `100`                                                                                         |
-| `{step_line:%03d}` | Step line number with leading zeros. Modifiers are from `sprintf()`.            | `001`, `010`, `100`                                                                                      |
-| `{step_name}`      | Step name without `Given/When/Then` and lower-cased.                            | `i_am_on_the_test_page`                                                                                  |
-| `{datetime}`       | Current date and time. defaults to `Ymd_His` format.                            | `20010310_171618`                                                                                        |
-| `{datetime:U}`     | Current date and time as microtime. Modifiers are from `date()`.                | `1697490961192498`                                                                                       |
+| Token              | Substituted with                                                                | Example value(s)                                                  |
+|--------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| `{ext}`            | The extension of the file captured                                              | `html` or `png`                                                   |
+| `{failed_prefix}`  | The value of failed_prefix from configuration                                   | `failed_`, `error_` (do include the `_` suffix, if required)      |
+| `{url}`            | Full URL                                                                        | `http_example_com_mypath_subpath_query_myquery_1_plus_2_fragment` |
+| `{url_origin}`     | Scheme with domain                                                              | `http_example_com`                                                |
+| `{url_relative}`   | Path + query + fragment                                                         | `mypath_subpath_query_myquery_1_plus_2_fragment`                  |
+| `{url_domain}`     | Domain                                                                          | `example_com`                                                     |
+| `{url_path}`       | Path                                                                            | `mypath_subpath`                                                  |
+| `{url_query}`      | Query                                                                           | `myquery_1_plus_2`                                                |
+| `{url_fragment}`   | Fragment                                                                        | `somefragment`                                                    |
+| `{feature_file}`   | The filename of the `.feature` file currently being executed, without extension | `my_example.feature` -> `my_example`                              |
+| `{step_line}`      | Step line number                                                                | `1`, `10`, `100`                                                  |
+| `{step_line:%03d}` | Step line number with leading zeros. Modifiers are from `sprintf()`.            | `001`, `010`, `100`                                               |
+| `{step_name}`      | Step name without `Given/When/Then` and lower-cased.                            | `i_am_on_the_test_page`                                           |
+| `{datetime}`       | Current date and time. defaults to `Ymd_His` format.                            | `20010310_171618`                                                 |
+| `{datetime:U}`     | Current date and time as microtime. Modifiers are from `date()`.                | `1697490961192498`                                                |
+
+## Auto-purge
+
+By default, the `purge` option is disabled. This means that the screenshot
+directory will not be cleared after each test run. This is useful when you want
+to keep the screenshots for debugging purposes.
+
+If you want to clear the directory after each test run, you can enable the
+`purge` option in the configuration.
+
+```yaml
+default:
+  extensions:
+    DrevOps\BehatScreenshotExtension:
+      purge: true
+```
+
+Alternatively, you can use `BEHAT_SCREENSHOT_PURGE` environment variable to
+enable the auto-purge feature for a specific test run.
+
+```shell
+BEHAT_SCREENSHOT_PURGE=1 vendor/bin/behat
+```
+
+## Additional information on screenshots
+
+You can enable additional information on screenshots by setting `info_types` in
+the configuration. The order of the types will be the order of the information
+displayed on the screenshot.
+
+By default, the information displayed is the URL, feature file name, step line:
+
+```html
+Current URL: http://example.com<br/>
+Feature: My feature<br/>
+Step: I save screenshot (line 8)<br/>
+Datetime: 2025-01-19 00:01:10
+<hr/>
+<!DOCTYPE html>
+<html>
+...
+</html>
+```
+
+More information can be added by setting the `info_types` configuration option
+and using `addInfo()` method in your context class.
+
+```php
+/**
+ * @BeforeScenario
+ */
+public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
+  $environment = $scope->getEnvironment();
+  if ($environment instanceof InitializedContextEnvironment) {
+    foreach ($environment->getContexts() as $context) {
+      if ($context instanceof ScreenshotContext) {
+        $context->addInfo('Custom info', 'My custom info');
+      }
+    }
+  }
+}
+```
 
 ## Maintenance
 
-### Local development setup
-
-### Install dependencies.
-
 ```shell
 composer install
-```
-
-### Lint code
-
-```shell
 composer lint
-```
-
-### Fix code style
-
-```shell
 composer lint-fix
+composer test-unit
+composer test-bdd
 ```
 
-### Run tests
+### BDD tests
 
-#### Unit tests
-
-```shell
-composer test-unit # Run unit tests.
-```
-
-#### BDD tests
-
-We have tests for Selenium and Headless drivers. Selenium requires a Docker
+There are tests for Selenium and Headless drivers. Selenium requires a Docker
 container and headless requires a Chromium browser (we will make this more
 streamlined in the future).
 

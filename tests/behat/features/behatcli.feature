@@ -49,7 +49,7 @@ Feature: Behat CLI context
             selenium2: ~
             base_url: http://0.0.0.0:8888
       """
-      And a file named "tests/behat/fixtures/screenshot.html" with:
+    And a file named "tests/behat/fixtures/screenshot.html" with:
       """
       <!DOCTYPE html>
         <html>

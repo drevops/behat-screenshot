@@ -19,36 +19,36 @@ class BehatScreenshotExtensionTest extends TestCase {
 
   public function testGetConfigKey(): void {
     $extension = new BehatScreenshotExtension();
-    $this->assertEquals('drevops_screenshot', $extension->getConfigKey());
+    $this->assertEquals('drevops_behat_screenshot', $extension->getConfigKey());
   }
 
   public function testLoad(): void {
     $container = new ContainerBuilder();
     $config = [
       'dir' => '%paths.base%/screenshots',
-      'fail' => TRUE,
-      'fail_prefix' => 'failed_',
+      'on_failed' => TRUE,
+      'failed_prefix' => 'failed_',
       'purge' => FALSE,
-      'filenamePattern' => '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      'filenamePatternFailed' => '{datetime:U}.{fail_prefix}{feature_file}.feature_{step_line}.{ext}',
+      'filename_pattern' => '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
+      'filename_pattern_failed' => '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       'info_types' => FALSE,
     ];
 
     $extension = new BehatScreenshotExtension();
     $extension->load($container, $config);
 
-    $this->assertTrue($container->hasDefinition('drevops_screenshot.screenshot_context_initializer'));
+    $this->assertTrue($container->hasDefinition('drevops_behat_screenshot.screenshot_context_initializer'));
 
-    $definition = $container->getDefinition('drevops_screenshot.screenshot_context_initializer');
+    $definition = $container->getDefinition('drevops_behat_screenshot.screenshot_context_initializer');
     $this->assertEquals(ScreenshotContextInitializer::class, $definition->getClass());
     $this->assertEquals(
       [
         $config['dir'],
-        $config['fail'],
-        $config['fail_prefix'],
+        $config['on_failed'],
+        $config['failed_prefix'],
         $config['purge'],
-        $config['filenamePattern'],
-        $config['filenamePatternFailed'],
+        $config['filename_pattern'],
+        $config['filename_pattern_failed'],
         $config['info_types'],
       ],
       $definition->getArguments()

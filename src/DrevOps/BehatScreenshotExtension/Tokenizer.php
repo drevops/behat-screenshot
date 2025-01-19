@@ -118,10 +118,14 @@ class Tokenizer {
    *   Token replacement.
    */
   protected static function buildTokenReplacement(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    $method = 'replace' . ucfirst($name) . 'Token';
-
+    $method = 'replace' . str_replace('_', '', ucwords($name, '_')) . 'Token';
     if (is_callable([self::class, $method])) {
-      $token = self::$method($token, $name, $qualifier, $format, $data);
+      return self::$method($token, $name, $qualifier, $format, $data);
+    }
+
+    $method = 'replace' . str_replace('_', '', ucwords($name . '_' . $qualifier, '_')) . 'Token';
+    if (is_callable([self::class, $method])) {
+      return self::$method($token, $name, $qualifier, $format, $data);
     }
 
     return $token;
@@ -230,10 +234,10 @@ class Tokenizer {
   }
 
   /**
-   * Replace {fail} token.
+   * Replace {failed_prefix} token.
    */
-  protected static function replaceFailToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    return !empty($data['fail_prefix']) && is_string($data['fail_prefix']) ? $data['fail_prefix'] : $token;
+  protected static function replaceFailedPrefixToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
+    return !empty($data['failed_prefix']) && is_string($data['failed_prefix']) ? $data['failed_prefix'] : $token;
   }
 
 }
