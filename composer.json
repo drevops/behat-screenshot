@@ -34,7 +34,7 @@
         "mikey179/vfsstream": "^1.6",
         "opis/closure": "^4.0",
         "phpstan/phpstan": "^2",
-        "phpunit/phpunit": "^11",
+        "phpunit/phpunit": "^12",
         "rector/rector": "^2",
         "symfony/process": "^6.4 || ^7.0"
     },
