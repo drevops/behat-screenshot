@@ -22,7 +22,7 @@ trait ScreenshotTrait {
    */
   public function screenshotInitParams(array $parameters): void {
     if (getenv('BEHAT_SCREENSHOT_DIR')) {
-      $this->screenshotDir = getenv('BEHAT_SCREENSHOT_DIR');
+      $this->screenshotDir = (string) getenv('BEHAT_SCREENSHOT_DIR');
     }
     elseif (isset($parameters['screenshot_dir'])) {
       $this->screenshotDir = $parameters['screenshot_dir'];
