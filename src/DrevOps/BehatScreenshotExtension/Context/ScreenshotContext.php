@@ -361,7 +361,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       // @codeCoverageIgnoreStart
       $host = parse_url($url, PHP_URL_HOST);
       if ($host) {
-        $url = str_replace($host, getenv('BEHAT_SCREENSHOT_TOKEN_HOST'), $url);
+        $url = str_replace($host, (string) getenv('BEHAT_SCREENSHOT_TOKEN_HOST'), $url);
       }
       // @codeCoverageIgnoreEnd
     }
