@@ -20,7 +20,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
   /**
    * Extension configuration ID.
    */
-  const MOD_ID = 'drevops_behat_screenshot';
+  public const MOD_ID = 'drevops_behat_screenshot';
 
   /**
    * {@inheritdoc}
