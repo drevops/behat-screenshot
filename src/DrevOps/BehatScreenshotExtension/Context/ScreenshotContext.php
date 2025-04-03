@@ -236,9 +236,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function saveScreenshotContent(string $filename, string $content): void {
     (new Filesystem())->mkdir($this->dir, 0755);
-    $success = file_put_contents($this->dir . DIRECTORY_SEPARATOR . $filename, $content);
+    $file_path = $this->dir . DIRECTORY_SEPARATOR . $filename;
+    $success = file_put_contents($file_path, $content);
     if ($success === FALSE) {
-      throw new \RuntimeException(sprintf('Failed to save screenshot to %s', $filename));
+      // @codeCoverageIgnoreStart
+      throw new \RuntimeException(sprintf('Failed to save screenshot to %s. Check permissions and disk space.', $file_path));
+      // @codeCoverageIgnoreEnd
     }
   }
 

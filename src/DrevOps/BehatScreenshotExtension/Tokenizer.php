@@ -33,13 +33,10 @@ class Tokenizer {
 
     // Move {step_name} token to the last position as it may contain other
     // tokens.
-    foreach ($replacements as $name => $value) {
-      if ($name === '{step_name}') {
-        $replaced = [$name => $value];
-        unset($replacements[$name]);
-        $replacements = array_merge($replacements, $replaced);
-        break;
-      }
+    if (isset($replacements['{step_name}'])) {
+      $step_name_value = $replacements['{step_name}'];
+      unset($replacements['{step_name}']);
+      $replacements['{step_name}'] = $step_name_value;
     }
 
     return strtr($text, $replacements);
