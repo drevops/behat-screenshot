@@ -282,12 +282,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected function compileInfo(): void {
     foreach ($this->infoTypes as $type) {
       if ($type === 'url') {
-        $current_url = 'not available';
         try {
           $current_url = $this->getSession()->getCurrentUrl();
         }
         catch (\Exception) {
-          // Do nothing.
+          $current_url = 'not available';
         }
 
         $this->appendInfo('Current URL', $current_url);
