@@ -59,9 +59,9 @@ class ScreenshotContextInitializer implements ContextInitializer {
       $dir = getenv('BEHAT_SCREENSHOT_DIR') ?: $this->dir;
 
       if ((getenv('BEHAT_SCREENSHOT_PURGE') || $this->purge) && $this->needsPurging) {
-        $fs = new Filesystem();
+        $fs = $this->getFilesystem();
         if ($fs->exists($dir)) {
-          $fs->remove((new Finder())->files()->in($dir));
+          $fs->remove($this->getFinder()->files()->in($dir));
         }
         $this->needsPurging = FALSE;
       }
@@ -75,6 +75,30 @@ class ScreenshotContextInitializer implements ContextInitializer {
         $this->infoTypes
       );
     }
+  }
+
+  /**
+   * Get filesystem instance.
+   *
+   * @return \Symfony\Component\Filesystem\Filesystem
+   *   Filesystem instance.
+   */
+  protected function getFilesystem(): Filesystem {
+    // @codeCoverageIgnoreStart
+    return new Filesystem();
+    // @codeCoverageIgnoreEnd
+  }
+
+  /**
+   * Get finder instance.
+   *
+   * @return \Symfony\Component\Finder\Finder
+   *   Finder instance.
+   */
+  protected function getFinder(): Finder {
+    // @codeCoverageIgnoreStart
+    return new Finder();
+    // @codeCoverageIgnoreEnd
   }
 
 }
