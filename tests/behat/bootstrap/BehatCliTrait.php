@@ -94,40 +94,70 @@ trait BehatCliTrait {
 <?php
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Context\Environment\InitializedContextEnvironment;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\MinkExtension\Context\MinkContext;
+use Behat\MinkExtension\Context\RawMinkContext;
 
 {{USE_DECLARATION}}
 
 class FeatureContextTest extends MinkContext implements Context {
   {{USE_IN_CLASS}}
 
-   /**
-    * FeatureContext constructor.
-    *
-    * @param array $parameters Array of parameters from config.
-    */
-   public function __construct($parameters)
-   {
-       $this->screenshotInitParams($parameters);
-   }
+  /**
+   * Base URL for JavaScript scenarios.
+   */
+  protected string $javascriptBaseUrl;
 
-   /**
-    * Go to the phpserver test page.
-    *
-    * @Given /^(?:|I )am on (?:|the )phpserver test page$/
-    * @When /^(?:|I )go to (?:|the )phpserver test page$/
-    */
-   public function goToPhpServerTestPage()
-   {
-       $this->getSession()->visit('http://0.0.0.0:8888/screenshot.html');
-   }
+  /**
+   * FeatureContext constructor.
+   *
+   * @param array $parameters Array of parameters from config.
+   */
+  public function __construct($parameters) {
+    $this->screenshotInitParams($parameters);
 
-   /**
-    * @Given I throw test exception with message :message
-    */
-   public function throwTestException($message) {
-     throw new \RuntimeException($message);
-   }
+    // Set the screenshot token host to override any real host.
+    putenv('BEHAT_SCREENSHOT_TOKEN_HOST=example.com');
+    // Set the JavaScript override base URL.
+    $this->javascriptBaseUrl = getenv('BEHAT_JAVASCRIPT_BASE_URL') ?: 'http://host.docker.internal:8888';
+  }
+
+  /**
+   * Update base URL for JavaScript scenarios.
+   *
+   * @BeforeScenario
+   */
+  public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
+    if ($scope->getScenario()->hasTag('javascript') && !$scope->getScenario()->hasTag('skip-base-url-rewrite')) {
+      $environment = $scope->getEnvironment();
+      if ($environment instanceof InitializedContextEnvironment) {
+        foreach ($environment->getContexts() as $context) {
+          if ($context instanceof RawMinkContext) {
+            $context->setMinkParameter('base_url', $this->javascriptBaseUrl);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Go to the phpserver test page.
+   *
+   * @Given /^(?:|I )am on (?:|the )phpserver test page$/
+   * @When /^(?:|I )go to (?:|the )phpserver test page$/
+   */
+  public function goToPhpServerTestPage()
+  {
+    $this->visitPath('/screenshot.html');
+  }
+
+  /**
+   * @Given I throw test exception with message :message
+   */
+  public function throwTestException($message) {
+    throw new \RuntimeException($message);
+  }
 
 }
 EOL;
@@ -212,7 +242,7 @@ default:
     Behat\MinkExtension:
       browserkit_http: ~
       selenium2: ~
-      base_url: http://nginx:8080
+      base_url: http://0.0.0.0:8888
 EOL;
 
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
@@ -241,8 +271,25 @@ default:
   extensions:
     Behat\MinkExtension:
       browserkit_http: ~
-      selenium2: ~
       base_url: http://0.0.0.0:8888
+      browser_name: chrome
+      javascript_session: selenium2
+      selenium2:
+        wd_host: "http://localhost:4444/wd/hub"
+        capabilities:
+          browser: chrome
+          extra_capabilities:
+            "goog:chromeOptions":
+              args:
+                - '--disable-gpu'            # Disables hardware acceleration required in containers and cloud-based instances (like CI runners) where GPU is not available.
+                # Options to increase stability and speed.
+                - '--disable-extensions'     # Disables all installed Chrome extensions. Useful in testing environments to avoid interference from extensions.
+                - '--disable-infobars'       # Hides the infobar that Chrome displays for various notifications, like warnings when opening multiple tabs.
+                - '--disable-popup-blocking' # Disables the popup blocker, allowing all popups to appear. Useful in testing scenarios where popups are expected.
+                - '--disable-translate'      # Disables the built-in translation feature, preventing Chrome from offering to translate pages.
+                - '--no-first-run'           # Skips the initial setup screen that Chrome typically shows when running for the first time.
+                - '--test-type'              # Disables certain security features and UI components that are unnecessary for automated testing, making Chrome more suitable for test environments.
+
 EOL;
 
     $content .= PHP_EOL . '    ' . trim((string) $value);
@@ -259,19 +306,45 @@ EOL;
    */
   public function behatCliWriteScreenshotFixture(): void {
     $filename = 'tests/behat/fixtures/screenshot.html';
+    $src = __DIR__ . '/../fixtures/screenshot.html';
 
-    $content = <<<'EOL'
-<!DOCTYPE html>
-  <html>
-  <head>
-    <title>Test page</title>
-  </head>
-  <body style="background-color: blue;">
-  Test page
-  </body>
-</html>
-EOL;
-    $this->createFile($this->workingDir . '/' . $filename, $content);
+    $this->createFile($this->workingDir . '/' . $filename, file_get_contents($src));
+  }
+
+  /**
+   * @Given short screenshot fixture
+   */
+  public function behatCliWriteScreenshotShortFixture(): void {
+    $filename = 'tests/behat/fixtures/screenshot.html';
+    $src = __DIR__ . '/../fixtures/screenshot_short.html';
+
+    $this->createFile($this->workingDir . '/' . $filename, file_get_contents($src));
+  }
+
+  /**
+   * @Given screenshot test context:
+   */
+  public function behatCliWriteScreenshotTestContext(PyStringNode $content): void {
+    $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/bootstrap/FullscreenTestContext.php';
+    $this->createFile($filename, $content);
+
+    if (static::behatCliIsDebug()) {
+      static::behatCliPrintFileContents($filename, 'FullscreenTestContext');
+    }
+
+    // Update the behat.yml to include this context.
+    $behatYmlPath = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
+    if (file_exists($behatYmlPath)) {
+      $behatYml = file_get_contents($behatYmlPath);
+      if (strpos($behatYml, 'FullscreenTestContext') === FALSE) {
+        $behatYml = str_replace(
+          'ScreenshotContext',
+          "ScreenshotContext\n        - FullscreenTestContext",
+          $behatYml
+        );
+        file_put_contents($behatYmlPath, $behatYml);
+      }
+    }
   }
 
   /**

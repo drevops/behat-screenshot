@@ -9,6 +9,8 @@ default:
       dir: %paths.base%/screenshots
       on_failed: true
       purge: false
+      always_fullscreen: false
+      fullscreen_algorithm: stitch # 'stitch' (only if GD ext available) or 'resize'
       info_types:
         - url
         - feature

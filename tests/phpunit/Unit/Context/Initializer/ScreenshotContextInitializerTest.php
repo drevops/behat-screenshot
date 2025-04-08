@@ -29,6 +29,8 @@ class ScreenshotContextInitializerTest extends TestCase {
       TRUE,
       'failed_',
       TRUE,
+      TRUE,
+      'stitch',
       '{datetime:U}.{ext}',
       '{datetime:U}.{failed_prefix}{ext}',
       []
@@ -52,6 +54,8 @@ class ScreenshotContextInitializerTest extends TestCase {
         'screenshots',
         TRUE,
         'failed_',
+        TRUE,
+        'stitch',
         '{datetime:U}.{ext}',
         '{datetime:U}.{failed_prefix}{ext}',
         []
@@ -61,8 +65,10 @@ class ScreenshotContextInitializerTest extends TestCase {
       'screenshots',
       TRUE,
       'failed_',
-    // don't purge.
+      // don't purge.
       FALSE,
+      TRUE,
+      'stitch',
       '{datetime:U}.{ext}',
       '{datetime:U}.{failed_prefix}{ext}',
       []
@@ -86,10 +92,12 @@ class ScreenshotContextInitializerTest extends TestCase {
       $context->expects($this->once())
         ->method('setScreenshotParameters')
         ->with(
-      // From ENV.
+          // From ENV.
           'custom-screenshots-dir',
           TRUE,
           'failed_',
+          TRUE,
+          'stitch',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           []
@@ -122,8 +130,10 @@ class ScreenshotContextInitializerTest extends TestCase {
           'screenshots',
           TRUE,
           'failed_',
-      // Not used due to ENV override.
+          // Not used due to ENV override.
           FALSE,
+          TRUE,
+          'stitch',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           [],
@@ -144,6 +154,8 @@ class ScreenshotContextInitializerTest extends TestCase {
           'custom-screenshots-dir',
           TRUE,
           'failed_',
+          TRUE,
+          'stitch',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           []

@@ -31,6 +31,10 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *   File name prefix for a failed test.
    * @param bool $purge
    *   Purge dir before start script.
+   * @param bool $alwaysFullscreen
+   *   Always take fullscreen screenshots.
+   * @param string $fullscreenAlgorithm
+   *   Algorithm to use for fullscreen screenshots ('stitch' or 'resize').
    * @param string $filenamePattern
    *   File name pattern.
    * @param string $filenamePatternFailed
@@ -45,6 +49,8 @@ class ScreenshotContextInitializer implements ContextInitializer {
     protected bool $onFailed,
     private readonly string $failedPrefix,
     protected bool $purge,
+    protected bool $alwaysFullscreen,
+    protected string $fullscreenAlgorithm,
     protected string $filenamePattern,
     protected string $filenamePatternFailed,
     protected array $infoTypes = [],
@@ -70,6 +76,8 @@ class ScreenshotContextInitializer implements ContextInitializer {
         $dir,
         $this->onFailed,
         $this->failedPrefix,
+        $this->alwaysFullscreen,
+        $this->fullscreenAlgorithm,
         $this->filenamePattern,
         $this->filenamePatternFailed,
         $this->infoTypes

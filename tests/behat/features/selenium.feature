@@ -14,6 +14,20 @@ Feature: Selenium screenshots
     When save 1440 x 900 screenshot
     And file wildcard "*.selenium.feature_14.html" should exist
 
+  @phpserver @javascript @fullscreen
+  Scenario: Capture a fullscreen screenshot using Selenium driver
+    Given I am on the screenshot test page
+    When save fullscreen screenshot
+    Then file wildcard "*.selenium.feature_20.html" should exist
+    Then file wildcard "*.selenium.feature_20.png" should exist
+
+  @phpserver @javascript @fullscreen
+  Scenario: Capture a fullscreen screenshot with name using Selenium driver
+    Given I am on the screenshot test page
+    When I save fullscreen screenshot with name "fullscreen-selenium-screenshot"
+    Then file wildcard "fullscreen-selenium-screenshot.html" should exist
+    And file wildcard "fullscreen-selenium-screenshot.png" should exist
+
   @phpserver @javascript
   Scenario: Capture a screenshot with name using Selenium driver with a custom name
     Given I am on the screenshot test page

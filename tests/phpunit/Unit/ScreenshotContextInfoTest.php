@@ -66,6 +66,8 @@ class ScreenshotContextInfoTest extends TestCase {
       sys_get_temp_dir(),
       TRUE,
       'failed_',
+      FALSE,
+      'stitch',
       '{datetime:U}.test.{ext}',
       '{datetime:U}.{failed_prefix}test.{ext}',
       $info_types
@@ -109,6 +111,8 @@ class ScreenshotContextInfoTest extends TestCase {
       sys_get_temp_dir(),
       TRUE,
       'failed_',
+      FALSE,
+      'stitch',
       '{datetime:U}.test.{ext}',
       '{datetime:U}.{failed_prefix}test.{ext}',
       ['url']
@@ -156,7 +160,7 @@ class ScreenshotContextInfoTest extends TestCase {
     // Expect saveScreenshotContent to be called exactly once (for HTML only)
     $screenshot_context->expects($this->exactly(1))->method('saveScreenshotContent');
 
-    $screenshot_context->iSaveScreenshot();
+    $screenshot_context->screenshot();
   }
 
   /**
@@ -209,6 +213,8 @@ class ScreenshotContextInfoTest extends TestCase {
         'test-dir',
         FALSE,
         'failed_',
+        FALSE,
+        'stitch',
         '{url}.{ext}',
         '{failed_prefix}{url}.{ext}',
         []
