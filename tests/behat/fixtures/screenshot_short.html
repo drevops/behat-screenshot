@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test page for screenshots</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px;
+      color: white;
+    }
+
+    p {
+      margin: 0;
+      padding: 20px;
+      font-size: 18px;
+      color: white;
+    }
+
+    .section {
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .marker {
+      position: absolute;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Section background */
+    #section-1 {
+      background-color: #3498db;
+    }
+
+    /* Checkerboard pattern overlay */
+    .section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.15) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.15) 75%);
+      background-size: 40px 40px;
+      background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Section number indicator */
+    .section-number {
+      left: 70px;
+      font-size: 32px;
+      font-weight: bold;
+      color: white;
+      padding: 30px;
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 50%;
+      z-index: 3;
+    }
+  </style>
+</head>
+<body>
+<div id="section-1" class="section">
+  <span class="section-number">1</span>
+  <span class="marker">TEST</span>
+  <h1>Screenshot Test Section</h1>
+  <p>This is a simple test page for capturing screenshots. It features a blue background with a checkerboard pattern overlay.</p>
+</div>
+</body>
+</html>

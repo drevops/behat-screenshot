@@ -23,6 +23,9 @@ composer test       # Run PHPUnit tests without coverage
 - Coverage reports are generated in .logs/coverage directory
 
 ## Recent Improvements
+- Added support for fullscreen screenshots with two algorithms:
+  - Stitch algorithm (default): Takes multiple screenshots while scrolling and stitches them together
+  - Resize algorithm: Temporarily resizes browser window to capture full page
 - Updated autoloader from PSR-0 to PSR-4
 - Made constants public as per PHP 8.2+ standards
 - Improved error messages for file operations
@@ -34,7 +37,7 @@ composer test       # Run PHPUnit tests without coverage
 The Behat Screenshot extension provides functionality to capture screenshots during Behat test runs. Its main components are:
 
 1. **BehatScreenshotExtension**: Handles configuration and service container integration
-2. **ScreenshotContext**: Provides Behat steps and screenshot capabilities
+2. **ScreenshotContext**: Provides Behat steps and screenshot capabilities, including fullscreen screenshot functionality with both stitch and resize algorithms
 3. **Tokenizer**: Processes dynamic filename generation with tokens
 
 ## Best Practices for Contributing

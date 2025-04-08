@@ -1,9 +1,323 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Test page</title>
+  <title>Test page for screenshots</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px;
+      color: white;
+    }
+
+    p {
+      margin: 0;
+      padding: 20px;
+      font-size: 18px;
+      color: white;
+    }
+
+    .section {
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-top: 1px solid white;
+      border-bottom: 1px solid black;
+      position: relative;
+    }
+
+    .marker {
+      position: absolute;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Section backgrounds with checkerboard pattern */
+    #section-1 {
+      background-color: #3498db;
+    }
+
+    #section-2 {
+      background-color: #e74c3c;
+    }
+
+    #section-3 {
+      background-color: #2ecc71;
+    }
+
+    #section-4 {
+      background-color: #f39c12;
+    }
+
+    #section-5 {
+      background-color: #9b59b6;
+    }
+
+    #section-6 {
+      background-color: #34495e;
+    }
+
+    #section-7 {
+      background-color: #16a085;
+    }
+
+    /* Checkerboard pattern overlay for all sections */
+    .section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.15) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.15) 75%);
+      background-size: 40px 40px;
+      background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Stitching border indicators */
+    .section::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background: repeating-linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.3) 0px,
+        rgba(0, 0, 0, 0.3) 20px,
+      );
+      z-index: 2;
+    }
+
+    .section::after {
+      bottom: 0;
+    }
+
+    /* Section number indicators that should align when stitched */
+    .section-number {
+      left: 70px;
+      font-size: 32px;
+      font-weight: bold;
+      color: white;
+      padding: 30px;
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 50%;
+      z-index: 3;
+    }
+
+    /* Row numbers for the grid */
+    .grid-row {
+      position: absolute;
+      left: 0;
+      height: 40px;
+      width: 100%;
+      z-index: 3;
+      pointer-events: none;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
+    }
+
+    .row-number {
+      position: absolute;
+      left: 10px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      font-weight: bold;
+      border-radius: 50%;
+      z-index: 3;
+    }
+  </style>
 </head>
-<body style="background-color: green;">
-Test page
+<body>
+<div id="section-1" class="section">
+  <span class="section-number">1</span>
+  <span class="marker">TOP</span>
+  <h1>Section 1 - Blue</h1>
+  <p>This is the first section of a very tall page. It's designed to be taller than a typical browser viewport to test fullscreen screenshots.</p>
+
+  <!-- Row numbers for section 1 -->
+  <div class="grid-row" style="top: 0px;"><span class="row-number">1</span></div>
+  <div class="grid-row" style="top: 40px;"><span class="row-number">2</span></div>
+  <div class="grid-row" style="top: 80px;"><span class="row-number">3</span></div>
+  <div class="grid-row" style="top: 120px;"><span class="row-number">4</span></div>
+  <div class="grid-row" style="top: 160px;"><span class="row-number">5</span></div>
+  <div class="grid-row" style="top: 200px;"><span class="row-number">6</span></div>
+  <div class="grid-row" style="top: 240px;"><span class="row-number">7</span></div>
+  <div class="grid-row" style="top: 280px;"><span class="row-number">8</span></div>
+  <div class="grid-row" style="top: 320px;"><span class="row-number">9</span></div>
+  <div class="grid-row" style="top: 360px;"><span class="row-number">10</span></div>
+  <div class="grid-row" style="top: 400px;"><span class="row-number">11</span></div>
+  <div class="grid-row" style="top: 440px;"><span class="row-number">12</span></div>
+  <div class="grid-row" style="top: 480px;"><span class="row-number">13</span></div>
+  <div class="grid-row" style="top: 520px;"><span class="row-number">14</span></div>
+  <div class="grid-row" style="top: 560px;"><span class="row-number">15</span></div>
+</div>
+
+<div id="section-2" class="section">
+  <span class="section-number">2</span>
+  <h1>Section 2 - Red</h1>
+  <p>This is the second section. If you're viewing a standard screenshot, you might not see this section without scrolling.</p>
+
+  <!-- Row numbers for section 2 -->
+  <div class="grid-row" style="top: 0px;"><span class="row-number">16</span></div>
+  <div class="grid-row" style="top: 40px;"><span class="row-number">17</span></div>
+  <div class="grid-row" style="top: 80px;"><span class="row-number">18</span></div>
+  <div class="grid-row" style="top: 120px;"><span class="row-number">19</span></div>
+  <div class="grid-row" style="top: 160px;"><span class="row-number">20</span></div>
+  <div class="grid-row" style="top: 200px;"><span class="row-number">21</span></div>
+  <div class="grid-row" style="top: 240px;"><span class="row-number">22</span></div>
+  <div class="grid-row" style="top: 280px;"><span class="row-number">23</span></div>
+  <div class="grid-row" style="top: 320px;"><span class="row-number">24</span></div>
+  <div class="grid-row" style="top: 360px;"><span class="row-number">25</span></div>
+  <div class="grid-row" style="top: 400px;"><span class="row-number">26</span></div>
+  <div class="grid-row" style="top: 440px;"><span class="row-number">27</span></div>
+  <div class="grid-row" style="top: 480px;"><span class="row-number">28</span></div>
+  <div class="grid-row" style="top: 520px;"><span class="row-number">29</span></div>
+  <div class="grid-row" style="top: 560px;"><span class="row-number">30</span></div>
+</div>
+
+<div id="section-3" class="section">
+  <span class="section-number">3</span>
+  <h1>Section 3 - Green</h1>
+  <p>This is the third section. A fullscreen screenshot should capture this section along with the ones above and below it.</p>
+
+  <!-- Row numbers for section 3 -->
+  <div class="grid-row" style="top: 0px;"><span class="row-number">31</span></div>
+  <div class="grid-row" style="top: 40px;"><span class="row-number">32</span></div>
+  <div class="grid-row" style="top: 80px;"><span class="row-number">33</span></div>
+  <div class="grid-row" style="top: 120px;"><span class="row-number">34</span></div>
+  <div class="grid-row" style="top: 160px;"><span class="row-number">35</span></div>
+  <div class="grid-row" style="top: 200px;"><span class="row-number">36</span></div>
+  <div class="grid-row" style="top: 240px;"><span class="row-number">37</span></div>
+  <div class="grid-row" style="top: 280px;"><span class="row-number">38</span></div>
+  <div class="grid-row" style="top: 320px;"><span class="row-number">39</span></div>
+  <div class="grid-row" style="top: 360px;"><span class="row-number">40</span></div>
+  <div class="grid-row" style="top: 400px;"><span class="row-number">41</span></div>
+  <div class="grid-row" style="top: 440px;"><span class="row-number">42</span></div>
+  <div class="grid-row" style="top: 480px;"><span class="row-number">43</span></div>
+  <div class="grid-row" style="top: 520px;"><span class="row-number">44</span></div>
+  <div class="grid-row" style="top: 560px;"><span class="row-number">45</span></div>
+</div>
+
+<div id="section-4" class="section">
+  <span class="section-number">4</span>
+  <h1>Section 4 - Orange</h1>
+  <p>This is the fourth section. We're getting pretty far down the page now.</p>
+
+  <!-- Row numbers for section 4 -->
+  <div class="grid-row" style="top: 0px;"><span class="row-number">46</span></div>
+  <div class="grid-row" style="top: 40px;"><span class="row-number">47</span></div>
+  <div class="grid-row" style="top: 80px;"><span class="row-number">48</span></div>
+  <div class="grid-row" style="top: 120px;"><span class="row-number">49</span></div>
+  <div class="grid-row" style="top: 160px;"><span class="row-number">50</span></div>
+  <div class="grid-row" style="top: 200px;"><span class="row-number">51</span></div>
+  <div class="grid-row" style="top: 240px;"><span class="row-number">52</span></div>
+  <div class="grid-row" style="top: 280px;"><span class="row-number">53</span></div>
+  <div class="grid-row" style="top: 320px;"><span class="row-number">54</span></div>
+  <div class="grid-row" style="top: 360px;"><span class="row-number">55</span></div>
+  <div class="grid-row" style="top: 400px;"><span class="row-number">56</span></div>
+  <div class="grid-row" style="top: 440px;"><span class="row-number">57</span></div>
+  <div class="grid-row" style="top: 480px;"><span class="row-number">58</span></div>
+  <div class="grid-row" style="top: 520px;"><span class="row-number">59</span></div>
+  <div class="grid-row" style="top: 560px;"><span class="row-number">60</span></div>
+</div>
+
+<div id="section-5" class="section">
+  <span class="section-number">5</span>
+  <h1>Section 5 - Purple</h1>
+  <p>This is the fifth section. We're getting deeper into the page.</p>
+
+  <!-- Row numbers for section 5 -->
+  <div class="grid-row" style="top: 0px;"><span class="row-number">61</span></div>
+  <div class="grid-row" style="top: 40px;"><span class="row-number">62</span></div>
+  <div class="grid-row" style="top: 80px;"><span class="row-number">63</span></div>
+  <div class="grid-row" style="top: 120px;"><span class="row-number">64</span></div>
+  <div class="grid-row" style="top: 160px;"><span class="row-number">65</span></div>
+  <div class="grid-row" style="top: 200px;"><span class="row-number">66</span></div>
+  <div class="grid-row" style="top: 240px;"><span class="row-number">67</span></div>
+  <div class="grid-row" style="top: 280px;"><span class="row-number">68</span></div>
+  <div class="grid-row" style="top: 320px;"><span class="row-number">69</span></div>
+  <div class="grid-row" style="top: 360px;"><span class="row-number">70</span></div>
+  <div class="grid-row" style="top: 400px;"><span class="row-number">71</span></div>
+  <div class="grid-row" style="top: 440px;"><span class="row-number">72</span></div>
+  <div class="grid-row" style="top: 480px;"><span class="row-number">73</span></div>
+  <div class="grid-row" style="top: 520px;"><span class="row-number">74</span></div>
+  <div class="grid-row" style="top: 560px;"><span class="row-number">75</span></div>
+</div>
+
+<div id="section-6" class="section">
+  <span class="section-number">6</span>
+  <h1>Section 6 - Dark Blue</h1>
+  <p>This is the sixth section. If stitching is working correctly, this section should be clearly visible in fullscreen screenshots.</p>
+
+  <!-- Row numbers for section 6 -->
+  <div class="grid-row" style="top: 0px;"><span class="row-number">76</span></div>
+  <div class="grid-row" style="top: 40px;"><span class="row-number">77</span></div>
+  <div class="grid-row" style="top: 80px;"><span class="row-number">78</span></div>
+  <div class="grid-row" style="top: 120px;"><span class="row-number">79</span></div>
+  <div class="grid-row" style="top: 160px;"><span class="row-number">80</span></div>
+  <div class="grid-row" style="top: 200px;"><span class="row-number">81</span></div>
+  <div class="grid-row" style="top: 240px;"><span class="row-number">82</span></div>
+  <div class="grid-row" style="top: 280px;"><span class="row-number">83</span></div>
+  <div class="grid-row" style="top: 320px;"><span class="row-number">84</span></div>
+  <div class="grid-row" style="top: 360px;"><span class="row-number">85</span></div>
+  <div class="grid-row" style="top: 400px;"><span class="row-number">86</span></div>
+  <div class="grid-row" style="top: 440px;"><span class="row-number">87</span></div>
+  <div class="grid-row" style="top: 480px;"><span class="row-number">88</span></div>
+  <div class="grid-row" style="top: 520px;"><span class="row-number">89</span></div>
+  <div class="grid-row" style="top: 560px;"><span class="row-number">90</span></div>
+</div>
+
+<div id="section-7" class="section">
+  <span class="section-number">7</span>
+  <span class="marker">BOTTOM</span>
+  <h1>Section 7 - Teal</h1>
+  <p>This is the seventh and final section. A properly stitched fullscreen screenshot should capture this section and everything above it.</p>
+
+  <!-- Row numbers for section 7 -->
+  <div class="grid-row" style="top: 0px;"><span class="row-number">91</span></div>
+  <div class="grid-row" style="top: 40px;"><span class="row-number">92</span></div>
+  <div class="grid-row" style="top: 80px;"><span class="row-number">93</span></div>
+  <div class="grid-row" style="top: 120px;"><span class="row-number">94</span></div>
+  <div class="grid-row" style="top: 160px;"><span class="row-number">95</span></div>
+  <div class="grid-row" style="top: 200px;"><span class="row-number">96</span></div>
+  <div class="grid-row" style="top: 240px;"><span class="row-number">97</span></div>
+  <div class="grid-row" style="top: 280px;"><span class="row-number">98</span></div>
+  <div class="grid-row" style="top: 320px;"><span class="row-number">99</span></div>
+  <div class="grid-row" style="top: 360px;"><span class="row-number">100</span></div>
+  <div class="grid-row" style="top: 400px;"><span class="row-number">101</span></div>
+  <div class="grid-row" style="top: 440px;"><span class="row-number">102</span></div>
+  <div class="grid-row" style="top: 480px;"><span class="row-number">103</span></div>
+  <div class="grid-row" style="top: 520px;"><span class="row-number">104</span></div>
+  <div class="grid-row" style="top: 560px;"><span class="row-number">105</span></div>
+</div>
 </body>
 </html>

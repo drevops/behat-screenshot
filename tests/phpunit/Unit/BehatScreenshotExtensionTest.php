@@ -29,6 +29,8 @@ class BehatScreenshotExtensionTest extends TestCase {
       'on_failed' => TRUE,
       'failed_prefix' => 'failed_',
       'purge' => FALSE,
+      'always_fullscreen' => FALSE,
+      'fullscreen_algorithm' => 'stitch',
       'filename_pattern' => '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       'filename_pattern_failed' => '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       'info_types' => FALSE,
@@ -47,6 +49,8 @@ class BehatScreenshotExtensionTest extends TestCase {
         $config['on_failed'],
         $config['failed_prefix'],
         $config['purge'],
+        $config['always_fullscreen'],
+        $config['fullscreen_algorithm'],
         $config['filename_pattern'],
         $config['filename_pattern_failed'],
         $config['info_types'],
@@ -61,7 +65,7 @@ class BehatScreenshotExtensionTest extends TestCase {
     $extension = new BehatScreenshotExtension();
     $extension->configure($builder);
 
-    $this->assertCount(7, $builder->getChildNodeDefinitions());
+    $this->assertCount(9, $builder->getChildNodeDefinitions());
   }
 
 }

@@ -69,6 +69,14 @@ class BehatScreenshotExtension implements ExtensionInterface {
         ->cannotBeEmpty()
         ->defaultValue(FALSE)
       ->end()
+      ->scalarNode('always_fullscreen')
+        ->cannotBeEmpty()
+        ->defaultValue(FALSE)
+      ->end()
+      ->enumNode('fullscreen_algorithm')
+        ->values(['stitch', 'resize'])
+        ->defaultValue('stitch')
+      ->end()
       ->scalarNode('filename_pattern')
         ->cannotBeEmpty()
         ->defaultValue('{datetime:U}.{feature_file}.feature_{step_line}.{ext}')
@@ -94,6 +102,8 @@ class BehatScreenshotExtension implements ExtensionInterface {
       $config['on_failed'],
       $config['failed_prefix'],
       $config['purge'],
+      $config['always_fullscreen'],
+      $config['fullscreen_algorithm'],
       $config['filename_pattern'],
       $config['filename_pattern_failed'],
       $config['info_types'],

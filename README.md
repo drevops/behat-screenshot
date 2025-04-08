@@ -24,11 +24,13 @@
 ## Features
 
 * Captures a screenshot using the `I save screenshot` step.
+* Captures fullscreen screenshots with the `I save fullscreen screenshot` step.
 * Automatically captures a screenshot when a test fails.
 * Supports both HTML and PNG screenshots.
+* Supports Selenium and Headless drivers.
 * Configurable screenshot directory.
 * Automatically purges screenshots after each test run.
-* Adds configurable additional information to screenshots.
+* Adds additional information to screenshots.
 
 ## Installation
 
@@ -65,6 +67,8 @@ default:
       dir: '%paths.base%/screenshots'
       on_failed: true
       purge: false
+      always_fullscreen: false
+      fullscreen_algorithm: stitch # Options: 'stitch' or 'resize'
       failed_prefix: 'failed_'
       filename_pattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
       filename_pattern_failed: '{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
@@ -77,30 +81,73 @@ Given I am on "http://google.com"
 Then I save screenshot
 ```
 
+You can capture fullscreen screenshots:
+
+```gherkin
+Given I am on "http://google.com"
+Then I save fullscreen screenshot
+```
+
+There are two algorithms available for capturing fullscreen screenshots:
+
+1. **Stitch** (default): Takes multiple screenshots while scrolling the page and
+   stitches them together. This produces high-quality results with proper
+   content rendering but requires the GD extension.
+
+2. **Resize**: Temporarily resizes the browser window to the full height of the
+   page to capture everything in one screenshot. This is faster, but may cause
+   layout issues on some pages.
+
+You can configure which algorithm to use via the `fullscreen_algorithm` option:
+
+```yaml
+default:
+  extensions:
+    DrevOps\BehatScreenshotExtension:
+      fullscreen_algorithm: resize # Options: 'stitch' or 'resize'
+```
+
 You may optionally specify the size of the browser window in the screenshot
 step:
 
 ```gherkin
 Then I save 1440 x 900 screenshot
+# Or with fullscreen
+Then I save fullscreen 1440 x 900 screenshot
 ```
 
 or a file name:
 
 ```gherkin
-Then I save screenshot to "my_screenshot.png"
+Then I save screenshot with name "my_screenshot.png"
+# Or with fullscreen
+Then I save fullscreen screenshot with name "my_screenshot.png"
+```
+
+To always capture fullscreen screenshots, even without explicitly using the
+`fullscreen` keyword, set the `always_fullscreen` configuration option to
+`true`:
+
+```yaml
+default:
+  extensions:
+    DrevOps\BehatScreenshotExtension:
+      always_fullscreen: true
 ```
 
 ## Options
 
-| Name                      | Default value                                                          | Description                                                                                                                                               |
-|---------------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `dir`                     | `%paths.base%/screenshots`                                             | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. Override with `BEHAT_SCREENSHOT_DIR` env var. |
-| `on_failed`               | `true`                                                                 | Capture screenshot on failed test.                                                                                                                        |
-| `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                       |
-| `info_types`              | `url`, `feature`, `step`, `datetime`                                   | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed.        |
-| `failed_prefix`           | `failed_`                                                              | Prefix failed screenshots with `failed_` string. Useful to distinguish failed and intended screenshots.                                                   |
-| `filename_pattern`        | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`                | File name pattern for successful assertions.                                                                                                              |
-| `filename_pattern_failed` | `{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                                  |
+| Name                      | Default value                                                          | Description                                                                                                                                                                                                                                                                                     |
+|---------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dir`                     | `%paths.base%/screenshots`                                             | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. Override with `BEHAT_SCREENSHOT_DIR` env var.                                                                                                                                       |
+| `on_failed`               | `true`                                                                 | Capture screenshot on failed test.                                                                                                                                                                                                                                                              |
+| `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                                                                                                                                                             |
+| `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
+| `fullscreen_algorithm`    | `stitch`                                                               | Algorithm to use for fullscreen screenshots. Options: `stitch` (captures multiple screenshots while scrolling and stitches them together) or `resize` (temporarily resizes browser window to full page height). The stitch algorithm requires GD extension but produces higher quality results. |
+| `info_types`              | `url`, `feature`, `step`, `datetime`                                   | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed.                                                                                                                                              |
+| `failed_prefix`           | `failed_`                                                              | Prefix failed screenshots with `failed_` string. Useful to distinguish failed and intended screenshots.                                                                                                                                                                                         |
+| `filename_pattern`        | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`                | File name pattern for successful assertions.                                                                                                                                                                                                                                                    |
+| `filename_pattern_failed` | `{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                                                                                                                                                                        |
 
 ### File name tokens
 
@@ -203,9 +250,7 @@ streamlined in the future).
 ```shell
 # Start Chromium in container for Selenium-based tests.
 docker run -d -p 4444:4444 -p 9222:9222 selenium/standalone-chromium
-```
 
-```shell
 # Install Chromium with brew.
 brew cask install chromedriver
 # Launch Chromium with remote debugging.

@@ -72,40 +72,60 @@ class ScreenshotContextTest extends TestCase {
       sys_get_temp_dir(),
       TRUE,
       'failed_',
+      FALSE,
+      'stitch',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       []
     );
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['iSaveScreenshot']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
       TRUE,
       'failed_',
+      FALSE,
+      'stitch',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
     );
-    $screenshot_context->expects($this->once())->method('iSaveScreenshot');
+    $screenshot_context->expects($this->once())->method('screenshot');
     $screenshot_context->printLastResponseOnError($scope);
   }
 
   public function testIsaveSizedScreenshot(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'iSaveScreenshot']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'screenshot']);
     $session = $this->createMock(Session::class);
     $exception = $this->createMock(UnsupportedDriverActionException::class);
     $session->method('resizeWindow')->willThrowException($exception);
     $screenshot_context->method('getSession')->willReturn($session);
-    $screenshot_context->expects($this->once())->method('iSaveScreenshot');
+    $screenshot_context->expects($this->once())->method('screenshot');
     $screenshot_context->iSaveSizedScreenshot();
   }
 
   public function testIsaveSizedScreenshotWithName(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['iSaveScreenshot']);
-    $screenshot_context->expects($this->once())->method('iSaveScreenshot');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
+    $screenshot_context->expects($this->once())->method('screenshot');
     $screenshot_context->iSaveScreenshotWithName('test-file-name');
   }
 
-  public function testIsaveScreenshot(): void {
+  public function testIsSaveFullscreenScreenshotWithName(): void {
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
+    $screenshot_context->expects($this->once())
+      ->method('screenshot')
+      ->with(['filename' => 'test-fullscreen-name', 'fullscreen' => TRUE]);
+    $screenshot_context->iSaveFullscreenScreenshotWithName('test-fullscreen-name');
+  }
+
+  public function testIsSaveFullscreenScreenshot(): void {
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
+    $screenshot_context->expects($this->once())
+      ->method('screenshot')
+      ->with(['fullscreen' => TRUE]);
+    $screenshot_context->iSaveFullscreenScreenshot();
+  }
+
+  public function testScreenshot(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
@@ -120,10 +140,10 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->method('makeFileName')->willReturn('test-file-name');
 
     $screenshot_context->expects($this->exactly(2))->method('saveScreenshotContent');
-    $screenshot_context->iSaveScreenshot();
+    $screenshot_context->screenshot();
   }
 
-  public function testIsaveScreenshotThrowException(): void {
+  public function testScreenshotThrowException(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
@@ -138,7 +158,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->method('makeFileName')->willReturn('test-file-name');
 
     $screenshot_context->expects($this->never())->method('saveScreenshotContent');
-    $screenshot_context->iSaveScreenshot();
+    $screenshot_context->screenshot();
   }
 
   #[DataProvider('saveScreenshotDataDataProvider')]
@@ -148,6 +168,8 @@ class ScreenshotContextTest extends TestCase {
       sys_get_temp_dir(),
       TRUE,
       'failed_',
+      FALSE,
+      'stitch',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
@@ -217,6 +239,8 @@ class ScreenshotContextTest extends TestCase {
       'test-dir',
       $on_failed,
       $failed_prefix,
+      FALSE,
+      'stitch',
       $filename_pattern,
       $filename_pattern_failed,
       [],
