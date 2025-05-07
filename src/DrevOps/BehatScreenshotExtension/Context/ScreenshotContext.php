@@ -36,7 +36,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Algorithm to use for fullscreen screenshots ('stitch' or 'resize').
    */
-  protected string $fullscreenAlgorithm = 'stitch';
+  protected string $fullscreenAlgorithm = 'resize';
 
   /**
    * Prefix for failed screenshot files.
