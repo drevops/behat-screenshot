@@ -75,7 +75,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
       ->end()
       ->enumNode('fullscreen_algorithm')
         ->values(['stitch', 'resize'])
-        ->defaultValue('stitch')
+        ->defaultValue('resize')
       ->end()
       ->scalarNode('filename_pattern')
         ->cannotBeEmpty()

@@ -30,7 +30,7 @@ class BehatScreenshotExtensionTest extends TestCase {
       'failed_prefix' => 'failed_',
       'purge' => FALSE,
       'always_fullscreen' => FALSE,
-      'fullscreen_algorithm' => 'stitch',
+      'fullscreen_algorithm' => 'resize',
       'filename_pattern' => '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       'filename_pattern_failed' => '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       'info_types' => FALSE,

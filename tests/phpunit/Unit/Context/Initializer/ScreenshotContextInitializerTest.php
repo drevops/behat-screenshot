@@ -30,7 +30,7 @@ class ScreenshotContextInitializerTest extends TestCase {
       'failed_',
       TRUE,
       TRUE,
-      'stitch',
+      'resize',
       '{datetime:U}.{ext}',
       '{datetime:U}.{failed_prefix}{ext}',
       []
@@ -55,7 +55,7 @@ class ScreenshotContextInitializerTest extends TestCase {
         TRUE,
         'failed_',
         TRUE,
-        'stitch',
+        'resize',
         '{datetime:U}.{ext}',
         '{datetime:U}.{failed_prefix}{ext}',
         []
@@ -68,7 +68,7 @@ class ScreenshotContextInitializerTest extends TestCase {
       // don't purge.
       FALSE,
       TRUE,
-      'stitch',
+      'resize',
       '{datetime:U}.{ext}',
       '{datetime:U}.{failed_prefix}{ext}',
       []
@@ -97,7 +97,7 @@ class ScreenshotContextInitializerTest extends TestCase {
           TRUE,
           'failed_',
           TRUE,
-          'stitch',
+          'resize',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           []
@@ -133,7 +133,7 @@ class ScreenshotContextInitializerTest extends TestCase {
           // Not used due to ENV override.
           FALSE,
           TRUE,
-          'stitch',
+          'resize',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           [],
@@ -155,7 +155,7 @@ class ScreenshotContextInitializerTest extends TestCase {
           TRUE,
           'failed_',
           TRUE,
-          'stitch',
+          'resize',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           []
