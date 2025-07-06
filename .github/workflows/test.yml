@@ -64,7 +64,7 @@ jobs:
         continue-on-error: ${{ vars.CI_TEST_UNIT_IGNORE_FAILURE == '1' }}
 
       - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@v2
 
       - name: Start Chrome
         run: chrome --no-sandbox --headless --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222&
