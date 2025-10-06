@@ -32,17 +32,42 @@ class ScreenshotContextResizeTest extends TestCase {
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
 
-    // Mock the JavaScript evaluation to return document dimensions.
+    // Mock the JavaScript evaluation to return both original and document
+    // dimensions.
     $session->method('evaluateScript')
-      ->willReturn([
-        'scrollWidth' => 1440,
-        'scrollHeight' => 2000,
-      ]);
+      ->willReturnOnConsecutiveCalls(
+        // First call: get original window dimensions.
+        [
+          'width' => 1440,
+          'height' => 900,
+        ],
+        // Second call: get document scroll dimensions.
+        [
+          'scrollWidth' => 1440,
+          'scrollHeight' => 2000,
+        ]
+      );
 
-    // Cannot mock getWindowSize in PHPUnit 11, so we'll rely on default values.
-    $session->expects($this->once())
+    // Expect resize to be called twice: once to expand, once to restore.
+    $session->expects($this->exactly(2))
       ->method('resizeWindow')
-      ->with(1440, 2200, 'current');
+      ->willReturnCallback(function ($width, $height, $name): void {
+        static $call_count = 0;
+        $call_count++;
+
+        if ($call_count === 1) {
+          // First call: resize to fullscreen.
+          $this->assertEquals(1440, $width);
+          $this->assertEquals(2200, $height);
+          $this->assertEquals('current', $name);
+        }
+        elseif ($call_count === 2) {
+          // Second call: restore to original.
+          $this->assertEquals(1440, $width);
+          $this->assertEquals(900, $height);
+          $this->assertEquals('current', $name);
+        }
+      });
 
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
@@ -71,13 +96,24 @@ class ScreenshotContextResizeTest extends TestCase {
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
 
-    // Mock the JavaScript evaluation to return invalid dimensions.
+    // Mock the JavaScript evaluation to return invalid dimensions for both
+    // calls.
     $session->method('evaluateScript')
-      ->willReturn([
-        'scrollWidth' => 0,
-        'scrollHeight' => 0,
-      ]);
+      ->willReturnOnConsecutiveCalls(
+        // First call: get original window dimensions.
+        [
+          'width' => 1440,
+          'height' => 900,
+        ],
+        // Second call: get document scroll dimensions (invalid).
+        [
+          'scrollWidth' => 0,
+          'scrollHeight' => 0,
+        ]
+      );
 
+    // Should not resize when dimensions are invalid, but returns regular
+    // screenshot.
     $session->expects($this->never())->method('resizeWindow');
 
     $session->method('getDriver')->willReturn($driver);

@@ -437,14 +437,28 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $session->getDriver();
 
     // Store original window size to restore it later.
-    $original_width = 0;
-    $original_height = 0;
+    // Default to the standard size set in beforeScenarioInit().
+    $original_width = 1440;
+    $original_height = 900;
 
-    // Get the current window size.
-    if (method_exists($session, 'getWindowSize')) {
-      $size = $session->getWindowSize();
-      $original_width = $size['width'];
-      $original_height = $size['height'];
+    // Get the current window size using JavaScript.
+    try {
+      $original_dimensions = $session->evaluateScript("
+        return {
+          width: window.outerWidth,
+          height: window.outerHeight
+        };
+      ");
+
+      if (!empty($original_dimensions) && is_array($original_dimensions)) {
+        $original_width = isset($original_dimensions['width']) && is_numeric($original_dimensions['width'])
+          ? (int) $original_dimensions['width'] : 1440;
+        $original_height = isset($original_dimensions['height']) && is_numeric($original_dimensions['height'])
+          ? (int) $original_dimensions['height'] : 900;
+      }
+    }
+    catch (\Exception) {
+      // Use default dimensions if JavaScript evaluation fails.
     }
 
     $dimensions = $session->evaluateScript("
@@ -482,17 +496,19 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // Resize the window to capture the full page height.
     $session->resizeWindow($fullscreen_width, $fullscreen_height, 'current');
 
+    // Add a small delay to ensure the resize completes before taking
+    // screenshot.
+    usleep(100000);
+
     // Take the screenshot.
     $screenshot = $this->getScreenshot();
 
-    // Restore the original window size if we have dimensions.
-    if ($original_width > 0 && $original_height > 0) {
-      try {
-        $session->resizeWindow($original_width, $original_height, 'current');
-      }
-      catch (\Exception) {
-        // Ignore errors during restoration.
-      }
+    // Always restore the original window size.
+    try {
+      $session->resizeWindow($original_width, $original_height, 'current');
+    }
+    catch (\Exception) {
+      // Ignore errors during restoration - best effort attempt.
     }
 
     return $screenshot;
