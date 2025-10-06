@@ -108,7 +108,7 @@ Feature: Behat CLI context
 
       --- Failed scenarios:
 
-          features/fail.feature:3
+          features/fail.feature:3 (on line 5)
 
       1 scenario (1 failed)
       2 steps (1 passed, 1 failed)
@@ -138,7 +138,7 @@ Feature: Behat CLI context
 
       --- Failed scenarios:
 
-          features/fail.feature:3
+          features/fail.feature:3 (on line 5)
 
       1 scenario (1 failed)
       3 steps (1 passed, 1 failed, 1 skipped)
