@@ -36,7 +36,9 @@ class ScreenshotContextInitializer implements ContextInitializer {
    * @param bool $onEveryStep
    *   Capture screenshot after every step.
    * @param string $fullscreenAlgorithm
-   *   Algorithm to use for fullscreen screenshots ('stitch' or 'resize').
+   *   Algorithm to use for fullscreen screenshots. This parameter is
+   *   deprecated and will be ignored. The algorithm is now always set to
+   *   'resize'.
    * @param string $filenamePattern
    *   File name pattern.
    * @param string $filenamePatternFailed

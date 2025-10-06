@@ -25,7 +25,9 @@ interface ScreenshotAwareContextInterface extends Context {
    * @param bool $on_every_step
    *   Capture screenshot after every step.
    * @param string $fullscreen_algorithm
-   *   Algorithm to use for fullscreen screenshots ('stitch' or 'resize').
+   *   Algorithm to use for fullscreen screenshots. This parameter is
+   *   deprecated and will be ignored. The algorithm is now always set to
+   *   'resize'.
    * @param string $filename_pattern
    *   File name pattern.
    * @param string $filename_pattern_failed

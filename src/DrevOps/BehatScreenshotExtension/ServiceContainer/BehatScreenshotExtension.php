@@ -80,6 +80,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
       ->enumNode('fullscreen_algorithm')
         ->values(['stitch', 'resize'])
         ->defaultValue('resize')
+        ->setDeprecated('drevops/behat-screenshot', '2.2', 'The "%node%" option is deprecated. The fullscreen screenshot algorithm is now always set to "resize".')
       ->end()
       ->scalarNode('filename_pattern')
         ->cannotBeEmpty()

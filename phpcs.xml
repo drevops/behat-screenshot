@@ -39,4 +39,14 @@
     <rule ref="Drupal.Commenting.DocComment.MissingShort">
         <exclude-pattern>tests/behat/bootstrap/BehatCliTrait.php</exclude-pattern>
     </rule>
+
+    <!-- Allow non-Drupal deprecation version format for this non-Drupal package. -->
+    <rule ref="Drupal.Commenting.Deprecated.DeprecatedVersionFormat">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Allow non-Drupal.org @see URLs in deprecation tags. -->
+    <rule ref="Drupal.Commenting.Deprecated.DeprecatedWrongSeeUrlFormat">
+        <severity>0</severity>
+    </rule>
 </ruleset>

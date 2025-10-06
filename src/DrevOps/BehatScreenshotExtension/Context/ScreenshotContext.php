@@ -44,7 +44,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected bool $scenarioHasScreenshotsTag = FALSE;
 
   /**
-   * Algorithm to use for fullscreen screenshots ('stitch' or 'resize').
+   * Algorithm to use for fullscreen screenshots.
+   *
+   * @deprecated in behat-screenshot:2.2 and is removed from
+   *   behat-screenshot:2.3. The algorithm is now always set to 'resize'.
+   * @see \DrevOps\BehatScreenshotExtension\Context\ScreenshotContext::getScreenshotFullscreenWithResize()
    */
   protected string $fullscreenAlgorithm = 'resize';
 
@@ -322,14 +326,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
   /**
    * Get fullscreen screenshot.
+   *
+   * Note: The algorithm is now always set to 'resize'. The 'stitch' algorithm
+   * is deprecated and will be removed in a future version.
    */
   public function getScreenshotFullscreen(): string {
-    // Use the configured algorithm if both are available.
-    if ($this->fullscreenAlgorithm === 'stitch' && extension_loaded('gd') && function_exists('imagecreatetruecolor')) {
-      return $this->getScreenshotFullscreenWithStitching();
-    }
-
-    // Fall back to resize if stitching is unavailable or resize was selected.
+    // Always use the resize algorithm.
     return $this->getScreenshotFullscreenWithResize();
   }
 
@@ -338,6 +340,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @return string
    *   Screenshot data.
+   *
+   * @deprecated in behat-screenshot:2.2 and is removed from
+   *   behat-screenshot:2.3. Use getScreenshotFullscreenWithResize() instead.
+   * @see \DrevOps\BehatScreenshotExtension\Context\ScreenshotContext::getScreenshotFullscreenWithResize()
    */
   protected function getScreenshotFullscreenWithStitching(): string {
     $session = $this->getSession();
@@ -573,6 +579,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @return string
    *   The stitched image as a binary string.
+   *
+   * @deprecated in behat-screenshot:2.2 and is removed from
+   *   behat-screenshot:2.3. Use getScreenshotFullscreenWithResize() instead.
+   * @see \DrevOps\BehatScreenshotExtension\Context\ScreenshotContext::getScreenshotFullscreenWithResize()
    */
   protected function stitchImages(array $images, int $width, int $viewport_height, int $overlap): string {
     if (empty($images)) {
