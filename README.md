@@ -135,12 +135,41 @@ default:
       always_fullscreen: true
 ```
 
+### Capturing Screenshots After Every Step
+
+To automatically capture a screenshot after every step, you can either:
+
+1. **Enable globally** in configuration:
+
+```yaml
+default:
+  extensions:
+    DrevOps\BehatScreenshotExtension:
+      on_every_step: true
+```
+
+2. **Enable per-scenario** using the `@screenshots` tag:
+
+```gherkin
+@screenshots
+Scenario: My scenario with automatic screenshots
+  Given I am on "http://example.com"
+  When I click "Login"
+  Then I should see "Welcome"
+  # Screenshots will be captured after each of these steps
+```
+
+The `@screenshots` tag takes precedence over the global configuration, allowing you to enable this feature for specific scenarios even when it's disabled globally.
+
+**Note**: When both `on_every_step` and `on_failed` are enabled, only one screenshot is captured for failed steps (the failed screenshot) to avoid duplicates.
+
 ## Options
 
 | Name                      | Default value                                                          | Description                                                                                                                                                                                                                                                                                     |
 |---------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `dir`                     | `%paths.base%/screenshots`                                             | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. Override with `BEHAT_SCREENSHOT_DIR` env var.                                                                                                                                       |
 | `on_failed`               | `true`                                                                 | Capture screenshot on failed test.                                                                                                                                                                                                                                                              |
+| `on_every_step`           | `false`                                                                | Automatically capture screenshots after every step. Can be enabled globally via config or per-scenario using the `@screenshots` tag. Only captures on passed steps to avoid duplicates with `on_failed`.                                                                                        |
 | `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                                                                                                                                                             |
 | `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
 | `fullscreen_algorithm`    | `resize`                                                               | Algorithm to use for fullscreen screenshots. Options: `resize` (temporarily resizes browser window to full page height) or `stitch` (captures multiple screenshots while scrolling and stitches them together). The stitch algorithm requires GD extension but produces higher quality results. |

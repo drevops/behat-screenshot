@@ -8,6 +8,7 @@ default:
     DrevOps\BehatScreenshotExtension:
       dir: %paths.base%/screenshots
       on_failed: true
+      on_every_step: false # Capture screenshot after every step
       purge: false
       always_fullscreen: false
       fullscreen_algorithm: resize # 'stitch' (only if GD ext available) or 'resize'

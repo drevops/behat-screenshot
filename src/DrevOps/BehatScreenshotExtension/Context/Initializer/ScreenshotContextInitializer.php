@@ -33,6 +33,8 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *   Purge dir before start script.
    * @param bool $alwaysFullscreen
    *   Always take fullscreen screenshots.
+   * @param bool $onEveryStep
+   *   Capture screenshot after every step.
    * @param string $fullscreenAlgorithm
    *   Algorithm to use for fullscreen screenshots ('stitch' or 'resize').
    * @param string $filenamePattern
@@ -50,6 +52,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
     private readonly string $failedPrefix,
     protected bool $purge,
     protected bool $alwaysFullscreen,
+    protected bool $onEveryStep,
     protected string $fullscreenAlgorithm,
     protected string $filenamePattern,
     protected string $filenamePatternFailed,
@@ -77,6 +80,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
         $this->onFailed,
         $this->failedPrefix,
         $this->alwaysFullscreen,
+        $this->onEveryStep,
         $this->fullscreenAlgorithm,
         $this->filenamePattern,
         $this->filenamePatternFailed,
