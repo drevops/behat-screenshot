@@ -34,6 +34,16 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected bool $alwaysFullscreen = FALSE;
 
   /**
+   * Capture screenshot after every step.
+   */
+  protected bool $onEveryStep = FALSE;
+
+  /**
+   * Whether the current scenario has the @screenshots tag.
+   */
+  protected bool $scenarioHasScreenshotsTag = FALSE;
+
+  /**
    * Algorithm to use for fullscreen screenshots ('stitch' or 'resize').
    */
   protected string $fullscreenAlgorithm = 'resize';
@@ -75,11 +85,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, string $fullscreen_algorithm, string $filename_pattern, string $filename_pattern_failed, array $info_types): static {
+  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $fullscreen_algorithm, string $filename_pattern, string $filename_pattern_failed, array $info_types): static {
     $this->dir = $dir;
     $this->onFailed = $on_failed;
     $this->failedPrefix = $failed_prefix;
     $this->alwaysFullscreen = $always_fullscreen;
+    $this->onEveryStep = $on_every_step;
     $this->fullscreenAlgorithm = $fullscreen_algorithm;
     $this->filenamePattern = $filename_pattern;
     $this->filenamePatternFailed = $filename_pattern_failed;
@@ -96,6 +107,18 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function getDir(): string {
     return $this->dir;
+  }
+
+  /**
+   * Check if scenario has @screenshots tag.
+   *
+   * @param \Behat\Behat\Hook\Scope\BeforeScenarioScope $scope
+   *   Scenario scope.
+   *
+   * @BeforeScenario
+   */
+  public function beforeScenarioCheckScreenshotsTag(BeforeScenarioScope $scope): void {
+    $this->scenarioHasScreenshotsTag = $scope->getScenario()->hasTag('screenshots');
   }
 
   /**
@@ -150,6 +173,28 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     if (!$event->getTestResult()->isPassed() && $this->onFailed) {
       $this->screenshot([
         'is_failed' => TRUE,
+        'fullscreen' => $this->alwaysFullscreen,
+      ]);
+    }
+  }
+
+  /**
+   * Capture screenshot after every step when enabled.
+   *
+   * @param \Behat\Behat\Hook\Scope\AfterStepScope $event
+   *   After step scope event.
+   *
+   * @throws \Behat\Mink\Exception\DriverException
+   * @throws \Behat\Mink\Exception\UnsupportedDriverActionException
+   *
+   * @AfterStep
+   */
+  public function captureScreenshotAfterStep(AfterStepScope $event): void {
+    // Only capture if:
+    // 1. Global config is enabled OR scenario has the @screenshots tag
+    // 2. Step passed (we don't want duplicates with on_failed)
+    if (($this->onEveryStep || $this->scenarioHasScreenshotsTag) && $event->getTestResult()->isPassed()) {
+      $this->screenshot([
         'fullscreen' => $this->alwaysFullscreen,
       ]);
     }

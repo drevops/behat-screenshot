@@ -145,6 +145,7 @@ class ScreenshotContextResizeTest extends TestCase {
       TRUE,
       'failed_',
       TRUE,
+      FALSE,
       'resize',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
@@ -201,6 +202,7 @@ class ScreenshotContextResizeTest extends TestCase {
       'failed_',
     // always_fullscreen = TRUE.
       TRUE,
+      FALSE,
       'resize',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
