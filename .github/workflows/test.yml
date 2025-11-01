@@ -48,7 +48,11 @@ jobs:
           ini-values: pcov.directory=.
 
       - name: Install dependencies
-        run: composer install
+        run: |
+          if [ "${{ matrix.php-versions }}" == "8.2" ]; then
+            composer remove --dev drevops/phpcs-standard --no-update
+          fi
+          composer install
 
       - name: Validate composer.json
         run: |
@@ -56,6 +60,7 @@ jobs:
           composer normalize --dry-run
 
       - name: Check coding standards
+        if: matrix.php-versions == '8.3'
         run: composer lint
         continue-on-error: ${{ vars.CI_LINT_IGNORE_FAILURE == '1' }}
 
