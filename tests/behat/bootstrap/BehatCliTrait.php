@@ -76,13 +76,13 @@ trait BehatCliTrait {
       '{{USE_IN_CLASS}}' => '',
     ];
     foreach ($traits as $path => $trait) {
-      $traitName = $trait;
+      $trait_name = $trait;
       if (strpos($trait, '\\') !== FALSE) {
         $tokens['{{USE_DECLARATION}}'] .= sprintf('use %s;' . PHP_EOL, $trait);
-        $traitNameParts = explode('\\', $trait);
-        $traitName = end($traitNameParts);
+        $trait_name_parts = explode('\\', $trait);
+        $trait_name = end($trait_name_parts);
       }
-      $tokens['{{USE_IN_CLASS}}'] .= sprintf('use %s;' . PHP_EOL, $traitName);
+      $tokens['{{USE_IN_CLASS}}'] .= sprintf('use %s;' . PHP_EOL, $trait_name);
 
       if (is_string($path) && file_exists($path)) {
         $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/bootstrap/' . basename($path);
@@ -182,11 +182,11 @@ EOL;
     $content = strtr((string) $content, ["'''" => '"""']);
 
     // Make sure that indentation in provided content is accurate.
-    $contentLines = explode(PHP_EOL, $content);
-    foreach ($contentLines as $k => $contentLine) {
-      $contentLines[$k] = str_repeat(' ', 4) . trim($contentLine);
+    $content_lines = explode(PHP_EOL, $content);
+    foreach ($content_lines as $k => $content_line) {
+      $content_lines[$k] = str_repeat(' ', 4) . trim($content_line);
     }
-    $content = implode(PHP_EOL, $contentLines);
+    $content = implode(PHP_EOL, $content_lines);
 
     $tokens = [
       '{{SCENARIO_CONTENT}}' => $content,
@@ -333,16 +333,16 @@ EOL;
     }
 
     // Update the behat.yml to include this context.
-    $behatYmlPath = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
-    if (file_exists($behatYmlPath)) {
-      $behatYml = file_get_contents($behatYmlPath);
-      if (strpos($behatYml, 'FullscreenTestContext') === FALSE) {
-        $behatYml = str_replace(
+    $behat_yml_path = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
+    if (file_exists($behat_yml_path)) {
+      $behat_yml = file_get_contents($behat_yml_path);
+      if (strpos($behat_yml, 'FullscreenTestContext') === FALSE) {
+        $behat_yml = str_replace(
           'ScreenshotContext',
           "ScreenshotContext\n        - FullscreenTestContext",
-          $behatYml
+          $behat_yml
         );
-        file_put_contents($behatYmlPath, $behatYml);
+        file_put_contents($behat_yml_path, $behat_yml);
       }
     }
   }

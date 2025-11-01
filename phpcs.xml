@@ -10,6 +10,12 @@
     <rule ref="Generic.PHP.RequireStrictTypes">
         <exclude-pattern>BehatCliContext\.php</exclude-pattern>
     </rule>
+    <rule ref="DrevOps.NamingConventions.LocalVariableSnakeCase">
+        <exclude-pattern>BehatCliContext\.php</exclude-pattern>
+    </rule>
+    <rule ref="DrevOps.NamingConventions.ParameterSnakeCase">
+        <exclude-pattern>BehatCliContext\.php</exclude-pattern>
+    </rule>
 
     <!-- Show sniff codes in all reports -->
     <arg value="s"/>
