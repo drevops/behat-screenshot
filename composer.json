@@ -24,7 +24,7 @@
         "dealerdirect/phpcodesniffer-composer-installer": "^1",
         "dmore/behat-chrome-extension": "^1.4",
         "drevops/behat-phpserver": "^2.0",
-        "drevops/phpcs-standard": "^0.3.0",
+        "drevops/phpcs-standard": "^0.4.0",
         "drupal/coder": "^8.3",
         "dvdoug/behat-code-coverage": "^5.3",
         "ergebnis/composer-normalize": "^2.44",
