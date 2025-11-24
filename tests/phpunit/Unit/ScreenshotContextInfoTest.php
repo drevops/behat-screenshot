@@ -42,7 +42,7 @@ class ScreenshotContextInfoTest extends TestCase {
    * @param array $expected_keys
    *   The expected info keys.
    */
-  #[DataProvider('compileInfoDataProvider')]
+  #[DataProvider('dataProviderCompileInfo')]
   public function testCompileInfo(array $info_types, array $expected_keys): void {
     // Setup mocks.
     $env = $this->createMock(Environment::class);
@@ -249,7 +249,7 @@ class ScreenshotContextInfoTest extends TestCase {
   /**
    * Data provider for testCompileInfo.
    */
-  public static function compileInfoDataProvider(): array {
+  public static function dataProviderCompileInfo(): array {
     return [
       [
         ['url'],
