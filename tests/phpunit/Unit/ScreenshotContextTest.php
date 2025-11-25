@@ -163,7 +163,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->screenshot();
   }
 
-  #[DataProvider('saveScreenshotDataDataProvider')]
+  #[DataProvider('dataProviderSaveScreenshotData')]
   public function testSaveScreenshotData(string $filename, string $data): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotParameters(
@@ -191,14 +191,14 @@ class ScreenshotContextTest extends TestCase {
   /**
    * Data provider for testSaveScreenshotData method.
    */
-  public static function saveScreenshotDataDataProvider(): array {
+  public static function dataProviderSaveScreenshotData(): array {
     return [
       ['test-save-screenshot-1.txt', 'test-data-1'],
       ['test-save-screenshot-2.txt', 'test-data-2'],
     ];
   }
 
-  #[DataProvider('makeFileNameProvider')]
+  #[DataProvider('dataProviderMakeFileName')]
   public function testMakeFileName(
     string $ext,
     mixed $filename,
@@ -258,7 +258,7 @@ class ScreenshotContextTest extends TestCase {
     $this->assertEquals($expected, $filename_processed);
   }
 
-  public static function makeFileNameProvider(): array {
+  public static function dataProviderMakeFileName(): array {
     return [
       [
         'html',

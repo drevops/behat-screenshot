@@ -24,7 +24,7 @@
         "dealerdirect/phpcodesniffer-composer-installer": "^1",
         "dmore/behat-chrome-extension": "^1.4",
         "drevops/behat-phpserver": "^2.0",
-        "drevops/phpcs-standard": "^0.5.0",
+        "drevops/phpcs-standard": "^0.6.0",
         "drupal/coder": "^8.3",
         "dvdoug/behat-code-coverage": "^5.3",
         "ergebnis/composer-normalize": "^2.44",
@@ -57,11 +57,11 @@
         "lint": [
             "phpcs",
             "phpstan",
-            "rector --clear-cache --dry-run",
+            "rector --dry-run",
             "gherkinlint lint tests/behat/features"
         ],
         "lint-fix": [
-            "rector --clear-cache",
+            "rector",
             "phpcbf"
         ],
         "reset": "rm -Rf vendor vendor-bin composer.lock",

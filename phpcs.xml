@@ -10,10 +10,7 @@
     <rule ref="Generic.PHP.RequireStrictTypes">
         <exclude-pattern>BehatCliContext\.php</exclude-pattern>
     </rule>
-    <rule ref="DrevOps.NamingConventions.LocalVariableSnakeCase">
-        <exclude-pattern>BehatCliContext\.php</exclude-pattern>
-    </rule>
-    <rule ref="DrevOps.NamingConventions.ParameterSnakeCase">
+    <rule ref="DrevOps">
         <exclude-pattern>BehatCliContext\.php</exclude-pattern>
     </rule>
 
