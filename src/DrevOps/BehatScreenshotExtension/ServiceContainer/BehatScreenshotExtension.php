@@ -51,7 +51,6 @@ class BehatScreenshotExtension implements ExtensionInterface {
   public function configure(ArrayNodeDefinition $builder): void {
     // @phpcs:disable Drupal.WhiteSpace.ObjectOperatorIndent.Indent
     // @formatter:off
-    // @phpstan-ignore-next-line
     $builder->children()
       ->scalarNode('dir')
         ->cannotBeEmpty()
