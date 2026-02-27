@@ -32,7 +32,7 @@
         "lullabot/php-webdriver": "^2.0.4",
         "php-mock/php-mock-phpunit": "^2.13",
         "phpstan/phpstan": "^2",
-        "phpunit/phpunit": "^11",
+        "phpunit/phpunit": "^13",
         "rector/rector": "^2",
         "symfony/process": "^6.4 || ^7.0"
     },
