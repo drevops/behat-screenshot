@@ -32,7 +32,7 @@ class ScreenshotContextTest extends TestCase {
     $feature_node = $this->createMock(FeatureNode::class);
     $scenario = $this->createMock(ScenarioInterface::class);
     $scenario
-      ->method('hasTag')->with('javascript')->willReturn(TRUE);
+      ->expects($this->any())->method('hasTag')->with('javascript')->willReturn(TRUE);
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
     $driver->method('start')->willThrowException(new \RuntimeException('Test Exception.'));
