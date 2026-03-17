@@ -194,29 +194,29 @@ class Tokenizer {
 
       switch ($qualifier) {
         case 'origin':
-          $replacement = sprintf('%s://%s', $url_parts['scheme'], $url_parts['host']);
+          $replacement = sprintf('%s://%s', $url_parts['scheme'] ?? '', $url_parts['host'] ?? '');
           break;
 
         case 'relative':
-          $replacement = trim($url_parts['path'], '/');
+          $replacement = trim($url_parts['path'] ?? '', '/');
           $replacement = isset($url_parts['query']) ? $replacement . '?' . $url_parts['query'] : $replacement;
           $replacement = isset($url_parts['fragment']) ? $replacement . '#' . $url_parts['fragment'] : $replacement;
           break;
 
         case 'domain':
-          $replacement = $url_parts['host'];
+          $replacement = $url_parts['host'] ?? '';
           break;
 
         case 'path':
-          $replacement = trim($url_parts['path'], '/');
+          $replacement = trim($url_parts['path'] ?? '', '/');
           break;
 
         case 'query':
-          $replacement = $url_parts['query'] ?: '';
+          $replacement = $url_parts['query'] ?? '';
           break;
 
         case 'fragment':
-          $replacement = $url_parts['fragment'] ?: '';
+          $replacement = $url_parts['fragment'] ?? '';
           break;
 
         default:
