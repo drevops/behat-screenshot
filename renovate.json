@@ -1,26 +1,11 @@
 {
     "extends": ["config:recommended"],
     "automerge": true,
-    "rangeStrategy": "bump",
     "dependencyDashboard": true,
     "pinDigests": true,
     "branchPrefix": "deps/",
+    "enabledManagers": ["github-actions"],
     "packageRules": [
-        {
-            "matchDepNames": ["php"],
-            "matchManagers": ["composer"],
-            "enabled": false
-        },
-        {
-            "matchDepNames": ["node", "yarn"],
-            "matchManagers": ["npm"],
-            "enabled": false
-        },
-        {
-            "matchManagers": ["npm", "composer"],
-            "matchUpdateTypes": ["major"],
-            "enabled": false
-        },
         {
             "matchPackageNames": ["*"],
             "groupName": "all dependencies",
