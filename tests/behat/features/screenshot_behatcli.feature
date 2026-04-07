@@ -10,7 +10,6 @@ Feature: Screenshot context
             on_failed: true
             purge: true
             always_fullscreen: false
-            fullscreen_algorithm: "stitch"
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -352,7 +351,6 @@ Feature: Screenshot context
             on_failed: true
             purge: true
             always_fullscreen: false
-            fullscreen_algorithm: "stitch"
       """
     And scenario steps tagged with "@phpserver @javascript":
       """
@@ -365,7 +363,7 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/*.stub.feature_6\.png" should exist
 
   @selenium
-  Scenario: Test Screenshot context with JS full-screen screenshot using stitch algorithm
+  Scenario: Test Screenshot context with JS full-screen screenshot
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
@@ -374,20 +372,19 @@ Feature: Screenshot context
             on_failed: true
             purge: true
             always_fullscreen: false
-            fullscreen_algorithm: "stitch"
       """
     And scenario steps tagged with "@phpserver @javascript":
       """
       When I am on the phpserver test page
-      And I save fullscreen screenshot with name "fullscreen-stitch"
+      And I save fullscreen screenshot with name "fullscreen"
       """
     When I run "behat --no-colors --strict"
     Then it should pass
-    And behat cli file wildcard "screenshots/fullscreen-stitch\.html" should exist
-    And behat cli file wildcard "screenshots/fullscreen-stitch\.png" should exist
+    And behat cli file wildcard "screenshots/fullscreen\.html" should exist
+    And behat cli file wildcard "screenshots/fullscreen\.png" should exist
 
   @selenium
-  Scenario: Test Screenshot context with JS full-screen short screenshot using stitch algorithm
+  Scenario: Test Screenshot context with JS full-screen short screenshot
     Given short screenshot fixture
     And screenshot context behat configuration with value:
       """
@@ -396,61 +393,16 @@ Feature: Screenshot context
             on_failed: true
             purge: true
             always_fullscreen: false
-            fullscreen_algorithm: "stitch"
       """
     And scenario steps tagged with "@phpserver @javascript":
       """
       When I am on the phpserver test page
-      And I save fullscreen screenshot with name "fullscreen-short-stitch"
+      And I save fullscreen screenshot with name "fullscreen-short"
       """
     When I run "behat --no-colors --strict"
     Then it should pass
-    And behat cli file wildcard "screenshots/fullscreen-short-stitch\.html" should exist
-    And behat cli file wildcard "screenshots/fullscreen-short-stitch\.png" should exist
-
-  @selenium
-  Scenario: Test Screenshot context with JS full-screen screenshot using resize algorithm
-    Given screenshot fixture
-    And screenshot context behat configuration with value:
-      """
-      DrevOps\BehatScreenshotExtension:
-            dir: "%paths.base%/screenshots"
-            on_failed: true
-            purge: true
-            always_fullscreen: false
-            fullscreen_algorithm: "resize"
-      """
-    And scenario steps tagged with "@phpserver @javascript":
-      """
-      When I am on the phpserver test page
-      And I save fullscreen screenshot with name "fullscreen-resize"
-      """
-    When I run "behat --no-colors --strict"
-    Then it should pass
-    And behat cli file wildcard "screenshots/fullscreen-resize\.html" should exist
-    And behat cli file wildcard "screenshots/fullscreen-resize\.png" should exist
-
-  @selenium
-  Scenario: Test Screenshot context with JS full-screen short screenshot using resize algorithm
-    Given short screenshot fixture
-    And screenshot context behat configuration with value:
-      """
-      DrevOps\BehatScreenshotExtension:
-            dir: "%paths.base%/screenshots"
-            on_failed: true
-            purge: true
-            always_fullscreen: false
-            fullscreen_algorithm: "resize"
-      """
-    And scenario steps tagged with "@phpserver @javascript":
-      """
-      When I am on the phpserver test page
-      And I save fullscreen screenshot with name "fullscreen-short-resize"
-      """
-    When I run "behat --no-colors --strict"
-    Then it should pass
-    And behat cli file wildcard "screenshots/fullscreen-short-resize\.html" should exist
-    And behat cli file wildcard "screenshots/fullscreen-short-resize\.png" should exist
+    And behat cli file wildcard "screenshots/fullscreen-short\.html" should exist
+    And behat cli file wildcard "screenshots/fullscreen-short\.png" should exist
 
   # Test for a headless browser using behat-chrome/behat-chrome-extension driver.
   # @see https://gitlab.com/behat-chrome/behat-chrome-extension

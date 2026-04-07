@@ -139,14 +139,12 @@ class ScreenshotContextResizeTest extends TestCase {
       'getScreenshotFullscreenWithResize',
     ]);
 
-    // Set the fullscreen algorithm to 'resize'.
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
       TRUE,
       'failed_',
       TRUE,
       FALSE,
-      'resize',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
@@ -195,15 +193,13 @@ class ScreenshotContextResizeTest extends TestCase {
     $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
     $screenshot_context->method('getCurrentTime')->willReturn(1234567890);
 
-    // Set screenshot parameters with resize algorithm.
+    // Set screenshot parameters with always_fullscreen = TRUE.
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
       TRUE,
       'failed_',
-    // always_fullscreen = TRUE.
       TRUE,
       FALSE,
-      'resize',
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],

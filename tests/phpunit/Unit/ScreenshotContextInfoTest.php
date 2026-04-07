@@ -68,7 +68,6 @@ class ScreenshotContextInfoTest extends TestCase {
       'failed_',
       FALSE,
       FALSE,
-      'stitch',
       '{datetime:U}.test.{ext}',
       '{datetime:U}.{failed_prefix}test.{ext}',
       $info_types
@@ -114,7 +113,6 @@ class ScreenshotContextInfoTest extends TestCase {
       'failed_',
       FALSE,
       FALSE,
-      'stitch',
       '{datetime:U}.test.{ext}',
       '{datetime:U}.{failed_prefix}test.{ext}',
       ['url']
@@ -217,7 +215,6 @@ class ScreenshotContextInfoTest extends TestCase {
         'failed_',
         FALSE,
         FALSE,
-        'stitch',
         '{url}.{ext}',
         '{failed_prefix}{url}.{ext}',
         []
