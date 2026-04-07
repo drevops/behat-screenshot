@@ -76,11 +76,6 @@ class BehatScreenshotExtension implements ExtensionInterface {
         ->cannotBeEmpty()
         ->defaultValue(FALSE)
       ->end()
-      ->enumNode('fullscreen_algorithm')
-        ->values(['stitch', 'resize'])
-        ->defaultValue('resize')
-        ->setDeprecated('drevops/behat-screenshot', '2.2', 'The "%node%" option is deprecated. The fullscreen screenshot algorithm is now always set to "resize".')
-      ->end()
       ->scalarNode('filename_pattern')
         ->cannotBeEmpty()
         ->defaultValue('{datetime:U}.{feature_file}.feature_{step_line}.{ext}')
@@ -108,7 +103,6 @@ class BehatScreenshotExtension implements ExtensionInterface {
       $config['purge'],
       $config['always_fullscreen'],
       $config['on_every_step'],
-      $config['fullscreen_algorithm'],
       $config['filename_pattern'],
       $config['filename_pattern_failed'],
       $config['info_types'],

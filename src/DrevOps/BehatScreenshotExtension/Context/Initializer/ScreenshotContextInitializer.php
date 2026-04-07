@@ -35,10 +35,6 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *   Always take fullscreen screenshots.
    * @param bool $onEveryStep
    *   Capture screenshot after every step.
-   * @param string $fullscreenAlgorithm
-   *   Algorithm to use for fullscreen screenshots. This parameter is
-   *   deprecated and will be ignored. The algorithm is now always set to
-   *   'resize'.
    * @param string $filenamePattern
    *   File name pattern.
    * @param string $filenamePatternFailed
@@ -55,7 +51,6 @@ class ScreenshotContextInitializer implements ContextInitializer {
     protected bool $purge,
     protected bool $alwaysFullscreen,
     protected bool $onEveryStep,
-    protected string $fullscreenAlgorithm,
     protected string $filenamePattern,
     protected string $filenamePatternFailed,
     protected array $infoTypes = [],
@@ -83,7 +78,6 @@ class ScreenshotContextInitializer implements ContextInitializer {
         $this->failedPrefix,
         $this->alwaysFullscreen,
         $this->onEveryStep,
-        $this->fullscreenAlgorithm,
         $this->filenamePattern,
         $this->filenamePatternFailed,
         $this->infoTypes

@@ -24,10 +24,6 @@ interface ScreenshotAwareContextInterface extends Context {
    *   Always take fullscreen screenshots.
    * @param bool $on_every_step
    *   Capture screenshot after every step.
-   * @param string $fullscreen_algorithm
-   *   Algorithm to use for fullscreen screenshots. This parameter is
-   *   deprecated and will be ignored. The algorithm is now always set to
-   *   'resize'.
    * @param string $filename_pattern
    *   File name pattern.
    * @param string $filename_pattern_failed
@@ -37,7 +33,7 @@ interface ScreenshotAwareContextInterface extends Context {
    *
    * @return $this
    */
-  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $fullscreen_algorithm, string $filename_pattern, string $filename_pattern_failed, array $info_types): static;
+  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types): static;
 
   /**
    * Save screenshot content into a file.

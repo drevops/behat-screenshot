@@ -31,7 +31,6 @@ class ScreenshotContextInitializerTest extends TestCase {
       TRUE,
       TRUE,
       FALSE,
-      'resize',
       '{datetime:U}.{ext}',
       '{datetime:U}.{failed_prefix}{ext}',
       []
@@ -57,7 +56,6 @@ class ScreenshotContextInitializerTest extends TestCase {
         'failed_',
         TRUE,
         FALSE,
-        'resize',
         '{datetime:U}.{ext}',
         '{datetime:U}.{failed_prefix}{ext}',
         []
@@ -71,7 +69,6 @@ class ScreenshotContextInitializerTest extends TestCase {
       FALSE,
       TRUE,
       FALSE,
-      'resize',
       '{datetime:U}.{ext}',
       '{datetime:U}.{failed_prefix}{ext}',
       []
@@ -101,7 +98,6 @@ class ScreenshotContextInitializerTest extends TestCase {
           'failed_',
           TRUE,
           FALSE,
-          'resize',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           []
@@ -138,7 +134,6 @@ class ScreenshotContextInitializerTest extends TestCase {
           FALSE,
           TRUE,
           FALSE,
-          'resize',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           [],
@@ -161,7 +156,6 @@ class ScreenshotContextInitializerTest extends TestCase {
           'failed_',
           TRUE,
           FALSE,
-          'resize',
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           []

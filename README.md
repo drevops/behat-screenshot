@@ -69,7 +69,6 @@ default:
       on_failed: true
       purge: false
       always_fullscreen: false
-      fullscreen_algorithm: resize # Options: 'stitch' or 'resize'
       failed_prefix: 'failed_'
       filename_pattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
       filename_pattern_failed: '{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
@@ -89,24 +88,8 @@ Given I am on "http://google.com"
 Then I save fullscreen screenshot
 ```
 
-There are two algorithms available for capturing fullscreen screenshots:
-
-1. **Resize** (default): Temporarily resizes the browser window to the full height of the
-   page to capture everything in one screenshot. This is faster, but may cause
-   layout issues on some pages.
-
-2. **Stitch**: Takes multiple screenshots while scrolling the page and
-   stitches them together. This produces high-quality results with proper
-   content rendering but requires the GD extension.
-
-You can configure which algorithm to use via the `fullscreen_algorithm` option:
-
-```yaml
-default:
-  extensions:
-    DrevOps\BehatScreenshotExtension:
-      fullscreen_algorithm: resize # Options: 'stitch' or 'resize'
-```
+Fullscreen screenshots work by temporarily resizing the browser window to the
+full height of the page to capture everything in one screenshot.
 
 You may optionally specify the size of the browser window in the screenshot
 step:
@@ -173,7 +156,6 @@ The `@screenshots` tag takes precedence over the global configuration, allowing 
 | `on_every_step`           | `false`                                                                | Automatically capture screenshots after every step. Can be enabled globally via config or per-scenario using the `@screenshots` tag. Only captures on passed steps to avoid duplicates with `on_failed`.                                                                                        |
 | `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                                                                                                                                                             |
 | `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
-| `fullscreen_algorithm`    | `resize`                                                               | Algorithm to use for fullscreen screenshots. Options: `resize` (temporarily resizes browser window to full page height) or `stitch` (captures multiple screenshots while scrolling and stitches them together). The stitch algorithm requires GD extension but produces higher quality results. |
 | `info_types`              | `url`, `feature`, `step`, `datetime`                                   | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed.                                                                                                                                              |
 | `failed_prefix`           | `failed_`                                                              | Prefix failed screenshots with `failed_` string. Useful to distinguish failed and intended screenshots.                                                                                                                                                                                         |
 | `filename_pattern`        | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`                | File name pattern for successful assertions.                                                                                                                                                                                                                                                    |
