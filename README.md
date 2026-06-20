@@ -32,6 +32,7 @@
 * Configurable screenshot directory.
 * Automatically purges screenshots after each test run.
 * Adds additional information to screenshots.
+* Records an animated GIF of a scenario from its per-step screenshots.
 
 ## Installation
 
@@ -147,6 +148,36 @@ The `@screenshots` tag takes precedence over the global configuration, allowing 
 
 **Note**: When both `on_every_step` and `on_failed` are enabled, only one screenshot is captured for failed steps (the failed screenshot) to avoid duplicates.
 
+### Recording an animated GIF
+
+To record an animated GIF of a scenario from its per-step screenshots, you can either:
+
+1. **Enable globally** in configuration:
+
+```yaml
+default:
+  extensions:
+    DrevOps\BehatScreenshotExtension:
+      animation:
+        enabled: true
+        frame_delay: 500
+```
+
+2. **Enable per-scenario** using the `@screenshots:animated` tag:
+
+```gherkin
+@javascript @screenshots:animated
+Scenario: My scenario recorded as an animated GIF
+  Given I am on "http://example.com"
+  When I click "Login"
+  Then I should see "Welcome"
+  # An animated GIF is written when the scenario finishes.
+```
+
+Enabling animation implies per-step capture: a screenshot is taken after every passed step, and the frames are combined into a single GIF - named after the feature file and scenario line - when the scenario finishes. `frame_delay` sets the delay between frames in milliseconds.
+
+The `@screenshots:animated` tag is read at both the scenario and feature level. Animation requires the `gd` PHP extension and a driver that can capture screenshots (such as a real browser via `@javascript`); without GD, the animated GIF is skipped while the per-step screenshots are still written.
+
 ## Options
 
 | Name                      | Default value                                                          | Description                                                                                                                                                                                                                                                                                     |
@@ -154,6 +185,8 @@ The `@screenshots` tag takes precedence over the global configuration, allowing 
 | `dir`                     | `%paths.base%/screenshots`                                             | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. Override with `BEHAT_SCREENSHOT_DIR` env var.                                                                                                                                       |
 | `on_failed`               | `true`                                                                 | Capture screenshot on failed test.                                                                                                                                                                                                                                                              |
 | `on_every_step`           | `false`                                                                | Automatically capture screenshots after every step. Can be enabled globally via config or per-scenario using the `@screenshots` tag. Only captures on passed steps to avoid duplicates with `on_failed`.                                                                                        |
+| `animation.enabled`       | `false`                                                                | Build an animated GIF per scenario from the per-step screenshots. Implies per-step capture. Can be enabled per-scenario with the `@screenshots:animated` tag (read at scenario or feature level). Requires the `gd` PHP extension.                                                               |
+| `animation.frame_delay`   | `500`                                                                  | Delay between animated GIF frames, in milliseconds.                                                                                                                                                                                                                                             |
 | `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                                                                                                                                                             |
 | `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
 | `info_types`              | `url`, `feature`, `step`, `datetime`                                   | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed.                                                                                                                                              |

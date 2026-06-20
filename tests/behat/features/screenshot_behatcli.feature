@@ -383,6 +383,23 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/fullscreen\.html" should exist
     And behat cli file wildcard "screenshots/fullscreen\.png" should exist
 
+  Scenario: Test Screenshot context records an animated GIF when tagged
+    Given screenshot fixture
+    And screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension:
+            dir: "%paths.base%/screenshots"
+            purge: true
+      """
+    And scenario steps tagged with "@phpserver @javascript @screenshots:animated":
+      """
+      When I am on the phpserver test page
+      And I save screenshot
+      """
+    When I run "behat --no-colors --strict"
+    Then it should pass
+    And behat cli file wildcard "screenshots/*\.gif" should exist
+
   @selenium
   Scenario: Test Screenshot context with JS full-screen short screenshot
     Given short screenshot fixture

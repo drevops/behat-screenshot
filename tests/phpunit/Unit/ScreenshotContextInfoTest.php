@@ -70,7 +70,8 @@ class ScreenshotContextInfoTest extends TestCase {
       FALSE,
       '{datetime:U}.test.{ext}',
       '{datetime:U}.{failed_prefix}test.{ext}',
-      $info_types
+      $info_types,
+      []
     );
 
     // Get the info.
@@ -115,7 +116,8 @@ class ScreenshotContextInfoTest extends TestCase {
       FALSE,
       '{datetime:U}.test.{ext}',
       '{datetime:U}.{failed_prefix}test.{ext}',
-      ['url']
+      ['url'],
+      []
     );
 
     // Get the info.
@@ -217,6 +219,7 @@ class ScreenshotContextInfoTest extends TestCase {
         FALSE,
         '{url}.{ext}',
         '{failed_prefix}{url}.{ext}',
+        [],
         []
       );
 

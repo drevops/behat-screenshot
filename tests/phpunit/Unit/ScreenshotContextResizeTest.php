@@ -148,6 +148,7 @@ class ScreenshotContextResizeTest extends TestCase {
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
+      []
     );
 
     // Mock the resize method to return test data.
@@ -203,6 +204,7 @@ class ScreenshotContextResizeTest extends TestCase {
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
+      []
     );
 
     // Mock the fullscreen screenshot method.

@@ -76,6 +76,7 @@ class ScreenshotContextTest extends TestCase {
       FALSE,
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
+      [],
       []
     );
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
@@ -88,6 +89,7 @@ class ScreenshotContextTest extends TestCase {
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
+      []
     );
     $screenshot_context->expects($this->once())->method('screenshot');
     $screenshot_context->printLastResponseOnError($scope);
@@ -173,6 +175,7 @@ class ScreenshotContextTest extends TestCase {
       '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       [],
+      []
     );
     $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
     $method = $screenshot_context_reflection->getMethod('saveScreenshotContent');
@@ -244,6 +247,7 @@ class ScreenshotContextTest extends TestCase {
       $filename_pattern,
       $filename_pattern_failed,
       [],
+      []
     );
 
     $screenshot_context_reflection = new \ReflectionClass($screenshot_context);

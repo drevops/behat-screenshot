@@ -33,6 +33,7 @@ class ScreenshotContextInitializerTest extends TestCase {
       FALSE,
       '{datetime:U}.{ext}',
       '{datetime:U}.{failed_prefix}{ext}',
+      [],
       []
     );
 
@@ -58,6 +59,7 @@ class ScreenshotContextInitializerTest extends TestCase {
         FALSE,
         '{datetime:U}.{ext}',
         '{datetime:U}.{failed_prefix}{ext}',
+        [],
         []
       );
 
@@ -71,6 +73,7 @@ class ScreenshotContextInitializerTest extends TestCase {
       FALSE,
       '{datetime:U}.{ext}',
       '{datetime:U}.{failed_prefix}{ext}',
+      [],
       []
     );
 
@@ -100,6 +103,7 @@ class ScreenshotContextInitializerTest extends TestCase {
           FALSE,
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
+          [],
           []
         );
 
@@ -137,6 +141,7 @@ class ScreenshotContextInitializerTest extends TestCase {
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
           [],
+          [],
         ])
         ->onlyMethods(['getFilesystem', 'getFinder'])
         ->getMock();
@@ -158,6 +163,7 @@ class ScreenshotContextInitializerTest extends TestCase {
           FALSE,
           '{datetime:U}.{ext}',
           '{datetime:U}.{failed_prefix}{ext}',
+          [],
           []
         );
 

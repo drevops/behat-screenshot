@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshotExtension\Context;
 
+use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
+use DrevOps\BehatScreenshotExtension\AnimatedGif;
 use DrevOps\BehatScreenshotExtension\Tokenizer;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -42,6 +44,30 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * Whether the current scenario has the @screenshots tag.
    */
   protected bool $scenarioHasScreenshotsTag = FALSE;
+
+  /**
+   * Animated GIF settings (keys: enabled, frame_delay).
+   *
+   * @var array<string,mixed>
+   */
+  protected array $animation = [];
+
+  /**
+   * Whether the current scenario should produce an animated GIF.
+   */
+  protected bool $scenarioIsAnimated = FALSE;
+
+  /**
+   * Screenshot image data collected during the current scenario.
+   *
+   * @var array<int,string>
+   */
+  protected array $animationFrames = [];
+
+  /**
+   * Image data of the most recent PNG screenshot written by screenshot().
+   */
+  protected ?string $lastScreenshotData = NULL;
 
   /**
    * Prefix for failed screenshot files.
@@ -80,7 +106,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types): static {
+  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static {
     $this->dir = $dir;
     $this->onFailed = $on_failed;
     $this->failedPrefix = $failed_prefix;
@@ -89,6 +115,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $this->filenamePattern = $filename_pattern;
     $this->filenamePatternFailed = $filename_pattern_failed;
     $this->infoTypes = $info_types;
+    $this->animation = $animation;
 
     return $this;
   }
@@ -104,7 +131,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Check if scenario has @screenshots tag.
+   * Detect screenshot tags and reset per-scenario animation state.
+   *
+   * Tags are read at both the scenario and feature level, so either may
+   * enable the behaviour.
    *
    * @param \Behat\Behat\Hook\Scope\BeforeScenarioScope $scope
    *   Scenario scope.
@@ -112,7 +142,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @BeforeScenario
    */
   public function beforeScenarioCheckScreenshotsTag(BeforeScenarioScope $scope): void {
-    $this->scenarioHasScreenshotsTag = $scope->getScenario()->hasTag('screenshots');
+    $scenario = $scope->getScenario();
+    $feature = $scope->getFeature();
+
+    $this->scenarioHasScreenshotsTag = $scenario->hasTag('screenshots') || $feature->hasTag('screenshots');
+    $this->scenarioIsAnimated = !empty($this->animation['enabled']) || $scenario->hasTag('screenshots:animated') || $feature->hasTag('screenshots:animated');
+    $this->animationFrames = [];
   }
 
   /**
@@ -184,14 +219,38 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @AfterStep
    */
   public function captureScreenshotAfterStep(AfterStepScope $event): void {
-    // Only capture if:
-    // 1. Global config is enabled OR scenario has the @screenshots tag
-    // 2. Step passed (we don't want duplicates with on_failed)
-    if (($this->onEveryStep || $this->scenarioHasScreenshotsTag) && $event->getTestResult()->isPassed()) {
+    // Capture when per-step screenshots are enabled - globally, via the
+    // @screenshots tag, or because the scenario is animated - and the step
+    // passed. Failed steps are covered by on_failed to avoid duplicates.
+    if (($this->onEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $event->getTestResult()->isPassed()) {
       $this->screenshot([
         'fullscreen' => $this->alwaysFullscreen,
       ]);
+
+      if ($this->scenarioIsAnimated && $this->lastScreenshotData !== NULL) {
+        $this->animationFrames[] = $this->lastScreenshotData;
+      }
     }
+  }
+
+  /**
+   * Assemble the captured frames into an animated GIF.
+   *
+   * @param \Behat\Behat\Hook\Scope\AfterScenarioScope $scope
+   *   After scenario scope.
+   *
+   * @AfterScenario
+   */
+  public function afterScenarioAnimate(AfterScenarioScope $scope): void {
+    if (!$this->scenarioIsAnimated || $this->animationFrames === [] || !$this->isAnimatedGifSupported()) {
+      return;
+    }
+
+    $frame_delay = isset($this->animation['frame_delay']) && is_numeric($this->animation['frame_delay']) ? (int) $this->animation['frame_delay'] : 500;
+    $content = $this->getAnimatedGif()->encode($this->animationFrames, $frame_delay);
+    $this->animationFrames = [];
+
+    $this->saveScreenshotContent($this->makeAnimationFileName($scope), $content);
   }
 
   /**
@@ -269,6 +328,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $filename = isset($options['filename']) && is_scalar($options['filename']) ? strval($options['filename']) : NULL;
     $is_failed = isset($options['is_failed']) && is_scalar($options['is_failed']) && $options['is_failed'];
 
+    $this->lastScreenshotData = NULL;
+
     $driver = $this->getSession()->getDriver();
     $info = $this->renderInfo();
 
@@ -302,6 +363,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // and screenshot files together by name.
     $filename_png = $this->makeFileName('png', $filename, $is_failed);
     $this->saveScreenshotContent($filename_png, $content);
+    $this->lastScreenshotData = $content;
   }
 
   /**
@@ -562,6 +624,48 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     ];
 
     return Tokenizer::replaceTokens($filename, $data);
+  }
+
+  /**
+   * Make animated GIF filename for a scenario.
+   *
+   * Format: timestamp.featurefilename_scenariolinenumber.gif.
+   *
+   * @param \Behat\Behat\Hook\Scope\AfterScenarioScope $scope
+   *   After scenario scope.
+   *
+   * @return string
+   *   Unique animated GIF file name grouped with the scenario step files.
+   *
+   * @throws \Exception
+   */
+  protected function makeAnimationFileName(AfterScenarioScope $scope): string {
+    $data = [
+      'feature_file' => $scope->getFeature()->getFile(),
+      'timestamp' => $this->getCurrentTime(),
+    ];
+
+    return Tokenizer::replaceTokens('{datetime:U}.{feature_file}.feature_' . $scope->getScenario()->getLine() . '.gif', $data);
+  }
+
+  /**
+   * Check whether the runtime can encode animated GIFs.
+   *
+   * @return bool
+   *   TRUE when the GD image functions required for encoding are available.
+   */
+  protected function isAnimatedGifSupported(): bool {
+    return function_exists('imagecreatefromstring') && function_exists('imagegif');
+  }
+
+  /**
+   * Get an animated GIF encoder instance.
+   *
+   * @return \DrevOps\BehatScreenshotExtension\AnimatedGif
+   *   Animated GIF encoder.
+   */
+  protected function getAnimatedGif(): AnimatedGif {
+    return new AnimatedGif();
   }
 
 }

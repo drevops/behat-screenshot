@@ -9,6 +9,9 @@ default:
       dir: %paths.base%/screenshots
       on_failed: true
       on_every_step: false # Capture screenshot after every step
+      animation:
+        enabled: false # Build an animated GIF from per-step screenshots for each scenario.
+        frame_delay: 500 # Delay between animated GIF frames, in milliseconds.
       purge: false
       always_fullscreen: false
       info_types:
