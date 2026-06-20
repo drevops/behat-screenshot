@@ -34,7 +34,7 @@ class AnimatedGif {
    *
    * @param array<int,string> $frames
    *   Raw image data for each frame, in any format readable by GD (e.g. PNG).
-   *   Frames are normalised to the dimensions of the first decodable frame.
+   *   Frames are padded to the largest frame's dimensions, never stretched.
    * @param int $frame_delay
    *   Delay between frames, in milliseconds.
    *
@@ -63,25 +63,35 @@ class AnimatedGif {
    *   Raw image data for each frame.
    *
    * @return array<int,string>
-   *   Single-frame GIF binaries, all sharing the first frame's dimensions.
+   *   Single-frame GIF binaries, all sharing the largest frame's dimensions.
    */
   protected function normaliseFrames(array $frames): array {
-    $gif_frames = [];
-    $width = NULL;
-    $height = NULL;
+    // Size the canvas to the largest frame so each frame keeps its own aspect
+    // ratio. Resampling frames of different sizes to a single size distorts
+    // them - smaller frames are padded instead, and nothing is stretched.
+    $width = 0;
+    $height = 0;
+    foreach ($frames as $frame) {
+      $size = @getimagesizefromstring($frame);
+      if ($size !== FALSE) {
+        $width = max($width, $size[0]);
+        $height = max($height, $size[1]);
+      }
+    }
 
+    if ($width < 1 || $height < 1) {
+      throw new \InvalidArgumentException('None of the provided frames could be decoded as an image.');
+    }
+
+    $gif_frames = [];
     foreach ($frames as $frame) {
       $image = @imagecreatefromstring($frame);
       if (!$image instanceof \GdImage) {
         continue;
       }
 
-      if ($width === NULL || $height === NULL) {
-        $width = imagesx($image);
-        $height = imagesy($image);
-      }
-      elseif (imagesx($image) !== $width || imagesy($image) !== $height) {
-        $image = $this->resize($image, max(1, $width), max(1, $height));
+      if (imagesx($image) !== $width || imagesy($image) !== $height) {
+        $image = $this->pad($image, $width, $height);
       }
 
       ob_start();
@@ -94,37 +104,42 @@ class AnimatedGif {
       }
     }
 
+    // @codeCoverageIgnoreStart
     if ($gif_frames === []) {
       throw new \InvalidArgumentException('None of the provided frames could be decoded as an image.');
     }
 
+    // @codeCoverageIgnoreEnd
     return $gif_frames;
   }
 
   /**
-   * Resize an image onto a new canvas of the given dimensions.
+   * Pad an image onto a larger canvas without scaling it.
    *
    * @param \GdImage $image
-   *   Source image. Destroyed once copied onto the new canvas.
+   *   Source image. Destroyed once copied onto the canvas.
    * @param positive-int $width
-   *   Target width.
+   *   Canvas width.
    * @param positive-int $height
-   *   Target height.
+   *   Canvas height.
    *
    * @return \GdImage
-   *   Resized image on a new canvas.
+   *   The source image placed top-left on a white canvas of the given size.
    */
-  protected function resize(\GdImage $image, int $width, int $height): \GdImage {
+  protected function pad(\GdImage $image, int $width, int $height): \GdImage {
     $canvas = imagecreatetruecolor($width, $height);
 
     // @codeCoverageIgnoreStart
     if (!$canvas instanceof \GdImage) {
       imagedestroy($image);
 
-      throw new \RuntimeException('Unable to create a canvas for resizing an animation frame.');
+      throw new \RuntimeException('Unable to create a canvas for an animation frame.');
     }
     // @codeCoverageIgnoreEnd
-    imagecopyresampled($canvas, $image, 0, 0, 0, 0, $width, $height, imagesx($image), imagesy($image));
+    // Smaller frames sit on a white background rather than being stretched.
+    $background = (int) imagecolorallocate($canvas, 255, 255, 255);
+    imagefilledrectangle($canvas, 0, 0, $width - 1, $height - 1, $background);
+    imagecopy($canvas, $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
     imagedestroy($image);
 
     return $canvas;

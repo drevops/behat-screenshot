@@ -34,7 +34,7 @@ class AnimatedGifTest extends TestCase {
     $this->assertSame([120, 90], $this->imageSize($gif));
   }
 
-  public function testEncodeNormalisesDifferentlySizedFrames(): void {
+  public function testEncodePadsFramesToLargestFrame(): void {
     $frames = [
       $this->createPngFrame(100, 100, [10, 20, 30]),
       $this->createPngFrame(64, 48, [200, 100, 50]),
@@ -46,8 +46,26 @@ class AnimatedGifTest extends TestCase {
     $this->assertStringStartsWith('GIF89a', $gif);
     $this->assertEquals(3, substr_count($gif, "\x21\xF9\x04"));
 
-    // All frames are normalised to the first frame's dimensions.
-    $this->assertSame([100, 100], $this->imageSize($gif));
+    // The canvas matches the largest frame; smaller frames are padded,
+    // not scaled.
+    $this->assertSame([150, 120], $this->imageSize($gif));
+  }
+
+  public function testEncodeDoesNotStretchSmallerFrames(): void {
+    // A small red frame followed by a larger blue frame.
+    $frames = [
+      $this->createPngFrame(40, 30, [255, 0, 0]),
+      $this->createPngFrame(80, 60, [0, 0, 255]),
+    ];
+
+    $gif = (new AnimatedGif())->encode($frames, 100);
+
+    // The canvas is the larger frame's size.
+    $this->assertSame([80, 60], $this->imageSize($gif));
+    // The small frame keeps its native size at the top-left: its own area is
+    // red and the rest is white padding - it is not stretched to fill.
+    $this->assertColorNear([255, 0, 0], $this->pixelColor($gif, 5, 5));
+    $this->assertColorNear([255, 255, 255], $this->pixelColor($gif, 70, 50));
   }
 
   public function testEncodeHandlesFramesWithExtensionBlocks(): void {
@@ -83,6 +101,20 @@ class AnimatedGifTest extends TestCase {
     // byte for byte.
     $this->assertEquals($this->gifSignature($expected), $this->gifSignature($produced));
     $this->assertSame([80, 60], $this->imageSize($produced));
+  }
+
+  public function testEncodeSkipsUndecodableFrames(): void {
+    $frames = [
+      $this->createPngFrame(30, 20, [0, 128, 0]),
+      'not-an-image',
+    ];
+
+    $gif = (new AnimatedGif())->encode($frames, 100);
+
+    $this->assertStringStartsWith('GIF89a', $gif);
+    // Only the single decodable frame ends up in the animation.
+    $this->assertEquals(1, substr_count($gif, "\x21\xF9\x04"));
+    $this->assertSame([30, 20], $this->imageSize($gif));
   }
 
   public function testEncodeThrowsWhenNoFramesProvided(): void {
@@ -235,6 +267,45 @@ class AnimatedGifTest extends TestCase {
     imagedestroy($image);
 
     return $size;
+  }
+
+  /**
+   * Read the RGB colour of a pixel in the first frame of an image.
+   *
+   * @param string $data
+   *   Binary image data.
+   * @param int $x
+   *   Pixel x coordinate.
+   * @param int $y
+   *   Pixel y coordinate.
+   *
+   * @return array<int,int>
+   *   The red, green and blue components, or [-1, -1, -1] when undecodable.
+   */
+  protected function pixelColor(string $data, int $x, int $y): array {
+    $image = imagecreatefromstring($data);
+    if (!$image instanceof \GdImage) {
+      return [-1, -1, -1];
+    }
+
+    $colors = imagecolorsforindex($image, (int) imagecolorat($image, $x, $y));
+    imagedestroy($image);
+
+    return [$colors['red'], $colors['green'], $colors['blue']];
+  }
+
+  /**
+   * Assert two colours match within a tolerance to allow for GIF quantisation.
+   *
+   * @param array<int,int> $expected
+   *   Expected red, green and blue components.
+   * @param array<int,int> $actual
+   *   Actual red, green and blue components.
+   */
+  protected function assertColorNear(array $expected, array $actual): void {
+    foreach ($expected as $channel => $value) {
+      $this->assertEqualsWithDelta($value, $actual[$channel], 24);
+    }
   }
 
 }
