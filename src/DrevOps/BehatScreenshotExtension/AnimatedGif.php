@@ -17,17 +17,17 @@ class AnimatedGif {
   /**
    * Image Separator byte that introduces an image block.
    */
-  protected const IMAGE_SEPARATOR = 0x2C;
+  public const IMAGE_SEPARATOR = 0x2C;
 
   /**
    * Extension Introducer byte that introduces an extension block.
    */
-  protected const EXTENSION_INTRODUCER = 0x21;
+  public const EXTENSION_INTRODUCER = 0x21;
 
   /**
    * Trailer byte that terminates the GIF stream.
    */
-  protected const TRAILER = 0x3B;
+  public const TRAILER = 0x3B;
 
   /**
    * Encode a sequence of image frames into an animated GIF.
@@ -116,6 +116,14 @@ class AnimatedGif {
    */
   protected function resize(\GdImage $image, int $width, int $height): \GdImage {
     $canvas = imagecreatetruecolor($width, $height);
+
+    // @codeCoverageIgnoreStart
+    if (!$canvas instanceof \GdImage) {
+      imagedestroy($image);
+
+      throw new \RuntimeException('Unable to create a canvas for resizing an animation frame.');
+    }
+    // @codeCoverageIgnoreEnd
     imagecopyresampled($canvas, $image, 0, 0, 0, 0, $width, $height, imagesx($image), imagesy($image));
     imagedestroy($image);
 

@@ -136,7 +136,11 @@ class AnimatedGifTest extends TestCase {
    */
   protected function createPngFrame(int $width, int $height, array $rgb): string {
     $image = imagecreatetruecolor($width, $height);
-    $color = imagecolorallocate($image, $rgb[0], $rgb[1], $rgb[2]);
+    if (!$image instanceof \GdImage) {
+      return '';
+    }
+
+    $color = (int) imagecolorallocate($image, $rgb[0], $rgb[1], $rgb[2]);
     imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, $color);
 
     ob_start();
@@ -144,7 +148,7 @@ class AnimatedGifTest extends TestCase {
     $data = ob_get_clean();
     imagedestroy($image);
 
-    return (string) $data;
+    return is_string($data) ? $data : '';
   }
 
   /**
@@ -160,8 +164,12 @@ class AnimatedGifTest extends TestCase {
    */
   protected function createTransparentPngFrame(int $width, int $height): string {
     $image = imagecreate($width, $height);
+    if (!$image instanceof \GdImage) {
+      return '';
+    }
+
     imagecolorallocate($image, 200, 30, 30);
-    $transparent = imagecolorallocate($image, 0, 0, 0);
+    $transparent = (int) imagecolorallocate($image, 0, 0, 0);
     imagecolortransparent($image, $transparent);
     imagefilledrectangle($image, 0, 0, intdiv($width, 2), $height - 1, $transparent);
 
@@ -170,7 +178,7 @@ class AnimatedGifTest extends TestCase {
     $data = ob_get_clean();
     imagedestroy($image);
 
-    return (string) $data;
+    return is_string($data) ? $data : '';
   }
 
   /**
