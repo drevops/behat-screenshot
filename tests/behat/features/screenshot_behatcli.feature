@@ -383,6 +383,7 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/fullscreen\.html" should exist
     And behat cli file wildcard "screenshots/fullscreen\.png" should exist
 
+  @selenium
   Scenario: Test Screenshot context records an animated GIF when tagged
     Given screenshot fixture
     And screenshot context behat configuration with value:
