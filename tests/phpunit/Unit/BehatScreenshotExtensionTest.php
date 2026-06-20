@@ -34,6 +34,7 @@ class BehatScreenshotExtensionTest extends TestCase {
       'filename_pattern' => '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
       'filename_pattern_failed' => '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
       'info_types' => FALSE,
+      'animation' => ['enabled' => FALSE, 'frame_delay' => 500],
     ];
 
     $extension = new BehatScreenshotExtension();
@@ -54,6 +55,7 @@ class BehatScreenshotExtensionTest extends TestCase {
         $config['filename_pattern'],
         $config['filename_pattern_failed'],
         $config['info_types'],
+        $config['animation'],
       ],
       $definition->getArguments()
     );
@@ -65,7 +67,7 @@ class BehatScreenshotExtensionTest extends TestCase {
     $extension = new BehatScreenshotExtension();
     $extension->configure($builder);
 
-    $this->assertCount(9, $builder->getChildNodeDefinitions());
+    $this->assertCount(10, $builder->getChildNodeDefinitions());
   }
 
 }

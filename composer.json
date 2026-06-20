@@ -36,6 +36,9 @@
         "rector/rector": "^2",
         "symfony/process": "^6.4 || ^7.0"
     },
+    "suggest": {
+        "ext-gd": "Required to generate animated GIF screenshots (the animation option)."
+    },
     "autoload": {
         "psr-4": {
             "DrevOps\\BehatScreenshotExtension\\": "src/DrevOps/BehatScreenshotExtension"

@@ -76,6 +76,18 @@ class BehatScreenshotExtension implements ExtensionInterface {
         ->cannotBeEmpty()
         ->defaultValue(FALSE)
       ->end()
+      ->arrayNode('animation')
+        ->addDefaultsIfNotSet()
+        ->children()
+          ->booleanNode('enabled')
+            ->defaultFalse()
+          ->end()
+          ->integerNode('frame_delay')
+            ->min(0)
+            ->defaultValue(500)
+          ->end()
+        ->end()
+      ->end()
       ->scalarNode('filename_pattern')
         ->cannotBeEmpty()
         ->defaultValue('{datetime:U}.{feature_file}.feature_{step_line}.{ext}')
@@ -106,6 +118,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
       $config['filename_pattern'],
       $config['filename_pattern_failed'],
       $config['info_types'],
+      $config['animation'],
     ]);
     $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
     $container->setDefinition(static::MOD_ID . '.screenshot_context_initializer', $definition);

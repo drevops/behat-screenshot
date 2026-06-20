@@ -41,6 +41,8 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *   File name pattern failed.
    * @param array<int,string> $infoTypes
    *   Show these info types in the screenshot.
+   * @param array<string,mixed> $animation
+   *   Animated GIF settings (keys: enabled, frame_delay).
    *
    * @codeCoverageIgnore
    */
@@ -54,6 +56,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
     protected string $filenamePattern,
     protected string $filenamePatternFailed,
     protected array $infoTypes = [],
+    protected array $animation = [],
   ) {
   }
 
@@ -80,7 +83,8 @@ class ScreenshotContextInitializer implements ContextInitializer {
         $this->onEveryStep,
         $this->filenamePattern,
         $this->filenamePatternFailed,
-        $this->infoTypes
+        $this->infoTypes,
+        $this->animation
       );
     }
   }
