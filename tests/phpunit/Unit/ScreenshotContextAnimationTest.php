@@ -159,6 +159,30 @@ class ScreenshotContextAnimationTest extends TestCase {
     $context->afterScenarioAnimate($this->createAfterScenarioScope());
   }
 
+  public function testAfterScenarioAnimateClearsFramesWhenEncoderFails(): void {
+    $encoder = $this->createMock(AnimatedGif::class);
+    $encoder->method('encode')->willThrowException(new \RuntimeException('encode failed'));
+
+    $context = $this->createPartialMock(ScreenshotContext::class, ['isAnimatedGifSupported', 'getAnimatedGif', 'makeAnimationFileName', 'saveScreenshotContent']);
+    $context->method('isAnimatedGifSupported')->willReturn(TRUE);
+    $context->method('getAnimatedGif')->willReturn($encoder);
+    $context->expects($this->never())->method('saveScreenshotContent');
+
+    $context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE]);
+    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
+    self::setProtectedValue($context, 'animationFrames', ['frame-1']);
+
+    try {
+      $context->afterScenarioAnimate($this->createAfterScenarioScope());
+      $this->fail('Expected exception was not thrown.');
+    }
+    catch (\Exception $exception) {
+      $this->assertSame('encode failed', $exception->getMessage());
+    }
+
+    $this->assertSame([], $this->getProtectedProperty($context, 'animationFrames'));
+  }
+
   public function testMakeAnimationFileName(): void {
     $context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
     $context->method('getCurrentTime')->willReturn(1700000000);

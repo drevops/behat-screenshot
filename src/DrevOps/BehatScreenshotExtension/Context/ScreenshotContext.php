@@ -246,11 +246,17 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
 
-    $frame_delay = isset($this->animation['frame_delay']) && is_numeric($this->animation['frame_delay']) ? (int) $this->animation['frame_delay'] : 500;
-    $content = $this->getAnimatedGif()->encode($this->animationFrames, $frame_delay);
-    $this->animationFrames = [];
-
-    $this->saveScreenshotContent($this->makeAnimationFileName($scope), $content);
+    // The frame buffer is always cleared, even when encoding or writing the
+    // animated GIF fails, so a non-critical artifact does not leak frames into
+    // the next scenario.
+    try {
+      $frame_delay = isset($this->animation['frame_delay']) && is_numeric($this->animation['frame_delay']) ? (int) $this->animation['frame_delay'] : 500;
+      $content = $this->getAnimatedGif()->encode($this->animationFrames, $frame_delay);
+      $this->saveScreenshotContent($this->makeAnimationFileName($scope), $content);
+    }
+    finally {
+      $this->animationFrames = [];
+    }
   }
 
   /**
