@@ -219,9 +219,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @AfterStep
    */
   public function captureScreenshotAfterStep(AfterStepScope $event): void {
-    // Capture when per-step screenshots are enabled - globally, via the
-    // @screenshots tag, or because the scenario is animated - and the step
-    // passed. Failed steps are covered by on_failed to avoid duplicates.
+    // Capture on passed steps when per-step screenshots are globally enabled,
+    // the @screenshots tag is active, or animation is recording.
+    // Failed steps are covered separately by on_failed to avoid duplicates.
     if (($this->onEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $event->getTestResult()->isPassed()) {
       $this->screenshot([
         'fullscreen' => $this->alwaysFullscreen,

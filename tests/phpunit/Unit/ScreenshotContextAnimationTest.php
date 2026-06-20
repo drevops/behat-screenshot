@@ -28,7 +28,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
   use ReflectionTrait;
 
-  #[DataProvider('dataProviderBeforeScenarioTags')]
+  #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTag')]
   public function testBeforeScenarioCheckScreenshotsTag(array $scenario_tags, array $feature_tags, array $animation, bool $expected_screenshots, bool $expected_animated): void {
     $environment = $this->createMock(Environment::class);
     $feature = $this->createMock(FeatureNode::class);
@@ -47,7 +47,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertSame([], $this->getProtectedProperty($context, 'animationFrames'));
   }
 
-  public static function dataProviderBeforeScenarioTags(): array {
+  public static function dataProviderBeforeScenarioCheckScreenshotsTag(): array {
     return [
       'no tags, no config' => [[], [], [], FALSE, FALSE],
       'scenario screenshots tag' => [['screenshots'], [], [], TRUE, FALSE],

@@ -99,7 +99,7 @@ class AnimatedGifTest extends TestCase {
     (new AnimatedGif())->encode(['not-an-image'], 500);
   }
 
-  #[DataProvider('dataProviderDelayConversion')]
+  #[DataProvider('dataProviderEncodeConvertsDelayToCentiseconds')]
   public function testEncodeConvertsDelayToCentiseconds(int $milliseconds, int $expected_centiseconds): void {
     $frames = [
       $this->createPngFrame(20, 20, [1, 2, 3]),
@@ -112,7 +112,7 @@ class AnimatedGifTest extends TestCase {
     $this->assertStringContainsString($needle, $gif);
   }
 
-  public static function dataProviderDelayConversion(): array {
+  public static function dataProviderEncodeConvertsDelayToCentiseconds(): array {
     return [
       'half second' => [500, 50],
       'one second' => [1000, 100],
@@ -135,12 +135,12 @@ class AnimatedGifTest extends TestCase {
    *   Binary PNG data.
    */
   protected function createPngFrame(int $width, int $height, array $rgb): string {
-    $image = imagecreatetruecolor($width, $height);
+    $image = imagecreatetruecolor(max(1, $width), max(1, $height));
     if (!$image instanceof \GdImage) {
       return '';
     }
 
-    $color = (int) imagecolorallocate($image, $rgb[0], $rgb[1], $rgb[2]);
+    $color = (int) imagecolorallocate($image, min(255, max(0, $rgb[0])), min(255, max(0, $rgb[1])), min(255, max(0, $rgb[2])));
     imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, $color);
 
     ob_start();
@@ -163,7 +163,7 @@ class AnimatedGifTest extends TestCase {
    *   Binary PNG data with transparency.
    */
   protected function createTransparentPngFrame(int $width, int $height): string {
-    $image = imagecreate($width, $height);
+    $image = imagecreate(max(1, $width), max(1, $height));
     if (!$image instanceof \GdImage) {
       return '';
     }

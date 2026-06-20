@@ -81,7 +81,7 @@ class AnimatedGif {
         $height = imagesy($image);
       }
       elseif (imagesx($image) !== $width || imagesy($image) !== $height) {
-        $image = $this->resize($image, $width, $height);
+        $image = $this->resize($image, max(1, $width), max(1, $height));
       }
 
       ob_start();
@@ -106,9 +106,9 @@ class AnimatedGif {
    *
    * @param \GdImage $image
    *   Source image. Destroyed once copied onto the new canvas.
-   * @param int $width
+   * @param positive-int $width
    *   Target width.
-   * @param int $height
+   * @param positive-int $height
    *   Target height.
    *
    * @return \GdImage
@@ -147,7 +147,7 @@ class AnimatedGif {
     // The 7-byte Logical Screen Descriptor follows the 6-byte header.
     $screen_descriptor = substr($first, 6, 7);
     $packed = ord($first[10]);
-    $global_color_table = ($packed & 0x80) ? substr($first, 13, $this->colorTableBytes($packed)) : '';
+    $global_color_table = (($packed & 0x80) !== 0) ? substr($first, 13, $this->colorTableBytes($packed)) : '';
 
     $output = 'GIF89a' . $screen_descriptor . $global_color_table;
     // Netscape Application Extension instructing viewers to loop forever.
