@@ -8,6 +8,7 @@
 /docker-compose.override.default.yml  export-ignore
 /docker-compose.yml                   export-ignore
 /docs                                 export-ignore
+/gherkinlint.json                     export-ignore
 /phpcs.xml                            export-ignore
 /phpmd.xml                            export-ignore
 /phpstan.neon                         export-ignore
