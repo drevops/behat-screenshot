@@ -99,7 +99,7 @@ class AnimatedGif {
       $gif = ob_get_clean();
       imagedestroy($image);
 
-      if (is_string($gif) && $gif !== '') {
+      if ($gif !== '') {
         $gif_frames[] = $gif;
       }
     }
