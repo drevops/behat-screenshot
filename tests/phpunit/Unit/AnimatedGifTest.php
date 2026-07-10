@@ -180,7 +180,7 @@ class AnimatedGifTest extends TestCase {
     $data = ob_get_clean();
     imagedestroy($image);
 
-    return is_string($data) ? $data : '';
+    return $data;
   }
 
   /**
@@ -210,7 +210,7 @@ class AnimatedGifTest extends TestCase {
     $data = ob_get_clean();
     imagedestroy($image);
 
-    return is_string($data) ? $data : '';
+    return $data;
   }
 
   /**
