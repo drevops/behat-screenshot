@@ -55,9 +55,9 @@ class AnimatedGif implements \Countable {
    * AnimatedGif constructor.
    *
    * @param int $maxWidth
-   *   Maximum frame width in pixels; 0 leaves the width unbounded.
+   *   Width in pixels beyond which a frame is cropped; 0 leaves it unbounded.
    * @param int $maxHeight
-   *   Maximum frame height in pixels; 0 leaves the height unbounded.
+   *   Height in pixels beyond which a frame is cropped; 0 leaves it unbounded.
    */
   public function __construct(
     protected int $maxWidth = 0,
@@ -187,43 +187,40 @@ class AnimatedGif implements \Countable {
   }
 
   /**
-   * Scale an image down to fit within the configured maximum dimensions.
+   * Crop an image to the configured maximum dimensions.
+   *
+   * Each axis is capped on its own and the top-left of the frame is kept, so
+   * the retained area holds its captured resolution and frames that share a
+   * width still share it after cropping.
    *
    * @param \GdImage $image
-   *   Source image. Destroyed once a scaled copy replaces it.
+   *   Source image. Destroyed once a cropped copy replaces it.
    *
    * @return \GdImage
-   *   The source image when it already fits, a scaled copy otherwise.
+   *   The source image when it already fits, a cropped copy otherwise.
    */
   protected function constrain(\GdImage $image): \GdImage {
     $width = imagesx($image);
     $height = imagesy($image);
 
-    $scale = 1.0;
+    $bounded_width = ($this->maxWidth > 0 && $width > $this->maxWidth) ? $this->maxWidth : $width;
+    $bounded_height = ($this->maxHeight > 0 && $height > $this->maxHeight) ? $this->maxHeight : $height;
 
-    if ($this->maxWidth > 0 && $width > $this->maxWidth) {
-      $scale = $this->maxWidth / $width;
-    }
-
-    if ($this->maxHeight > 0 && $height > $this->maxHeight) {
-      $scale = min($scale, $this->maxHeight / $height);
-    }
-
-    if ($scale >= 1.0) {
+    if ($bounded_width === $width && $bounded_height === $height) {
       return $image;
     }
 
-    $scaled = imagescale($image, max(1, (int) round($width * $scale)), max(1, (int) round($height * $scale)));
+    $cropped = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => $bounded_width, 'height' => $bounded_height]);
 
     // @codeCoverageIgnoreStart
-    if (!$scaled instanceof \GdImage) {
+    if (!$cropped instanceof \GdImage) {
       return $image;
     }
 
     // @codeCoverageIgnoreEnd
     imagedestroy($image);
 
-    return $scaled;
+    return $cropped;
   }
 
   /**

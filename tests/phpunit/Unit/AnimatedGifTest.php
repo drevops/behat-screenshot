@@ -300,14 +300,31 @@ class AnimatedGifTest extends TestCase {
   public static function dataProviderConstrainFrameSize(): array {
     return [
       'no caps' => [0, 0, 400, 200, [400, 200]],
-      'width cap scales height with it' => [100, 0, 400, 200, [100, 50]],
-      'height cap scales width with it' => [0, 100, 400, 200, [200, 100]],
-      'tightest cap wins' => [200, 50, 400, 200, [100, 50]],
+      'width cap leaves height alone' => [100, 0, 400, 200, [100, 200]],
+      'height cap leaves width alone' => [0, 100, 400, 200, [400, 100]],
+      'both caps apply' => [200, 50, 400, 200, [200, 50]],
       'frame already within caps' => [800, 800, 400, 200, [400, 200]],
       'cap equal to frame size' => [400, 200, 400, 200, [400, 200]],
-      'extreme height cap' => [0, 20, 400, 4000, [2, 20]],
-      'never scales below one pixel' => [0, 1, 400, 4000, [1, 1]],
+      'extreme height cap' => [0, 20, 400, 4000, [400, 20]],
+      'single pixel height cap' => [0, 1, 400, 4000, [400, 1]],
     ];
+  }
+
+  public function testConstrainKeepsTheTopLeftOfAnOversizedFrame(): void {
+    // A frame whose top half is red and bottom half is blue.
+    $image = imagecreatetruecolor(80, 200);
+    imagefilledrectangle($image, 0, 0, 79, 99, (int) imagecolorallocate($image, 255, 0, 0));
+    imagefilledrectangle($image, 0, 100, 79, 199, (int) imagecolorallocate($image, 0, 0, 255));
+    ob_start();
+    imagepng($image);
+    $frame = strval(ob_get_clean());
+    imagedestroy($image);
+
+    $gif = (new AnimatedGif(0, 100))->encode([$frame], 100);
+
+    // The kept half is the top one, at its original resolution.
+    $this->assertSame([80, 100], $this->canvasSize($gif));
+    $this->assertColorNear([255, 0, 0], $this->pixelColor($gif, 40, 50));
   }
 
   public function testConstrainAppliesToEachFrameIndependently(): void {
@@ -318,9 +335,9 @@ class AnimatedGifTest extends TestCase {
 
     $gif = (new AnimatedGif(100, 0))->encode($frames, 100);
 
-    // Only the oversized frame is scaled; the smaller one is left alone.
+    // Only the oversized frame is cropped; the smaller one is left alone.
     $this->assertSame([
-      ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 50],
+      ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 200],
       ['left' => 0, 'top' => 0, 'width' => 50, 'height' => 40],
     ], $this->frameGeometry($gif));
   }
