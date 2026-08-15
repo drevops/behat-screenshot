@@ -178,6 +178,23 @@ When animation is enabled, a screenshot is taken after every passed step, and th
 
 The `@screenshots:animated` tag is read at both the scenario and feature level. Animation requires the `gd` PHP extension and a driver that can capture screenshots (such as a real browser via `@javascript`); without GD, the animated GIF is skipped while the per-step screenshots are still written.
 
+Each frame keeps the size it was captured at. Frames smaller than the tallest or widest frame of the scenario are shown at the top-left of the animation against a white background, rather than being scaled up or stretched.
+
+#### Limiting frame size
+
+With `always_fullscreen: true` every frame is as tall as the page it captured, so one long page - an admin listing, a search result set - produces very large frames and a correspondingly large GIF. Cap them with `max_width` and `max_height`:
+
+```yaml
+default:
+  extensions:
+    DrevOps\BehatScreenshotExtension:
+      animation:
+        enabled: true
+        max_height: 2000
+```
+
+Frames larger than the cap are scaled down proportionally before being encoded; frames already within it are untouched. Both caps default to `0`, which leaves the frame size unbounded. The per-step PNG screenshots are always written at full size, so capping affects the animation only.
+
 ## Options
 
 | Name                      | Default value                                                          | Description                                                                                                                                                                                                                                                                                     |
@@ -187,6 +204,8 @@ The `@screenshots:animated` tag is read at both the scenario and feature level. 
 | `on_every_step`           | `false`                                                                | Automatically capture screenshots after every step. Can be enabled globally via config or per-scenario using the `@screenshots` tag. Only captures on passed steps to avoid duplicates with `on_failed`.                                                                                        |
 | `animation.enabled`       | `false`                                                                | Build an animated GIF per scenario from the per-step screenshots, automatically enabling per-step capture. Can be enabled per-scenario with the `@screenshots:animated` tag (read at scenario or feature level). Requires the `gd` PHP extension.                                                |
 | `animation.frame_delay`   | `500`                                                                  | Delay between animated GIF frames, in milliseconds.                                                                                                                                                                                                                                             |
+| `animation.max_width`     | `0`                                                                    | Maximum animated GIF frame width, in pixels. Wider frames are scaled down proportionally before encoding. `0` leaves the width unbounded.                                                                                                                                                       |
+| `animation.max_height`    | `0`                                                                    | Maximum animated GIF frame height, in pixels. Taller frames are scaled down proportionally before encoding. `0` leaves the height unbounded. Useful with `always_fullscreen`, where frame height follows the page height.                                                                        |
 | `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                                                                                                                                                             |
 | `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
 | `info_types`              | `url`, `feature`, `step`, `datetime`                                   | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed.                                                                                                                                              |
