@@ -129,6 +129,24 @@ class AnimatedGifTest extends TestCase {
     ];
   }
 
+  public function testEncodeDoesNotInflatePixelsWhenOneFrameIsMuchTaller(): void {
+    // A long scenario in which a single step captured a very tall page.
+    $frames = [];
+    for ($step = 0; $step < 120; $step++) {
+      $frames[] = $step === 60
+        ? $this->createPngFrame(160, 2400, [0, 0, 200])
+        : $this->createPngFrame(160, 120, [200, 0, 0]);
+    }
+
+    $gif = (new AnimatedGif())->encode($frames, 500);
+
+    // The logical screen still covers the tall frame, but the other 119 frames
+    // are encoded at their own size rather than padded up to it: 2,668,800
+    // pixels instead of the 46,080,000 a shared canvas would encode.
+    $this->assertSame([160, 2400], $this->canvasSize($gif));
+    $this->assertSame(2668800, $this->encodedPixels($gif));
+  }
+
   public function testEncodeDoesNotPayForPaddingPixels(): void {
     $tall = $this->createGradientPngFrame(400, 400);
     $short = $this->createGradientPngFrame(20, 20);
@@ -477,6 +495,22 @@ class AnimatedGifTest extends TestCase {
     }
 
     return $frames;
+  }
+
+  /**
+   * Total the pixels every frame of a GIF stream actually encodes.
+   *
+   * @param string $gif
+   *   Binary GIF content.
+   *
+   * @return int
+   *   Sum of each image block's area, in pixels.
+   */
+  protected function encodedPixels(string $gif): int {
+    return array_sum(array_map(
+      static fn(array $frame): int => $frame['width'] * $frame['height'],
+      $this->parseFrames($gif)
+    ));
   }
 
   /**

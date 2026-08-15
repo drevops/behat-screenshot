@@ -12,6 +12,8 @@ default:
       animation:
         enabled: false # Build an animated GIF from per-step screenshots for each scenario.
         frame_delay: 500 # Delay between animated GIF frames, in milliseconds.
+        max_width: 0 # Maximum animated GIF frame width, in pixels. 0 leaves the width unbounded.
+        max_height: 0 # Maximum animated GIF frame height, in pixels. 0 leaves the height unbounded.
       purge: false
       always_fullscreen: false
       info_types:
