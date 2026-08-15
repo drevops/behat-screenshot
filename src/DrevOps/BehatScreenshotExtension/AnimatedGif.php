@@ -118,13 +118,13 @@ class AnimatedGif implements \Countable {
 
     ob_start();
     imagegif($image);
-    $gif = ob_get_clean();
+    // ob_get_clean() returns FALSE when no output buffer is active; strval()
+    // maps that to the same empty string a failed encode produces.
+    $gif = strval(ob_get_clean());
     imagedestroy($image);
 
     // @codeCoverageIgnoreStart
-    // ob_get_clean() is typed string|false; keep this check even where
-    // static analysis narrows the local type to string.
-    if (!is_string($gif) || $gif === '') {
+    if ($gif === '') {
       return FALSE;
     }
 
