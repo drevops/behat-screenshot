@@ -204,7 +204,7 @@ class AnimatedGifTest extends TestCase {
     (new AnimatedGif())->encode(['not-an-image'], 500);
   }
 
-  public function testEncodeDiscardsFramesFromAPreviousCall(): void {
+  public function testEncodeDiscardsFramesFromPreviousCall(): void {
     $encoder = new AnimatedGif();
 
     $encoder->encode([$this->createPngFrame(40, 30, [255, 0, 0])], 100);
