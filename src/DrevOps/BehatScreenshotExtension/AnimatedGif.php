@@ -122,7 +122,9 @@ class AnimatedGif implements \Countable {
     imagedestroy($image);
 
     // @codeCoverageIgnoreStart
-    if ($gif === '') {
+    // ob_get_clean() is typed string|false; keep this check even where
+    // static analysis narrows the local type to string.
+    if (!is_string($gif) || $gif === '') {
       return FALSE;
     }
 
