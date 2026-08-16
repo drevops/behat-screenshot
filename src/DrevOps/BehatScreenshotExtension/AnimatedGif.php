@@ -53,6 +53,13 @@ class AnimatedGif implements \Countable {
   public const MAX_DIMENSION = 65535;
 
   /**
+   * Longest delay GIF can record, in hundredths of a second.
+   *
+   * Held in the same unsigned 16-bit field width as the frame geometry.
+   */
+  public const MAX_DELAY = 65535;
+
+  /**
    * Added frames as single-frame GIF binaries with their pixel dimensions.
    *
    * @var array<int,array{gif:string,width:int,height:int}>
@@ -171,7 +178,7 @@ class AnimatedGif implements \Countable {
     }
 
     // GIF frame delays are expressed in hundredths of a second.
-    $delay = max(0, (int) round($frame_delay / 10));
+    $delay = min(max(0, (int) round($frame_delay / 10)), self::MAX_DELAY);
 
     $width = max(array_column($this->frames, 'width'));
     $height = max(array_column($this->frames, 'height'));

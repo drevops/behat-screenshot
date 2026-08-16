@@ -253,6 +253,9 @@ class AnimatedGifTest extends TestCase {
       'one second' => [1000, 100],
       'zero delay' => [0, 0],
       'rounds to nearest' => [44, 4],
+      // The delay shares the unsigned 16-bit field width of the geometry.
+      'largest representable delay' => [655350, 65535],
+      'beyond the representable delay' => [900000, 65535],
     ];
   }
 

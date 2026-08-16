@@ -20,7 +20,7 @@ trait GifParserTrait {
   /**
    * Value reported for a frame that carries no Graphic Control Extension.
    */
-  protected static int $gifMissingControl = -1;
+  protected const GIF_MISSING_CONTROL = -1;
 
   /**
    * Walk a GIF stream and describe each of its frames.
@@ -36,8 +36,8 @@ trait GifParserTrait {
     $offset = 13 + (($packed & 0x80) !== 0 ? $this->colorTableBytes($packed) : 0);
 
     $frames = [];
-    $disposal = self::$gifMissingControl;
-    $delay = self::$gifMissingControl;
+    $disposal = self::GIF_MISSING_CONTROL;
+    $delay = self::GIF_MISSING_CONTROL;
 
     while ($offset < strlen($gif) && ord($gif[$offset]) !== 0x3B) {
       $marker = ord($gif[$offset]);
@@ -69,8 +69,8 @@ trait GifParserTrait {
 
       // Each frame carries its own control block, so nothing is inherited from
       // the frame before it.
-      $disposal = self::$gifMissingControl;
-      $delay = self::$gifMissingControl;
+      $disposal = self::GIF_MISSING_CONTROL;
+      $delay = self::GIF_MISSING_CONTROL;
 
       $offset += 10 + (($image_packed & 0x80) !== 0 ? $this->colorTableBytes($image_packed) : 0);
       // Skip the LZW minimum code size byte and the image data sub-blocks.

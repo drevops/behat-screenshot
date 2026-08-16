@@ -52,6 +52,12 @@ class AnimationArtifactsTest extends TestCase {
   protected function setUp(): void {
     parent::setUp();
 
+    // GD is a suggested dependency, so there is nothing to render without it -
+    // the animation is skipped at runtime for the same reason.
+    if (!function_exists('imagecreatetruecolor') || !function_exists('imagegif')) {
+      $this->markTestSkipped('Producing animated GIF artifacts requires the gd extension.');
+    }
+
     $this->dir = dirname(__DIR__, 3) . '/.logs/animation';
     if (!is_dir($this->dir) && !mkdir($this->dir, 0755, TRUE) && !is_dir($this->dir)) {
       throw new \RuntimeException(sprintf('Unable to create the artifact directory %s.', $this->dir));
