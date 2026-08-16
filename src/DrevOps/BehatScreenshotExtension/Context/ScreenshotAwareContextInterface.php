@@ -31,7 +31,8 @@ interface ScreenshotAwareContextInterface extends Context {
    * @param array<int,string> $info_types
    *   Show these info types in the screenshot.
    * @param array<string,mixed> $animation
-   *   Animated GIF settings (keys: enabled, frame_delay).
+   *   Animated GIF settings (keys: enabled, frame_delay, max_width,
+   *   max_height).
    */
   public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static;
 

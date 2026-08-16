@@ -11,8 +11,13 @@ namespace DrevOps\BehatScreenshotExtension;
  * single-frame GIF with GD - which performs the colour quantisation and LZW
  * compression - and the resulting frames are then stitched into a GIF89a
  * stream with the looping and per-frame delay control blocks.
+ *
+ * Every frame keeps the size it was captured at. GIF89a gives each image block
+ * its own geometry, so a frame smaller than the logical screen is written as
+ * is rather than padded up to the largest frame - the number of pixels encoded
+ * is the number of pixels captured.
  */
-class AnimatedGif {
+class AnimatedGif implements \Countable {
 
   /**
    * Image Separator byte that introduces an image block.
@@ -30,11 +35,56 @@ class AnimatedGif {
   public const TRAILER = 0x3B;
 
   /**
+   * Disposal method leaving a frame on screen for the next one to draw over.
+   */
+  public const DISPOSAL_KEEP = 1;
+
+  /**
+   * Disposal method clearing a frame to the background colour after it shows.
+   */
+  public const DISPOSAL_BACKGROUND = 2;
+
+  /**
+   * Largest width or height GIF can record, in pixels.
+   *
+   * Frame geometry is stored in unsigned 16-bit fields, so anything past this
+   * wraps around and produces an undecodable stream.
+   */
+  public const MAX_DIMENSION = 65535;
+
+  /**
+   * Longest delay GIF can record, in hundredths of a second.
+   *
+   * Held in the same unsigned 16-bit field width as the frame geometry.
+   */
+  public const MAX_DELAY = 65535;
+
+  /**
+   * Added frames as single-frame GIF binaries with their pixel dimensions.
+   *
+   * @var array<int,array{gif:string,width:int,height:int}>
+   */
+  protected array $frames = [];
+
+  /**
+   * AnimatedGif constructor.
+   *
+   * @param int $maxWidth
+   *   Width in pixels beyond which a frame is cropped; 0 leaves it unbounded.
+   * @param int $maxHeight
+   *   Height in pixels beyond which a frame is cropped; 0 leaves it unbounded.
+   */
+  public function __construct(
+    protected int $maxWidth = 0,
+    protected int $maxHeight = 0,
+  ) {
+  }
+
+  /**
    * Encode a sequence of image frames into an animated GIF.
    *
    * @param array<int,string> $frames
    *   Raw image data for each frame, in any format readable by GD (e.g. PNG).
-   *   Frames are padded to the largest frame's dimensions, never stretched.
    * @param int $frame_delay
    *   Delay between frames, in milliseconds.
    *
@@ -48,131 +98,169 @@ class AnimatedGif {
       throw new \InvalidArgumentException('At least one frame is required to build an animated GIF.');
     }
 
-    // GIF frame delays are expressed in hundredths of a second.
-    $delay = max(0, (int) round($frame_delay / 10));
+    $this->reset();
 
-    $gif_frames = $this->normaliseFrames($frames);
+    foreach ($frames as $frame) {
+      $this->addFrame($frame);
+    }
 
-    return $this->assemble($gif_frames, $delay);
+    return $this->render($frame_delay);
   }
 
   /**
-   * Convert raw image frames into same-sized single-frame GIF binaries.
+   * Add a frame to the animation.
    *
-   * @param array<int,string> $frames
-   *   Raw image data for each frame.
+   * The frame is quantised and compressed on the spot, so the caller can
+   * release the raw image data rather than hold every frame until the
+   * animation is rendered.
    *
-   * @return array<int,string>
-   *   Single-frame GIF binaries, all sharing the largest frame's dimensions.
+   * @param string $frame
+   *   Raw image data, in any format readable by GD (e.g. PNG).
+   *
+   * @return bool
+   *   TRUE when the frame was decoded and added, FALSE when it was skipped.
    */
-  protected function normaliseFrames(array $frames): array {
-    // Size the canvas to the largest frame so each frame keeps its own aspect
-    // ratio. Resampling frames of different sizes to a single size distorts
-    // them - smaller frames are padded instead, and nothing is stretched.
-    $width = 0;
-    $height = 0;
-    foreach ($frames as $frame) {
-      $size = @getimagesizefromstring($frame);
-      if ($size !== FALSE) {
-        $width = max($width, $size[0]);
-        $height = max($height, $size[1]);
-      }
+  public function addFrame(string $frame): bool {
+    $image = @imagecreatefromstring($frame);
+
+    if (!$image instanceof \GdImage) {
+      return FALSE;
     }
 
-    if ($width < 1 || $height < 1) {
-      throw new \InvalidArgumentException('None of the provided frames could be decoded as an image.');
-    }
+    $image = $this->constrain($image);
+    $width = imagesx($image);
+    $height = imagesy($image);
 
-    $gif_frames = [];
-    foreach ($frames as $frame) {
-      $image = @imagecreatefromstring($frame);
-      if (!$image instanceof \GdImage) {
-        continue;
-      }
-
-      if (imagesx($image) !== $width || imagesy($image) !== $height) {
-        $image = $this->pad($image, $width, $height);
-      }
-
-      ob_start();
-      imagegif($image);
-      $gif = ob_get_clean();
-      imagedestroy($image);
-
-      if ($gif !== '') {
-        $gif_frames[] = $gif;
-      }
-    }
-
-    // @codeCoverageIgnoreStart
-    if ($gif_frames === []) {
-      throw new \InvalidArgumentException('None of the provided frames could be decoded as an image.');
-    }
-
-    // @codeCoverageIgnoreEnd
-    return $gif_frames;
-  }
-
-  /**
-   * Pad an image onto a larger canvas without scaling it.
-   *
-   * @param \GdImage $image
-   *   Source image. Destroyed once copied onto the canvas.
-   * @param positive-int $width
-   *   Canvas width.
-   * @param positive-int $height
-   *   Canvas height.
-   *
-   * @return \GdImage
-   *   The source image placed top-left on a white canvas of the given size.
-   */
-  protected function pad(\GdImage $image, int $width, int $height): \GdImage {
-    $canvas = imagecreatetruecolor($width, $height);
-
-    // @codeCoverageIgnoreStart
-    if (!$canvas instanceof \GdImage) {
-      imagedestroy($image);
-
-      throw new \RuntimeException('Unable to create a canvas for an animation frame.');
-    }
-    // @codeCoverageIgnoreEnd
-    // Smaller frames sit on a white background rather than being stretched.
-    $background = (int) imagecolorallocate($canvas, 255, 255, 255);
-    imagefilledrectangle($canvas, 0, 0, $width - 1, $height - 1, $background);
-    imagecopy($canvas, $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
+    ob_start();
+    imagegif($image);
+    // ob_get_clean() returns FALSE when no output buffer is active; strval()
+    // maps that to the same empty string a failed encode produces.
+    $gif = strval(ob_get_clean());
     imagedestroy($image);
 
-    return $canvas;
+    // @codeCoverageIgnoreStart
+    if ($gif === '') {
+      return FALSE;
+    }
+
+    // @codeCoverageIgnoreEnd
+    $this->frames[] = ['gif' => $gif, 'width' => $width, 'height' => $height];
+
+    return TRUE;
   }
 
   /**
-   * Stitch single-frame GIFs into one animated GIF89a stream.
+   * {@inheritdoc}
+   */
+  public function count(): int {
+    return count($this->frames);
+  }
+
+  /**
+   * Discard every frame added so far.
+   */
+  public function reset(): void {
+    $this->frames = [];
+  }
+
+  /**
+   * Render the added frames into one animated GIF89a stream.
    *
-   * @param array<int,string> $gif_frames
-   *   Single-frame GIF binaries sharing the same dimensions.
-   * @param int $delay
-   *   Delay between frames, in hundredths of a second.
+   * @param int $frame_delay
+   *   Delay between frames, in milliseconds.
    *
    * @return string
    *   Binary content of the animated GIF.
    */
-  protected function assemble(array $gif_frames, int $delay): string {
-    $first = $gif_frames[0];
+  public function render(int $frame_delay): string {
+    if ($this->frames === []) {
+      throw new \InvalidArgumentException('None of the provided frames could be decoded as an image.');
+    }
 
-    // The 7-byte Logical Screen Descriptor follows the 6-byte header.
-    $screen_descriptor = substr($first, 6, 7);
-    $packed = ord($first[10]);
-    $global_color_table = (($packed & 0x80) !== 0) ? substr($first, 13, $this->colorTableBytes($packed)) : '';
+    // GIF frame delays are expressed in hundredths of a second.
+    $delay = min(max(0, (int) round($frame_delay / 10)), self::MAX_DELAY);
 
-    $output = 'GIF89a' . $screen_descriptor . $global_color_table;
+    $width = max(array_column($this->frames, 'width'));
+    $height = max(array_column($this->frames, 'height'));
+
+    $output = 'GIF89a' . $this->screenDescriptor($width, $height);
     // Netscape Application Extension instructing viewers to loop forever.
     $output .= "\x21\xFF\x0B" . 'NETSCAPE2.0' . "\x03\x01" . pack('v', 0) . "\x00";
 
-    foreach ($gif_frames as $gif_frame) {
-      $output .= $this->frameBlock($gif_frame, $delay);
+    $total = count($this->frames);
+
+    foreach ($this->frames as $index => $frame) {
+      // Playback loops, so the frame after the last one is the first.
+      $next = $this->frames[($index + 1) % $total];
+      $is_covered = $next['width'] >= $frame['width'] && $next['height'] >= $frame['height'];
+      $disposal = $is_covered ? self::DISPOSAL_KEEP : self::DISPOSAL_BACKGROUND;
+
+      $output .= $this->frameBlock($frame['gif'], $delay, $disposal);
     }
 
     return $output . chr(self::TRAILER);
+  }
+
+  /**
+   * Crop an image to the configured maximum dimensions.
+   *
+   * Each axis is capped on its own and the top-left of the frame is kept, so
+   * the retained area holds its captured resolution and frames that share a
+   * width still share it after cropping. The format's own 16-bit ceiling
+   * applies whether or not a maximum is configured.
+   *
+   * @param \GdImage $image
+   *   Source image. Destroyed once a cropped copy replaces it.
+   *
+   * @return \GdImage
+   *   The source image when it already fits, a cropped copy otherwise.
+   */
+  protected function constrain(\GdImage $image): \GdImage {
+    $width = imagesx($image);
+    $height = imagesy($image);
+
+    $bounded_width = min($width, $this->maxWidth > 0 ? $this->maxWidth : $width, self::MAX_DIMENSION);
+    $bounded_height = min($height, $this->maxHeight > 0 ? $this->maxHeight : $height, self::MAX_DIMENSION);
+
+    if ($bounded_width === $width && $bounded_height === $height) {
+      return $image;
+    }
+
+    $cropped = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => $bounded_width, 'height' => $bounded_height]);
+
+    // @codeCoverageIgnoreStart
+    if (!$cropped instanceof \GdImage) {
+      return $image;
+    }
+
+    // @codeCoverageIgnoreEnd
+    imagedestroy($image);
+
+    return $cropped;
+  }
+
+  /**
+   * Build the Logical Screen Descriptor and its global colour table.
+   *
+   * @param int $width
+   *   Logical screen width, in pixels.
+   * @param int $height
+   *   Logical screen height, in pixels.
+   *
+   * @return string
+   *   Logical Screen Descriptor followed by a two-entry global colour table.
+   */
+  protected function screenDescriptor(int $width, int $height): string {
+    // Global colour table present, 8-bit colour resolution, two entries. Each
+    // frame carries its own local colour table, so the global one only gives
+    // the background colour index a value to point at.
+    $packed = chr(0xF0);
+    $background_index = chr(0);
+    $aspect_ratio = chr(0);
+    // Index 0 is the white shown around a frame smaller than the screen.
+    $color_table = "\xFF\xFF\xFF\x00\x00\x00";
+
+    return pack('vv', $width, $height) . $packed . $background_index . $aspect_ratio . $color_table;
   }
 
   /**
@@ -182,11 +270,13 @@ class AnimatedGif {
    *   Single-frame GIF binary.
    * @param int $delay
    *   Delay before the next frame, in hundredths of a second.
+   * @param int $disposal
+   *   Disposal method applied once the frame has been shown.
    *
    * @return string
    *   Concatenated Graphic Control Extension and image block for the frame.
    */
-  protected function frameBlock(string $frame, int $delay): string {
+  protected function frameBlock(string $frame, int $delay, int $disposal): string {
     // GD writes each frame's palette as a global colour table; lift it so it
     // can be re-emitted as a local colour table on the frame's image block.
     $packed = ord($frame[10]);
@@ -208,8 +298,8 @@ class AnimatedGif {
     // Everything up to the trailing Trailer byte is the LZW image data.
     $image_data = substr($frame, $offset, -1);
 
-    // Graphic Control Extension carrying the delay (disposal method 1).
-    $graphic_control = "\x21\xF9\x04\x04" . pack('v', $delay) . "\x00\x00";
+    // Graphic Control Extension carrying the delay and the disposal method.
+    $graphic_control = "\x21\xF9\x04" . chr($disposal << 2) . pack('v', $delay) . "\x00\x00";
 
     // Image Descriptor flagged to use the frame's own local colour table.
     $descriptor = chr(self::IMAGE_SEPARATOR) . $geometry . chr(0x80 | $size_bits);

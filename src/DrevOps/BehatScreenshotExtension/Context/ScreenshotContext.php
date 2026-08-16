@@ -46,7 +46,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected bool $scenarioHasScreenshotsTag = FALSE;
 
   /**
-   * Animated GIF settings (keys: enabled, frame_delay).
+   * Animated GIF settings (keys: enabled, frame_delay, max_width, max_height).
    *
    * @var array<string,mixed>
    */
@@ -58,11 +58,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected bool $scenarioIsAnimated = FALSE;
 
   /**
-   * Screenshot image data collected during the current scenario.
-   *
-   * @var array<int,string>
+   * Encoder holding the current scenario's animation frames.
    */
-  protected array $animationFrames = [];
+  protected ?AnimatedGif $animationEncoder = NULL;
 
   /**
    * Image data of the most recent PNG screenshot written by screenshot().
@@ -147,7 +145,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
     $this->scenarioHasScreenshotsTag = $scenario->hasTag('screenshots') || $feature->hasTag('screenshots');
     $this->scenarioIsAnimated = !empty($this->animation['enabled']) || $scenario->hasTag('screenshots:animated') || $feature->hasTag('screenshots:animated');
-    $this->animationFrames = [];
+    $this->animationEncoder = NULL;
   }
 
   /**
@@ -228,9 +226,27 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       ]);
 
       if ($this->scenarioIsAnimated && $this->lastScreenshotData !== NULL) {
-        $this->animationFrames[] = $this->lastScreenshotData;
+        $this->addAnimationFrame($this->lastScreenshotData);
       }
     }
+  }
+
+  /**
+   * Add a captured screenshot to the current scenario's animation.
+   *
+   * @param string $data
+   *   Raw screenshot data.
+   */
+  protected function addAnimationFrame(string $data): void {
+    if (!$this->isAnimatedGifSupported()) {
+      return;
+    }
+
+    if (!$this->animationEncoder instanceof AnimatedGif) {
+      $this->animationEncoder = $this->getAnimatedGif();
+    }
+
+    $this->animationEncoder->addFrame($data);
   }
 
   /**
@@ -242,20 +258,23 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @AfterScenario
    */
   public function afterScenarioAnimate(AfterScenarioScope $scope): void {
-    if (!$this->scenarioIsAnimated || $this->animationFrames === [] || !$this->isAnimatedGifSupported()) {
+    $encoder = $this->animationEncoder;
+
+    if (!$this->scenarioIsAnimated || !$encoder instanceof AnimatedGif || $encoder->count() === 0) {
+      $this->animationEncoder = NULL;
+
       return;
     }
 
-    // The frame buffer is always cleared, even when encoding or writing the
+    // The encoder is always released, even when rendering or writing the
     // animated GIF fails, so a non-critical artifact does not leak frames into
     // the next scenario.
     try {
-      $frame_delay = isset($this->animation['frame_delay']) && is_numeric($this->animation['frame_delay']) ? (int) $this->animation['frame_delay'] : 500;
-      $content = $this->getAnimatedGif()->encode($this->animationFrames, $frame_delay);
+      $content = $encoder->render($this->animationSetting('frame_delay', 500));
       $this->saveScreenshotContent($this->makeAnimationFileName($scope), $content);
     }
     finally {
-      $this->animationFrames = [];
+      $this->animationEncoder = NULL;
     }
   }
 
@@ -671,7 +690,22 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   Animated GIF encoder.
    */
   protected function getAnimatedGif(): AnimatedGif {
-    return new AnimatedGif();
+    return new AnimatedGif($this->animationSetting('max_width', 0), $this->animationSetting('max_height', 0));
+  }
+
+  /**
+   * Read a numeric animation setting.
+   *
+   * @param string $name
+   *   Setting name.
+   * @param int $default
+   *   Value used when the setting is absent or not numeric.
+   *
+   * @return int
+   *   Setting value.
+   */
+  protected function animationSetting(string $name, int $default): int {
+    return isset($this->animation[$name]) && is_numeric($this->animation[$name]) ? (int) $this->animation[$name] : $default;
   }
 
 }

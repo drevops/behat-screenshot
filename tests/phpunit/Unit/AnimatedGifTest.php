@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
+use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
 use DrevOps\BehatScreenshotExtension\AnimatedGif;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -14,6 +15,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(AnimatedGif::class)]
 class AnimatedGifTest extends TestCase {
+
+  use GifParserTrait;
 
   public function testEncodeProducesValidAnimatedGif(): void {
     $frames = [
@@ -27,14 +30,12 @@ class AnimatedGifTest extends TestCase {
     $this->assertStringStartsWith('GIF89a', $gif);
     // Looping is requested via the Netscape Application Extension.
     $this->assertStringContainsString('NETSCAPE2.0', $gif);
-    // One Graphic Control Extension is emitted per frame.
-    $this->assertEquals(3, substr_count($gif, "\x21\xF9\x04"));
-
-    // The assembled GIF is decodable and preserves the first frame's size.
-    $this->assertSame([120, 90], $this->imageSize($gif));
+    $this->assertCount(3, $this->parseFrames($gif));
+    $this->assertSame([120, 90], $this->canvasSize($gif));
+    $this->assertSame([120, 90], $this->firstFrameSize($gif));
   }
 
-  public function testEncodePadsFramesToLargestFrame(): void {
+  public function testEncodeSizesCanvasToLargestFrame(): void {
     $frames = [
       $this->createPngFrame(100, 100, [10, 20, 30]),
       $this->createPngFrame(64, 48, [200, 100, 50]),
@@ -43,12 +44,24 @@ class AnimatedGifTest extends TestCase {
 
     $gif = (new AnimatedGif())->encode($frames, 200);
 
-    $this->assertStringStartsWith('GIF89a', $gif);
-    $this->assertEquals(3, substr_count($gif, "\x21\xF9\x04"));
+    $this->assertSame([150, 120], $this->canvasSize($gif));
+  }
 
-    // The canvas matches the largest frame; smaller frames are padded,
-    // not scaled.
-    $this->assertSame([150, 120], $this->imageSize($gif));
+  public function testEncodeWritesFramesAtCapturedSize(): void {
+    $frames = [
+      $this->createPngFrame(100, 100, [10, 20, 30]),
+      $this->createPngFrame(64, 48, [200, 100, 50]),
+      $this->createPngFrame(150, 120, [0, 0, 0]),
+    ];
+
+    $gif = (new AnimatedGif())->encode($frames, 200);
+
+    // Each image block declares the size of the frame it was captured at.
+    $this->assertSame([
+      ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 100],
+      ['left' => 0, 'top' => 0, 'width' => 64, 'height' => 48],
+      ['left' => 0, 'top' => 0, 'width' => 150, 'height' => 120],
+    ], $this->frameGeometry($gif));
   }
 
   public function testEncodeDoesNotStretchSmallerFrames(): void {
@@ -60,12 +73,93 @@ class AnimatedGifTest extends TestCase {
 
     $gif = (new AnimatedGif())->encode($frames, 100);
 
-    // The canvas is the larger frame's size.
-    $this->assertSame([80, 60], $this->imageSize($gif));
-    // The small frame keeps its native size at the top-left: its own area is
-    // red and the rest is white padding - it is not stretched to fill.
+    // The logical screen is the larger frame's size, while the small frame
+    // keeps its own size at the top-left rather than being stretched to fill.
+    $this->assertSame([80, 60], $this->canvasSize($gif));
+    $this->assertSame([40, 30], $this->firstFrameSize($gif));
     $this->assertColorNear([255, 0, 0], $this->pixelColor($gif, 5, 5));
-    $this->assertColorNear([255, 255, 255], $this->pixelColor($gif, 70, 50));
+  }
+
+  public function testEncodeExposesWhiteAroundSmallerFrames(): void {
+    $frames = [
+      $this->createPngFrame(40, 30, [255, 0, 0]),
+      $this->createPngFrame(80, 60, [0, 0, 255]),
+    ];
+
+    $gif = (new AnimatedGif())->encode($frames, 100);
+
+    // The global colour table holds white at index 0 and the Logical Screen
+    // Descriptor points the background colour at it.
+    $this->assertSame(0xF0, ord($gif[10]));
+    $this->assertSame(0, ord($gif[11]));
+    $this->assertSame(0, ord($gif[12]));
+    $this->assertSame("\xFF\xFF\xFF\x00\x00\x00", substr($gif, 13, 6));
+  }
+
+  public function testEncodeKeepsFramesOnScreenWhenTheyDoNotShrink(): void {
+    $frames = [
+      $this->createPngFrame(80, 60, [255, 0, 0]),
+      $this->createPngFrame(80, 60, [0, 255, 0]),
+      $this->createPngFrame(80, 60, [0, 0, 255]),
+    ];
+
+    $gif = (new AnimatedGif())->encode($frames, 100);
+
+    // Same-sized frames always cover the previous one, so none needs clearing.
+    $this->assertSame([1, 1, 1], array_column($this->parseFrames($gif), 'disposal'));
+  }
+
+  #[DataProvider('dataProviderEncodeSetsDisposalPerFrame')]
+  public function testEncodeSetsDisposalPerFrame(array $sizes, array $expected_disposals): void {
+    $frames = [];
+    foreach ($sizes as $size) {
+      $frames[] = $this->createPngFrame($size[0], $size[1], [10, 20, 30]);
+    }
+
+    $gif = (new AnimatedGif())->encode($frames, 100);
+
+    $this->assertSame($expected_disposals, array_column($this->parseFrames($gif), 'disposal'));
+  }
+
+  public static function dataProviderEncodeSetsDisposalPerFrame(): array {
+    return [
+      'single frame' => [[[80, 60]], [1]],
+      'growing frames' => [[[40, 30], [80, 60]], [1, 2]],
+      'shrinking frames' => [[[80, 60], [40, 30]], [2, 1]],
+      'narrower next frame' => [[[80, 60], [40, 60]], [2, 1]],
+      'shorter next frame' => [[[80, 60], [80, 30]], [2, 1]],
+      'uniform then shorter' => [[[80, 60], [80, 60], [80, 30]], [1, 2, 1]],
+    ];
+  }
+
+  public function testEncodeDoesNotInflatePixelsWhenOneFrameIsMuchTaller(): void {
+    // A long scenario in which a single step captured a very tall page.
+    $frames = [];
+    for ($step = 0; $step < 120; $step++) {
+      $frames[] = $step === 60
+        ? $this->createPngFrame(160, 2400, [0, 0, 200])
+        : $this->createPngFrame(160, 120, [200, 0, 0]);
+    }
+
+    $gif = (new AnimatedGif())->encode($frames, 500);
+
+    // The logical screen still covers the tall frame, but the other 119 frames
+    // are encoded at their own size rather than padded up to it: 2,668,800
+    // pixels instead of the 46,080,000 a shared canvas would encode.
+    $this->assertSame([160, 2400], $this->canvasSize($gif));
+    $this->assertSame(2668800, $this->encodedPixels($gif));
+  }
+
+  public function testEncodeDoesNotPayForPaddingPixels(): void {
+    $tall = $this->createGradientPngFrame(400, 400);
+    $short = $this->createGradientPngFrame(20, 20);
+
+    $mixed = (new AnimatedGif())->encode([$tall, $short, $short, $short, $short], 100);
+    $uniform = (new AnimatedGif())->encode([$tall, $tall, $tall, $tall, $tall], 100);
+
+    // The four small frames are encoded at 20x20 rather than padded to
+    // 400x400, so the mixed animation costs about one large frame.
+    $this->assertLessThan(intdiv(strlen($uniform), 3), strlen($mixed));
   }
 
   public function testEncodeHandlesFramesWithExtensionBlocks(): void {
@@ -79,8 +173,8 @@ class AnimatedGifTest extends TestCase {
     $gif = (new AnimatedGif())->encode($frames, 100);
 
     $this->assertStringStartsWith('GIF89a', $gif);
-    $this->assertEquals(2, substr_count($gif, "\x21\xF9\x04"));
-    $this->assertSame([40, 30], $this->imageSize($gif));
+    $this->assertCount(2, $this->parseFrames($gif));
+    $this->assertSame([40, 30], $this->canvasSize($gif));
   }
 
   public function testEncodeMatchesFixture(): void {
@@ -100,7 +194,7 @@ class AnimatedGifTest extends TestCase {
     // are compared on the structure the encoder is responsible for rather than
     // byte for byte.
     $this->assertEquals($this->gifSignature($expected), $this->gifSignature($produced));
-    $this->assertSame([80, 60], $this->imageSize($produced));
+    $this->assertSame([80, 60], $this->firstFrameSize($produced));
   }
 
   public function testEncodeSkipsUndecodableFrames(): void {
@@ -113,8 +207,8 @@ class AnimatedGifTest extends TestCase {
 
     $this->assertStringStartsWith('GIF89a', $gif);
     // Only the single decodable frame ends up in the animation.
-    $this->assertEquals(1, substr_count($gif, "\x21\xF9\x04"));
-    $this->assertSame([30, 20], $this->imageSize($gif));
+    $this->assertCount(1, $this->parseFrames($gif));
+    $this->assertSame([30, 20], $this->canvasSize($gif));
   }
 
   public function testEncodeThrowsWhenNoFramesProvided(): void {
@@ -131,6 +225,16 @@ class AnimatedGifTest extends TestCase {
     (new AnimatedGif())->encode(['not-an-image'], 500);
   }
 
+  public function testEncodeDiscardsFramesFromPreviousCall(): void {
+    $encoder = new AnimatedGif();
+
+    $encoder->encode([$this->createPngFrame(40, 30, [255, 0, 0])], 100);
+    $gif = $encoder->encode([$this->createPngFrame(80, 60, [0, 0, 255])], 100);
+
+    $this->assertCount(1, $this->parseFrames($gif));
+    $this->assertSame([80, 60], $this->canvasSize($gif));
+  }
+
   #[DataProvider('dataProviderEncodeConvertsDelayToCentiseconds')]
   public function testEncodeConvertsDelayToCentiseconds(int $milliseconds, int $expected_centiseconds): void {
     $frames = [
@@ -140,8 +244,7 @@ class AnimatedGifTest extends TestCase {
 
     $gif = (new AnimatedGif())->encode($frames, $milliseconds);
 
-    $needle = "\x21\xF9\x04\x04" . pack('v', $expected_centiseconds);
-    $this->assertStringContainsString($needle, $gif);
+    $this->assertSame([$expected_centiseconds, $expected_centiseconds], array_column($this->parseFrames($gif), 'delay'));
   }
 
   public static function dataProviderEncodeConvertsDelayToCentiseconds(): array {
@@ -150,7 +253,108 @@ class AnimatedGifTest extends TestCase {
       'one second' => [1000, 100],
       'zero delay' => [0, 0],
       'rounds to nearest' => [44, 4],
+      // The delay shares the unsigned 16-bit field width of the geometry.
+      'largest representable delay' => [655350, 65535],
+      'beyond the representable delay' => [900000, 65535],
     ];
+  }
+
+  public function testAddFrameReportsWhetherTheFrameWasAdded(): void {
+    $encoder = new AnimatedGif();
+
+    $this->assertTrue($encoder->addFrame($this->createPngFrame(20, 20, [1, 2, 3])));
+    $this->assertFalse($encoder->addFrame('not-an-image'));
+    $this->assertCount(1, $encoder);
+  }
+
+  public function testResetDiscardsAddedFrames(): void {
+    $encoder = new AnimatedGif();
+    $encoder->addFrame($this->createPngFrame(20, 20, [1, 2, 3]));
+    $encoder->reset();
+
+    $this->assertCount(0, $encoder);
+  }
+
+  public function testRenderThrowsWhenNoFramesAdded(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('None of the provided frames could be decoded');
+
+    (new AnimatedGif())->render(500);
+  }
+
+  public function testRenderAssemblesIncrementallyAddedFrames(): void {
+    $encoder = new AnimatedGif();
+    $encoder->addFrame($this->createPngFrame(40, 30, [255, 0, 0]));
+    $encoder->addFrame($this->createPngFrame(80, 60, [0, 0, 255]));
+
+    $gif = $encoder->render(100);
+
+    $this->assertSame([80, 60], $this->canvasSize($gif));
+    $this->assertSame([
+      ['left' => 0, 'top' => 0, 'width' => 40, 'height' => 30],
+      ['left' => 0, 'top' => 0, 'width' => 80, 'height' => 60],
+    ], $this->frameGeometry($gif));
+  }
+
+  #[DataProvider('dataProviderConstrainFrameSize')]
+  public function testConstrainFrameSize(int $max_width, int $max_height, int $width, int $height, array $expected_size): void {
+    $gif = (new AnimatedGif($max_width, $max_height))->encode([$this->createPngFrame($width, $height, [10, 20, 30])], 100);
+
+    $this->assertSame($expected_size, $this->canvasSize($gif));
+  }
+
+  public static function dataProviderConstrainFrameSize(): array {
+    return [
+      'no caps' => [0, 0, 400, 200, [400, 200]],
+      'width cap leaves height alone' => [100, 0, 400, 200, [100, 200]],
+      'height cap leaves width alone' => [0, 100, 400, 200, [400, 100]],
+      'both caps apply' => [200, 50, 400, 200, [200, 50]],
+      'frame already within caps' => [800, 800, 400, 200, [400, 200]],
+      'cap equal to frame size' => [400, 200, 400, 200, [400, 200]],
+      'extreme height cap' => [0, 20, 400, 4000, [400, 20]],
+      'single pixel height cap' => [0, 1, 400, 4000, [400, 1]],
+    ];
+  }
+
+  public function testConstrainClampsFramesToTheGifDimensionLimit(): void {
+    // GIF records frame dimensions as unsigned 16-bit values, so a taller
+    // frame has to be cropped to stay representable.
+    $gif = (new AnimatedGif())->encode([$this->createPngFrame(4, 70000, [10, 20, 30])], 100);
+
+    $this->assertSame([4, 65535], $this->canvasSize($gif));
+    $this->assertSame([['left' => 0, 'top' => 0, 'width' => 4, 'height' => 65535]], $this->frameGeometry($gif));
+  }
+
+  public function testConstrainKeepsTheTopLeftOfAnOversizedFrame(): void {
+    // A frame whose top half is red and bottom half is blue.
+    $image = imagecreatetruecolor(80, 200);
+    imagefilledrectangle($image, 0, 0, 79, 99, (int) imagecolorallocate($image, 255, 0, 0));
+    imagefilledrectangle($image, 0, 100, 79, 199, (int) imagecolorallocate($image, 0, 0, 255));
+    ob_start();
+    imagepng($image);
+    $frame = strval(ob_get_clean());
+    imagedestroy($image);
+
+    $gif = (new AnimatedGif(0, 100))->encode([$frame], 100);
+
+    // The kept half is the top one, at its original resolution.
+    $this->assertSame([80, 100], $this->canvasSize($gif));
+    $this->assertColorNear([255, 0, 0], $this->pixelColor($gif, 40, 50));
+  }
+
+  public function testConstrainAppliesToEachFrameIndependently(): void {
+    $frames = [
+      $this->createPngFrame(400, 200, [10, 20, 30]),
+      $this->createPngFrame(50, 40, [200, 100, 50]),
+    ];
+
+    $gif = (new AnimatedGif(100, 0))->encode($frames, 100);
+
+    // Only the oversized frame is cropped; the smaller one is left alone.
+    $this->assertSame([
+      ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 200],
+      ['left' => 0, 'top' => 0, 'width' => 50, 'height' => 40],
+    ], $this->frameGeometry($gif));
   }
 
   /**
@@ -180,7 +384,39 @@ class AnimatedGifTest extends TestCase {
     $data = ob_get_clean();
     imagedestroy($image);
 
-    return $data;
+    return (string) $data;
+  }
+
+  /**
+   * Create a PNG frame whose content scales with its pixel count.
+   *
+   * @param int $width
+   *   Frame width.
+   * @param int $height
+   *   Frame height.
+   *
+   * @return string
+   *   Binary PNG data.
+   */
+  protected function createGradientPngFrame(int $width, int $height): string {
+    $image = imagecreatetruecolor(max(1, $width), max(1, $height));
+    if (!$image instanceof \GdImage) {
+      return '';
+    }
+
+    for ($y = 0; $y < $height; $y++) {
+      for ($x = 0; $x < $width; $x++) {
+        $color = (int) imagecolorallocate($image, $x % 256, $y % 256, ($x + $y) % 256);
+        imagesetpixel($image, $x, $y, $color);
+      }
+    }
+
+    ob_start();
+    imagepng($image);
+    $data = ob_get_clean();
+    imagedestroy($image);
+
+    return (string) $data;
   }
 
   /**
@@ -210,7 +446,7 @@ class AnimatedGifTest extends TestCase {
     $data = ob_get_clean();
     imagedestroy($image);
 
-    return $data;
+    return (string) $data;
   }
 
   /**
@@ -227,29 +463,24 @@ class AnimatedGifTest extends TestCase {
    *   Structural signature of the GIF.
    */
   protected function gifSignature(string $gif): array {
-    $delays = [];
-    $offset = 0;
-    while (($position = strpos($gif, "\x21\xF9\x04", $offset)) !== FALSE) {
-      $delay = unpack('v', substr($gif, $position + 4, 2));
-      $delays[] = is_array($delay) ? $delay[1] : 0;
-      $offset = $position + 1;
-    }
-
-    $width = unpack('v', substr($gif, 6, 2));
-    $height = unpack('v', substr($gif, 8, 2));
+    $frames = $this->parseFrames($gif);
+    $size = $this->canvasSize($gif);
 
     return [
       'version' => substr($gif, 0, 6),
-      'width' => is_array($width) ? $width[1] : 0,
-      'height' => is_array($height) ? $height[1] : 0,
-      'frame_count' => count($delays),
-      'delays' => $delays,
+      'width' => $size[0],
+      'height' => $size[1],
+      'frame_count' => count($frames),
+      'delays' => array_column($frames, 'delay'),
       'has_loop' => str_contains($gif, 'NETSCAPE2.0'),
     ];
   }
 
   /**
-   * Decode an image and return its dimensions.
+   * Decode the first frame of an image and return its dimensions.
+   *
+   * GD reads the first image block rather than the logical screen, so this
+   * reports the size the first frame was written at.
    *
    * @param string $data
    *   Binary image data.
@@ -257,8 +488,8 @@ class AnimatedGifTest extends TestCase {
    * @return array<int,int>
    *   The width and height, or [0, 0] when the data cannot be decoded.
    */
-  protected function imageSize(string $data): array {
-    $image = imagecreatefromstring($data);
+  protected function firstFrameSize(string $data): array {
+    $image = @imagecreatefromstring($data);
     if (!$image instanceof \GdImage) {
       return [0, 0];
     }
@@ -283,7 +514,7 @@ class AnimatedGifTest extends TestCase {
    *   The red, green and blue components, or [-1, -1, -1] when undecodable.
    */
   protected function pixelColor(string $data, int $x, int $y): array {
-    $image = imagecreatefromstring($data);
+    $image = @imagecreatefromstring($data);
     if (!$image instanceof \GdImage) {
       return [-1, -1, -1];
     }
