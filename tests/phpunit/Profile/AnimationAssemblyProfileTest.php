@@ -13,6 +13,7 @@ use Behat\Gherkin\Node\ScenarioInterface;
 use Behat\Gherkin\Node\StepNode;
 use Behat\Testwork\Environment\Environment;
 use Behat\Testwork\Tester\Result\TestResult;
+use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -34,6 +35,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 #[Group('profile')]
 class AnimationAssemblyProfileTest extends TestCase {
+
+  use GifParserTrait;
 
   /**
    * Width every captured frame shares, in pixels.
@@ -75,8 +78,8 @@ class AnimationAssemblyProfileTest extends TestCase {
       sprintf('Frames are %dpx wide. "long page" runs replace one frame mid-scenario', self::FRAME_WIDTH),
       sprintf('with a %dpx-tall capture, as always_fullscreen does on a long page.', self::LONG_PAGE_HEIGHT),
       '',
-      sprintf('%-8s %-12s %9s %11s %9s %14s %14s', 'steps', 'tallest', 'steps_s', 'assembly_s', 'peak_mb', 'px_captured', 'px_encoded'),
-      str_repeat('-', 84),
+      sprintf('%-8s %-12s %9s %11s %8s %9s %14s %14s', 'steps', 'tallest', 'steps_s', 'assembly_s', 'total_s', 'peak_mb', 'px_captured', 'px_encoded'),
+      str_repeat('-', 93),
     ];
 
     $rows = [];
@@ -89,17 +92,30 @@ class AnimationAssemblyProfileTest extends TestCase {
     }
 
     $report[] = '';
-    $report[] = 'Cost of one long page, at equal step counts:';
+    $report[] = 'Cost of one long page, against the same scenario without one:';
     foreach ($steps as $count) {
       $uniform = $rows[self::VIEWPORT_HEIGHT][$count];
       $long = $rows[self::LONG_PAGE_HEIGHT][$count];
       $report[] = sprintf(
-        '  %3d steps: %6.2fs -> %7.2fs (%.1fx), pixels encoded %.1fx what was captured',
+        '  %3d steps: total %6.2fs -> %7.2fs (%.1fx), pixels encoded %.1fx what was captured',
         $count,
-        $uniform['assembly'],
-        $long['assembly'],
-        $uniform['assembly'] > 0 ? $long['assembly'] / $uniform['assembly'] : 0,
+        $uniform['total'],
+        $long['total'],
+        $uniform['total'] > 0 ? $long['total'] / $uniform['total'] : 0,
         $long['captured'] > 0 ? $long['encoded'] / $long['captured'] : 0
+      );
+    }
+
+    $report[] = '';
+    $report[] = 'Share of the total that falls after the last step:';
+    foreach ($steps as $count) {
+      $long = $rows[self::LONG_PAGE_HEIGHT][$count];
+      $report[] = sprintf(
+        '  %3d steps with a long page: %5.1f%% of %6.2fs (%.2fs of it blocking at scenario end)',
+        $count,
+        $long['total'] > 0 ? $long['assembly'] / $long['total'] * 100 : 0,
+        $long['total'],
+        $long['assembly']
       );
     }
     $report[] = '';
@@ -164,6 +180,7 @@ class AnimationAssemblyProfileTest extends TestCase {
       'tallest' => $tallest,
       'steps' => $steps_elapsed,
       'assembly' => $assembly_elapsed,
+      'total' => $steps_elapsed + $assembly_elapsed,
       'peak' => (memory_get_peak_usage() - $baseline) / 1048576,
       'captured' => $captured,
       'encoded' => $this->encodedPixels($context->gif),
@@ -182,11 +199,12 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected function formatRow(array $row): string {
     return sprintf(
-      '%-8d %-12s %9.2f %11.2f %9.1f %14s %14s',
+      '%-8d %-12s %9.2f %11.2f %8.2f %9.1f %14s %14s',
       $row['steps_count'],
       $row['tallest'] > self::VIEWPORT_HEIGHT ? 'long page' : 'viewport',
       $row['steps'],
       $row['assembly'],
+      $row['total'],
       $row['peak'],
       number_format((float) $row['captured']),
       number_format((float) $row['encoded'])
@@ -224,81 +242,6 @@ class AnimationAssemblyProfileTest extends TestCase {
     imagedestroy($image);
 
     return $data;
-  }
-
-  /**
-   * Total the pixels every frame of a GIF stream encodes.
-   *
-   * @param string $gif
-   *   Binary GIF content.
-   *
-   * @return int
-   *   Sum of each image block's area, in pixels.
-   */
-  protected function encodedPixels(string $gif): int {
-    if (strlen($gif) < 14) {
-      return 0;
-    }
-
-    $packed = ord($gif[10]);
-    $offset = 13 + (($packed & 0x80) !== 0 ? 3 * (1 << (($packed & 0x07) + 1)) : 0);
-    $pixels = 0;
-
-    while ($offset < strlen($gif) && ord($gif[$offset]) !== 0x3B) {
-      $marker = ord($gif[$offset]);
-
-      if ($marker === 0x21) {
-        $offset = $this->skipSubBlocks($gif, $offset + 2);
-
-        continue;
-      }
-
-      if ($marker !== 0x2C) {
-        break;
-      }
-
-      $pixels += $this->readShort($gif, $offset + 5) * $this->readShort($gif, $offset + 7);
-
-      $image_packed = ord($gif[$offset + 9]);
-      $offset += 10 + (($image_packed & 0x80) !== 0 ? 3 * (1 << (($image_packed & 0x07) + 1)) : 0);
-      $offset = $this->skipSubBlocks($gif, $offset + 1);
-    }
-
-    return $pixels;
-  }
-
-  /**
-   * Read a little-endian unsigned short.
-   *
-   * @param string $data
-   *   Binary content.
-   * @param int $offset
-   *   Offset to read from.
-   *
-   * @return int
-   *   The decoded value.
-   */
-  protected function readShort(string $data, int $offset): int {
-    return ord($data[$offset]) + (ord($data[$offset + 1]) << 8);
-  }
-
-  /**
-   * Advance past a run of GIF data sub-blocks.
-   *
-   * @param string $data
-   *   GIF binary being scanned.
-   * @param int $offset
-   *   Offset of the first sub-block length byte.
-   *
-   * @return int
-   *   Offset immediately after the block terminator.
-   */
-  protected function skipSubBlocks(string $data, int $offset): int {
-    while (($length = ord($data[$offset])) !== 0) {
-      $offset += $length + 1;
-    }
-
-    return $offset + 1;
   }
 
   /**
