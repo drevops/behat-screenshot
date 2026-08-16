@@ -80,7 +80,6 @@ class ScreenshotContextInfoTest extends TestCase {
     // Use reflection to access protected property.
     $reflection = new \ReflectionObject($screenshot_context);
     $info_property = $reflection->getProperty('info');
-    $info_property->setAccessible(TRUE);
     $info = $info_property->getValue($screenshot_context);
     $this->assertIsArray($info);
 
@@ -126,7 +125,6 @@ class ScreenshotContextInfoTest extends TestCase {
     // Use reflection to access protected property.
     $reflection = new \ReflectionObject($screenshot_context);
     $info_property = $reflection->getProperty('info');
-    $info_property->setAccessible(TRUE);
     $info = $info_property->getValue($screenshot_context);
     $this->assertIsArray($info);
 
@@ -172,7 +170,6 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context = new ScreenshotContext();
     $reflection = new \ReflectionObject($screenshot_context);
     $method = $reflection->getMethod('getCurrentTime');
-    $method->setAccessible(TRUE);
 
     $time = $method->invoke($screenshot_context);
     $this->assertIsInt($time);
@@ -226,7 +223,6 @@ class ScreenshotContextInfoTest extends TestCase {
       // Access protected method.
       $reflection = new \ReflectionObject($screenshot_context);
       $method = $reflection->getMethod('makeFileName');
-      $method->setAccessible(TRUE);
 
       $result = $method->invokeArgs($screenshot_context, ['png', NULL, FALSE]);
       $this->assertIsString($result);

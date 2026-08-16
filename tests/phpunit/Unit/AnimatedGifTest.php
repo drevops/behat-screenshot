@@ -333,7 +333,6 @@ class AnimatedGifTest extends TestCase {
     ob_start();
     imagepng($image);
     $frame = strval(ob_get_clean());
-    imagedestroy($image);
 
     $gif = (new AnimatedGif(0, 100))->encode([$frame], 100);
 
@@ -382,7 +381,6 @@ class AnimatedGifTest extends TestCase {
     ob_start();
     imagepng($image);
     $data = ob_get_clean();
-    imagedestroy($image);
 
     return (string) $data;
   }
@@ -414,7 +412,6 @@ class AnimatedGifTest extends TestCase {
     ob_start();
     imagepng($image);
     $data = ob_get_clean();
-    imagedestroy($image);
 
     return (string) $data;
   }
@@ -444,7 +441,6 @@ class AnimatedGifTest extends TestCase {
     ob_start();
     imagepng($image);
     $data = ob_get_clean();
-    imagedestroy($image);
 
     return (string) $data;
   }
@@ -495,7 +491,6 @@ class AnimatedGifTest extends TestCase {
     }
 
     $size = [imagesx($image), imagesy($image)];
-    imagedestroy($image);
 
     return $size;
   }
@@ -520,7 +515,6 @@ class AnimatedGifTest extends TestCase {
     }
 
     $colors = imagecolorsforindex($image, (int) imagecolorat($image, $x, $y));
-    imagedestroy($image);
 
     return [$colors['red'], $colors['green'], $colors['blue']];
   }

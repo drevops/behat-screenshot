@@ -194,7 +194,6 @@ class AnimationArtifactsTest extends TestCase {
     ob_start();
     imagepng($image);
     $data = strval(ob_get_clean());
-    imagedestroy($image);
 
     return $data;
   }
@@ -214,7 +213,6 @@ class AnimationArtifactsTest extends TestCase {
   protected function writeConstrainedFrames(string $prefix, array $frames, int $max_width, int $max_height): void {
     $encoder = new AnimatedGif($max_width, $max_height);
     $constrain = new \ReflectionMethod($encoder, 'constrain');
-    $constrain->setAccessible(TRUE);
 
     foreach ($frames as $index => $frame) {
       $image = imagecreatefromstring($frame);
@@ -230,7 +228,6 @@ class AnimationArtifactsTest extends TestCase {
       ob_start();
       imagepng($result);
       $this->write(sprintf('%s-frame-%d.png', $prefix, $index + 1), strval(ob_get_clean()));
-      imagedestroy($result);
     }
   }
 
