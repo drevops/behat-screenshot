@@ -286,6 +286,20 @@ composer test-unit
 composer test-bdd
 ```
 
+### Profiling animated GIF assembly
+
+Building a scenario's animated GIF happens in the `AfterScenario` handler, so its cost lands as a pause after the scenario's last step rather than as slower steps. The profiler replays a scenario of a given length through the real hooks and reports how long each phase took, how much memory peaked, and how many pixels were encoded compared to how many were captured.
+
+It is excluded from `composer test` because it takes minutes to run.
+
+```shell
+composer profile  # Profile 25, 50 and 100-step scenarios.
+
+BEHAT_SCREENSHOT_PROFILE_STEPS=10,20 composer profile  # Profile other lengths.
+```
+
+The report is printed and written to `.logs/profile/animation-assembly.txt`, which CI collects as a build artifact.
+
 ### BDD tests
 
 There are tests for Selenium and Headless drivers. Selenium requires a Docker
