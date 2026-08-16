@@ -27,7 +27,7 @@ trait ReflectionTrait {
    * @return mixed
    *   Method result.
    */
-  protected static function callProtectedMethod(object|string $object, string $name, array $args = []) {
+  protected static function callProtectedMethod(object|string $object, string $name, array $args = []): mixed {
     $object_or_class = is_object($object) ? $object::class : $object;
 
     if (!class_exists($object_or_class)) {

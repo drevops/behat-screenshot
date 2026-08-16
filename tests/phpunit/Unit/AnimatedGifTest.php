@@ -490,9 +490,7 @@ class AnimatedGifTest extends TestCase {
       return [0, 0];
     }
 
-    $size = [imagesx($image), imagesy($image)];
-
-    return $size;
+    return [imagesx($image), imagesy($image)];
   }
 
   /**
