@@ -17,6 +17,12 @@
             <directory>tests/phpunit</directory>
         </testsuite>
     </testsuites>
+    <groups>
+        <exclude>
+            <!-- Profiling takes minutes; run it with `composer profile`. -->
+            <group>profile</group>
+        </exclude>
+    </groups>
     <source restrictNotices="true"
             restrictWarnings="true"
             ignoreIndirectDeprecations="true">

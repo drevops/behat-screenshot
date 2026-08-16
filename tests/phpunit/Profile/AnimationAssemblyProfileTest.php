@@ -1,0 +1,371 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DrevOps\BehatScreenshot\Tests\Profile;
+
+use Behat\Behat\Hook\Scope\AfterScenarioScope;
+use Behat\Behat\Hook\Scope\AfterStepScope;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Behat\Tester\Result\StepResult;
+use Behat\Gherkin\Node\FeatureNode;
+use Behat\Gherkin\Node\ScenarioInterface;
+use Behat\Gherkin\Node\StepNode;
+use Behat\Testwork\Environment\Environment;
+use Behat\Testwork\Tester\Result\TestResult;
+use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Measure how long a scenario's animated GIF takes to assemble.
+ *
+ * Drives ScreenshotContext through the same hooks Behat calls, with the driver
+ * replaced by prepared images, and times the work separately for the steps and
+ * for the AfterScenario handler that builds the GIF. Each run is measured
+ * twice: with every frame the height of the viewport, and with one very long
+ * page among them, so the cost of a single tall capture is isolated from the
+ * cost inherent to encoding that many frames.
+ *
+ * Excluded from the default suite because it takes minutes to run. Invoke it
+ * with `composer profile`. Step counts can be overridden with
+ * BEHAT_SCREENSHOT_PROFILE_STEPS, e.g. `BEHAT_SCREENSHOT_PROFILE_STEPS=10,20`.
+ */
+#[CoversNothing]
+#[Group('profile')]
+class AnimationAssemblyProfileTest extends TestCase {
+
+  /**
+   * Width every captured frame shares, in pixels.
+   */
+  protected const FRAME_WIDTH = 1432;
+
+  /**
+   * Height of an ordinary viewport-sized capture, in pixels.
+   */
+  protected const VIEWPORT_HEIGHT = 900;
+
+  /**
+   * Height of the single long page, in pixels.
+   */
+  protected const LONG_PAGE_HEIGHT = 19090;
+
+  /**
+   * Step counts profiled when none are given in the environment.
+   */
+  protected const DEFAULT_STEPS = [25, 50, 100];
+
+  public function testAnimationAssemblyCost(): void {
+    $steps = $this->stepCounts();
+
+    $report = [
+      'Animated GIF assembly cost',
+      '==========================',
+      '',
+      sprintf('Frames are %dpx wide. "long page" runs replace one frame mid-scenario', self::FRAME_WIDTH),
+      sprintf('with a %dpx-tall capture, as always_fullscreen does on a long page.', self::LONG_PAGE_HEIGHT),
+      '',
+      sprintf('%-8s %-12s %9s %11s %9s %14s %14s', 'steps', 'tallest', 'steps_s', 'assembly_s', 'peak_mb', 'px_captured', 'px_encoded'),
+      str_repeat('-', 84),
+    ];
+
+    $rows = [];
+    foreach ([self::VIEWPORT_HEIGHT, self::LONG_PAGE_HEIGHT] as $tallest) {
+      foreach ($steps as $count) {
+        $row = $this->profile($count, $tallest);
+        $rows[$tallest][$count] = $row;
+        $report[] = $this->formatRow($row);
+      }
+    }
+
+    $report[] = '';
+    $report[] = 'Cost of one long page, at equal step counts:';
+    foreach ($steps as $count) {
+      $uniform = $rows[self::VIEWPORT_HEIGHT][$count];
+      $long = $rows[self::LONG_PAGE_HEIGHT][$count];
+      $report[] = sprintf(
+        '  %3d steps: %6.2fs -> %7.2fs (%.1fx), pixels encoded %.1fx what was captured',
+        $count,
+        $uniform['assembly'],
+        $long['assembly'],
+        $uniform['assembly'] > 0 ? $long['assembly'] / $uniform['assembly'] : 0,
+        $long['captured'] > 0 ? $long['encoded'] / $long['captured'] : 0
+      );
+    }
+    $report[] = '';
+
+    $this->writeReport(implode("\n", $report) . "\n");
+
+    // The measurement is only meaningful if the work really does happen at
+    // scenario end rather than during the steps.
+    foreach ($rows as $by_step) {
+      foreach ($by_step as $row) {
+        $this->assertGreaterThan($row['steps'], $row['assembly']);
+      }
+    }
+  }
+
+  /**
+   * Run one scenario and measure it.
+   *
+   * @param int $steps
+   *   Number of steps in the scenario.
+   * @param int $tallest
+   *   Height of the tallest captured frame, in pixels.
+   *
+   * @return array<string,float|int>
+   *   Timings, peak memory and pixel counts for the run.
+   */
+  protected function profile(int $steps, int $tallest): array {
+    $context = new ProfiledScreenshotContext();
+    $context->setScreenshotParameters('unused', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 500]);
+
+    $before_scope = $this->beforeScenarioScope();
+    $after_step_scope = $this->afterStepScope();
+    $after_scenario_scope = $this->afterScenarioScope();
+
+    $viewport = $this->page(self::FRAME_WIDTH, self::VIEWPORT_HEIGHT);
+    $long = $tallest > self::VIEWPORT_HEIGHT ? $this->page(self::FRAME_WIDTH, $tallest) : $viewport;
+    $long_at = intdiv($steps, 2);
+
+    gc_collect_cycles();
+    memory_reset_peak_usage();
+    $baseline = memory_get_usage();
+
+    $context->beforeScenarioCheckScreenshotsTag($before_scope);
+
+    $started = hrtime(TRUE);
+    for ($step = 0; $step < $steps; $step++) {
+      $context->pending = $step === $long_at ? $long : $viewport;
+      $context->captureScreenshotAfterStep($after_step_scope);
+    }
+    $steps_elapsed = (hrtime(TRUE) - $started) / 1e9;
+    $context->pending = '';
+
+    $started = hrtime(TRUE);
+    $context->afterScenarioAnimate($after_scenario_scope);
+    $assembly_elapsed = (hrtime(TRUE) - $started) / 1e9;
+
+    $captured = ($steps - 1) * self::FRAME_WIDTH * self::VIEWPORT_HEIGHT + self::FRAME_WIDTH * $tallest;
+
+    return [
+      'steps_count' => $steps,
+      'tallest' => $tallest,
+      'steps' => $steps_elapsed,
+      'assembly' => $assembly_elapsed,
+      'peak' => (memory_get_peak_usage() - $baseline) / 1048576,
+      'captured' => $captured,
+      'encoded' => $this->encodedPixels($context->gif),
+      'bytes' => strlen($context->gif),
+    ];
+  }
+
+  /**
+   * Format one measured run as a report row.
+   *
+   * @param array<string,float|int> $row
+   *   Measurements for the run.
+   *
+   * @return string
+   *   Report line.
+   */
+  protected function formatRow(array $row): string {
+    return sprintf(
+      '%-8d %-12s %9.2f %11.2f %9.1f %14s %14s',
+      $row['steps_count'],
+      $row['tallest'] > self::VIEWPORT_HEIGHT ? 'long page' : 'viewport',
+      $row['steps'],
+      $row['assembly'],
+      $row['peak'],
+      number_format((float) $row['captured']),
+      number_format((float) $row['encoded'])
+    );
+  }
+
+  /**
+   * Render a page of the given size.
+   *
+   * @param int $width
+   *   Page width.
+   * @param int $height
+   *   Page height.
+   *
+   * @return string
+   *   Binary PNG data.
+   */
+  protected function page(int $width, int $height): string {
+    $image = imagecreatetruecolor(max(1, $width), max(1, $height));
+    imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, (int) imagecolorallocate($image, 250, 250, 252));
+    imagefilledrectangle($image, 0, 0, $width - 1, 60, (int) imagecolorallocate($image, 28, 42, 88));
+
+    $ink = (int) imagecolorallocate($image, 40, 44, 60);
+    $muted = (int) imagecolorallocate($image, 150, 155, 170);
+
+    for ($y = 96; $y < $height - 30; $y += 26) {
+      $length = 300 + (($y * 7) % (int) ($width * 0.55));
+      imagefilledrectangle($image, 40, $y, 40 + $length, $y + 11, $ink);
+      imagefilledrectangle($image, 40, $y + 14, 40 + (int) ($length * 0.7), $y + 20, $muted);
+    }
+
+    ob_start();
+    imagepng($image);
+    $data = strval(ob_get_clean());
+    imagedestroy($image);
+
+    return $data;
+  }
+
+  /**
+   * Total the pixels every frame of a GIF stream encodes.
+   *
+   * @param string $gif
+   *   Binary GIF content.
+   *
+   * @return int
+   *   Sum of each image block's area, in pixels.
+   */
+  protected function encodedPixels(string $gif): int {
+    if (strlen($gif) < 14) {
+      return 0;
+    }
+
+    $packed = ord($gif[10]);
+    $offset = 13 + (($packed & 0x80) !== 0 ? 3 * (1 << (($packed & 0x07) + 1)) : 0);
+    $pixels = 0;
+
+    while ($offset < strlen($gif) && ord($gif[$offset]) !== 0x3B) {
+      $marker = ord($gif[$offset]);
+
+      if ($marker === 0x21) {
+        $offset = $this->skipSubBlocks($gif, $offset + 2);
+
+        continue;
+      }
+
+      if ($marker !== 0x2C) {
+        break;
+      }
+
+      $pixels += $this->readShort($gif, $offset + 5) * $this->readShort($gif, $offset + 7);
+
+      $image_packed = ord($gif[$offset + 9]);
+      $offset += 10 + (($image_packed & 0x80) !== 0 ? 3 * (1 << (($image_packed & 0x07) + 1)) : 0);
+      $offset = $this->skipSubBlocks($gif, $offset + 1);
+    }
+
+    return $pixels;
+  }
+
+  /**
+   * Read a little-endian unsigned short.
+   *
+   * @param string $data
+   *   Binary content.
+   * @param int $offset
+   *   Offset to read from.
+   *
+   * @return int
+   *   The decoded value.
+   */
+  protected function readShort(string $data, int $offset): int {
+    return ord($data[$offset]) + (ord($data[$offset + 1]) << 8);
+  }
+
+  /**
+   * Advance past a run of GIF data sub-blocks.
+   *
+   * @param string $data
+   *   GIF binary being scanned.
+   * @param int $offset
+   *   Offset of the first sub-block length byte.
+   *
+   * @return int
+   *   Offset immediately after the block terminator.
+   */
+  protected function skipSubBlocks(string $data, int $offset): int {
+    while (($length = ord($data[$offset])) !== 0) {
+      $offset += $length + 1;
+    }
+
+    return $offset + 1;
+  }
+
+  /**
+   * Read the step counts to profile.
+   *
+   * @return array<int,int>
+   *   Step counts.
+   */
+  protected function stepCounts(): array {
+    $configured = getenv('BEHAT_SCREENSHOT_PROFILE_STEPS');
+    if (!is_string($configured) || trim($configured) === '') {
+      return self::DEFAULT_STEPS;
+    }
+
+    $counts = array_values(array_filter(array_map('intval', explode(',', $configured)), static fn(int $count): bool => $count > 0));
+
+    return $counts === [] ? self::DEFAULT_STEPS : $counts;
+  }
+
+  /**
+   * Write the report where CI collects it.
+   *
+   * @param string $report
+   *   Report content.
+   */
+  protected function writeReport(string $report): void {
+    $dir = dirname(__DIR__, 3) . '/.logs/profile';
+    if (!is_dir($dir) && !mkdir($dir, 0755, TRUE) && !is_dir($dir)) {
+      throw new \RuntimeException(sprintf('Unable to create the profile directory %s.', $dir));
+    }
+
+    file_put_contents($dir . '/animation-assembly.txt', $report);
+    // Diagnostics go to STDERR so the strict no-output-during-tests rule that
+    // guards the default suite still holds.
+    fwrite(STDERR, $report);
+  }
+
+  /**
+   * Create a before scenario scope.
+   *
+   * @return \Behat\Behat\Hook\Scope\BeforeScenarioScope
+   *   Before scenario scope.
+   */
+  protected function beforeScenarioScope(): BeforeScenarioScope {
+    $feature = $this->createMock(FeatureNode::class);
+    $feature->method('hasTag')->willReturn(FALSE);
+    $scenario = $this->createMock(ScenarioInterface::class);
+    $scenario->method('hasTag')->willReturn(FALSE);
+
+    return new BeforeScenarioScope($this->createMock(Environment::class), $feature, $scenario);
+  }
+
+  /**
+   * Create an after step scope for a passed step.
+   *
+   * @return \Behat\Behat\Hook\Scope\AfterStepScope
+   *   After step scope.
+   */
+  protected function afterStepScope(): AfterStepScope {
+    $result = $this->createMock(StepResult::class);
+    $result->method('isPassed')->willReturn(TRUE);
+
+    return new AfterStepScope($this->createMock(Environment::class), $this->createMock(FeatureNode::class), $this->createMock(StepNode::class), $result);
+  }
+
+  /**
+   * Create an after scenario scope.
+   *
+   * @return \Behat\Behat\Hook\Scope\AfterScenarioScope
+   *   After scenario scope.
+   */
+  protected function afterScenarioScope(): AfterScenarioScope {
+    $feature = $this->createMock(FeatureNode::class);
+    $feature->method('getFile')->willReturn('profile.feature');
+    $scenario = $this->createMock(ScenarioInterface::class);
+    $scenario->method('getLine')->willReturn(1);
+
+    return new AfterScenarioScope($this->createMock(Environment::class), $feature, $scenario, $this->createMock(TestResult::class));
+  }
+
+}

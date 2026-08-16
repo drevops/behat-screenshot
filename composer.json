@@ -67,6 +67,7 @@
             "rector",
             "phpcbf"
         ],
+        "profile": "phpunit --group profile --no-coverage --do-not-cache-result",
         "reset": "rm -Rf vendor vendor-bin composer.lock",
         "test": "phpunit --no-coverage",
         "test-bdd": "behat --colors",
