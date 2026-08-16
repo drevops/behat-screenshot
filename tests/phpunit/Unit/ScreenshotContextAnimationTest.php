@@ -211,14 +211,17 @@ class ScreenshotContextAnimationTest extends TestCase {
     self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
     self::setProtectedValue($context, 'animationEncoder', $encoder);
 
+    $thrown = NULL;
+
     try {
       $context->afterScenarioAnimate($this->createAfterScenarioScope());
-      $this->fail('Expected exception was not thrown.');
     }
     catch (\Exception $exception) {
-      $this->assertSame('render failed', $exception->getMessage());
+      $thrown = $exception;
     }
 
+    $this->assertInstanceOf(\RuntimeException::class, $thrown);
+    $this->assertSame('render failed', $thrown->getMessage());
     $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
   }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Functional;
 
+use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
 use DrevOps\BehatScreenshotExtension\AnimatedGif;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +19,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(AnimatedGif::class)]
 class AnimationArtifactsTest extends TestCase {
+
+  use GifParserTrait;
 
   /**
    * Directory the artifacts are written to.
@@ -50,8 +53,8 @@ class AnimationArtifactsTest extends TestCase {
     parent::setUp();
 
     $this->dir = dirname(__DIR__, 3) . '/.logs/animation';
-    if (!is_dir($this->dir)) {
-      mkdir($this->dir, 0755, TRUE);
+    if (!is_dir($this->dir) && !mkdir($this->dir, 0755, TRUE) && !is_dir($this->dir)) {
+      throw new \RuntimeException(sprintf('Unable to create the artifact directory %s.', $this->dir));
     }
   }
 
@@ -235,105 +238,6 @@ class AnimationArtifactsTest extends TestCase {
    */
   protected function write(string $name, string $content): void {
     file_put_contents($this->dir . DIRECTORY_SEPARATOR . $name, $content);
-  }
-
-  /**
-   * Read the logical screen dimensions of a GIF.
-   *
-   * @param string $gif
-   *   Binary GIF content.
-   *
-   * @return array<int,int>
-   *   The canvas width and height.
-   */
-  protected function canvasSize(string $gif): array {
-    $size = @getimagesizefromstring($gif);
-
-    return $size === FALSE ? [0, 0] : [$size[0], $size[1]];
-  }
-
-  /**
-   * Read the size of every image block in a GIF stream.
-   *
-   * @param string $gif
-   *   Binary GIF content.
-   *
-   * @return array<int,array<int,int>>
-   *   Width and height of each frame.
-   */
-  protected function frameSizes(string $gif): array {
-    $packed = ord($gif[10]);
-    $offset = 13 + (($packed & 0x80) !== 0 ? $this->colorTableBytes($packed) : 0);
-    $sizes = [];
-
-    while ($offset < strlen($gif) && ord($gif[$offset]) !== 0x3B) {
-      $marker = ord($gif[$offset]);
-
-      if ($marker === 0x21) {
-        $offset = $this->skipSubBlocks($gif, $offset + 2);
-
-        continue;
-      }
-
-      if ($marker !== 0x2C) {
-        break;
-      }
-
-      $sizes[] = [$this->readShort($gif, $offset + 5), $this->readShort($gif, $offset + 7)];
-
-      $image_packed = ord($gif[$offset + 9]);
-      $offset += 10 + (($image_packed & 0x80) !== 0 ? $this->colorTableBytes($image_packed) : 0);
-      $offset = $this->skipSubBlocks($gif, $offset + 1);
-    }
-
-    return $sizes;
-  }
-
-  /**
-   * Read a little-endian unsigned short.
-   *
-   * @param string $data
-   *   Binary content.
-   * @param int $offset
-   *   Offset to read from.
-   *
-   * @return int
-   *   The decoded value.
-   */
-  protected function readShort(string $data, int $offset): int {
-    return ord($data[$offset]) + (ord($data[$offset + 1]) << 8);
-  }
-
-  /**
-   * Calculate the colour table size, in bytes, for a packed field.
-   *
-   * @param int $packed
-   *   Packed field whose low three bits encode the colour table size.
-   *
-   * @return int
-   *   Number of bytes occupied by the colour table.
-   */
-  protected function colorTableBytes(int $packed): int {
-    return 3 * (1 << (($packed & 0x07) + 1));
-  }
-
-  /**
-   * Advance past a run of GIF data sub-blocks.
-   *
-   * @param string $data
-   *   GIF binary being scanned.
-   * @param int $offset
-   *   Offset of the first sub-block length byte.
-   *
-   * @return int
-   *   Offset immediately after the block terminator.
-   */
-  protected function skipSubBlocks(string $data, int $offset): int {
-    while (($length = ord($data[$offset])) !== 0) {
-      $offset += $length + 1;
-    }
-
-    return $offset + 1;
   }
 
 }

@@ -45,6 +45,14 @@ class AnimatedGif implements \Countable {
   public const DISPOSAL_BACKGROUND = 2;
 
   /**
+   * Largest width or height GIF can record, in pixels.
+   *
+   * Frame geometry is stored in unsigned 16-bit fields, so anything past this
+   * wraps around and produces an undecodable stream.
+   */
+  public const MAX_DIMENSION = 65535;
+
+  /**
    * Added frames as single-frame GIF binaries with their pixel dimensions.
    *
    * @var array<int,array{gif:string,width:int,height:int}>
@@ -191,7 +199,8 @@ class AnimatedGif implements \Countable {
    *
    * Each axis is capped on its own and the top-left of the frame is kept, so
    * the retained area holds its captured resolution and frames that share a
-   * width still share it after cropping.
+   * width still share it after cropping. The format's own 16-bit ceiling
+   * applies whether or not a maximum is configured.
    *
    * @param \GdImage $image
    *   Source image. Destroyed once a cropped copy replaces it.
@@ -203,8 +212,8 @@ class AnimatedGif implements \Countable {
     $width = imagesx($image);
     $height = imagesy($image);
 
-    $bounded_width = ($this->maxWidth > 0 && $width > $this->maxWidth) ? $this->maxWidth : $width;
-    $bounded_height = ($this->maxHeight > 0 && $height > $this->maxHeight) ? $this->maxHeight : $height;
+    $bounded_width = min($width, $this->maxWidth > 0 ? $this->maxWidth : $width, self::MAX_DIMENSION);
+    $bounded_height = min($height, $this->maxHeight > 0 ? $this->maxHeight : $height, self::MAX_DIMENSION);
 
     if ($bounded_width === $width && $bounded_height === $height) {
       return $image;
