@@ -55,6 +55,16 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected const DEFAULT_STEPS = [25, 50, 100];
 
+  protected function setUp(): void {
+    parent::setUp();
+
+    // GD is a suggested dependency, so the profiler has nothing to measure
+    // without it - the animation is skipped at runtime for the same reason.
+    if (!function_exists('imagecreatetruecolor') || !function_exists('imagegif')) {
+      $this->markTestSkipped('Profiling animated GIF assembly requires the gd extension.');
+    }
+  }
+
   public function testAnimationAssemblyCost(): void {
     $steps = $this->stepCounts();
 
@@ -96,11 +106,12 @@ class AnimationAssemblyProfileTest extends TestCase {
 
     $this->writeReport(implode("\n", $report) . "\n");
 
-    // The measurement is only meaningful if the work really does happen at
-    // scenario end rather than during the steps.
+    // The timings only describe something real if each scenario did produce an
+    // animation. Comparing the two timings against each other would be a race
+    // rather than an assertion, so the report is left to show that.
     foreach ($rows as $by_step) {
       foreach ($by_step as $row) {
-        $this->assertGreaterThan($row['steps'], $row['assembly']);
+        $this->assertGreaterThan(0, $row['bytes']);
       }
     }
   }
@@ -319,7 +330,11 @@ class AnimationAssemblyProfileTest extends TestCase {
       throw new \RuntimeException(sprintf('Unable to create the profile directory %s.', $dir));
     }
 
-    file_put_contents($dir . '/animation-assembly.txt', $report);
+    $file = $dir . '/animation-assembly.txt';
+    if (file_put_contents($file, $report) === FALSE) {
+      throw new \RuntimeException(sprintf('Unable to write the profile report to %s.', $file));
+    }
+
     // Diagnostics go to STDERR so the strict no-output-during-tests rule that
     // guards the default suite still holds.
     fwrite(STDERR, $report);
