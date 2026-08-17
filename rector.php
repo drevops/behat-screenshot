@@ -18,6 +18,7 @@ use Rector\CodingStyle\Rector\ClassMethod\NewlineBeforeNewAssignSetRector;
 use Rector\CodingStyle\Rector\FuncCall\CountArrayToEmptyArrayComparisonRector;
 use Rector\CodingStyle\Rector\Stmt\NewlineAfterStatementRector;
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\Cast\RecastingRemovalRector;
 use Rector\DeadCode\Rector\If_\RemoveAlwaysTrueIfConditionRector;
 use Rector\Set\ValueObject\SetList;
 use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
@@ -48,6 +49,15 @@ return static function (RectorConfig $rectorConfig): void {
     NewlineBeforeNewAssignSetRector::class,
     RemoveAlwaysTrueIfConditionRector::class,
     SimplifyEmptyCheckOnEmptyArrayRector::class,
+    // Rector infers ob_get_clean() as string, but it returns string|false
+    // when no buffer is active. The cast is what maps that FALSE onto the
+    // empty string these callers check for, so it is not redundant.
+    RecastingRemovalRector::class => [
+      __DIR__ . '/src/DrevOps/BehatScreenshotExtension/AnimatedGif.php',
+      __DIR__ . '/tests/phpunit/Functional/AnimationArtifactsTest.php',
+      __DIR__ . '/tests/phpunit/Profile/AnimationAssemblyProfileTest.php',
+      __DIR__ . '/tests/phpunit/Unit/AnimatedGifTest.php',
+    ],
     // Dependencies.
     '*/vendor/*',
     '*/node_modules/*',
