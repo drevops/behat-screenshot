@@ -50,7 +50,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
   public function __construct(
     protected string $dir,
     protected bool $onFailed,
-    private readonly string $failedPrefix,
+    protected string $failedPrefix,
     protected bool $purge,
     protected bool $alwaysFullscreen,
     protected bool $onEveryStep,
