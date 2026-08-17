@@ -77,7 +77,7 @@ trait BehatCliTrait {
     ];
     foreach ($traits as $path => $trait) {
       $trait_name = $trait;
-      if (strpos($trait, '\\') !== FALSE) {
+      if (str_contains($trait, '\\')) {
         $tokens['{{USE_DECLARATION}}'] .= sprintf('use %s;' . PHP_EOL, $trait);
         $trait_name_parts = explode('\\', $trait);
         $trait_name = end($trait_name_parts);
@@ -336,7 +336,7 @@ EOL;
     $behat_yml_path = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
     if (file_exists($behat_yml_path)) {
       $behat_yml = file_get_contents($behat_yml_path);
-      if (strpos($behat_yml, 'FullscreenTestContext') === FALSE) {
+      if (!str_contains($behat_yml, 'FullscreenTestContext')) {
         $behat_yml = str_replace(
           'ScreenshotContext',
           "ScreenshotContext\n        - FullscreenTestContext",
