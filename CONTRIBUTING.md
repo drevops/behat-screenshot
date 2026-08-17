@@ -31,9 +31,9 @@ There are tests for Selenium and Headless drivers. Selenium requires a Docker co
 docker run -d -p 4444:4444 -p 9222:9222 selenium/standalone-chromium
 
 # Install Chromium with brew.
-brew cask install chromedriver
+brew install --cask chromium
 # Launch Chromium with remote debugging.
-/opt/homebrew/Caskroom/chromium/latest/chromium.wrapper.sh --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
+"$(brew --prefix)/bin/chromium" --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
 ```
 
 ```shell
