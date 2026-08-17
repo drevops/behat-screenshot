@@ -19,9 +19,9 @@ class TokenizerTest extends TestCase {
   use ReflectionTrait;
 
   #[DataProvider('dataProviderScanTokens')]
-  public function testScanTokens(string $textContainsTokens, array $expectedTokens): void {
-    $tokens = Tokenizer::scanTokens($textContainsTokens);
-    $this->assertEquals($expectedTokens, $tokens);
+  public function testScanTokens(string $text_contains_tokens, array $expected_tokens): void {
+    $tokens = Tokenizer::scanTokens($text_contains_tokens);
+    $this->assertEquals($expected_tokens, $tokens);
   }
 
   public static function dataProviderScanTokens(): array {
@@ -184,8 +184,8 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceTokens')]
-  public function testReplaceTokens(string $stringContainsTokens, array $data, string $expected): void {
-    $replacement = Tokenizer::replaceTokens($stringContainsTokens, $data);
+  public function testReplaceTokens(string $string_contains_tokens, array $data, string $expected): void {
+    $replacement = Tokenizer::replaceTokens($string_contains_tokens, $data);
     $this->assertEquals($expected, $replacement);
   }
 
