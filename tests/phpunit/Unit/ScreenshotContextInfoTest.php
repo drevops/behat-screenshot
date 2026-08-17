@@ -133,9 +133,9 @@ class ScreenshotContextInfoTest extends TestCase {
   }
 
   /**
-   * Test iSaveScreenshot with UnsupportedDriverActionException.
+   * Test screenshot with UnsupportedDriverActionException.
    */
-  public function testSaveScreenshotUnsupportedDriver(): void {
+  public function testScreenshotUnsupportedDriver(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',

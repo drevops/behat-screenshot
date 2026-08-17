@@ -105,13 +105,13 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->iSaveSizedScreenshot();
   }
 
-  public function testIsaveSizedScreenshotWithName(): void {
+  public function testIsaveScreenshotWithName(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())->method('screenshot');
     $screenshot_context->iSaveScreenshotWithName('test-file-name');
   }
 
-  public function testIsSaveFullscreenScreenshotWithName(): void {
+  public function testIsaveFullscreenScreenshotWithName(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())
       ->method('screenshot')
@@ -119,7 +119,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->iSaveFullscreenScreenshotWithName('test-fullscreen-name');
   }
 
-  public function testIsSaveFullscreenScreenshot(): void {
+  public function testIsaveFullscreenScreenshot(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())
       ->method('screenshot')
@@ -163,8 +163,8 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->screenshot();
   }
 
-  #[DataProvider('dataProviderSaveScreenshotData')]
-  public function testSaveScreenshotData(string $filename, string $data): void {
+  #[DataProvider('dataProviderSaveScreenshotContent')]
+  public function testSaveScreenshotContent(string $filename, string $data): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
@@ -188,9 +188,9 @@ class ScreenshotContextTest extends TestCase {
   }
 
   /**
-   * Data provider for testSaveScreenshotData method.
+   * Data provider for testSaveScreenshotContent method.
    */
-  public static function dataProviderSaveScreenshotData(): array {
+  public static function dataProviderSaveScreenshotContent(): array {
     return [
       ['test-save-screenshot-1.txt', 'test-data-1'],
       ['test-save-screenshot-2.txt', 'test-data-2'],
