@@ -11,7 +11,7 @@ composer install
 ## Linting
 
 ```shell
-composer lint      # Check coding standards, run static analysis and lint feature files.
+composer lint      # Check standards, run static analysis, lint feature files.
 composer lint-fix  # Apply the fixes Rector and PHPCBF can make automatically.
 ```
 
@@ -33,7 +33,9 @@ docker run -d -p 4444:4444 -p 9222:9222 selenium/standalone-chromium
 # Install Chromium with brew.
 brew install --cask chromium
 # Launch Chromium with remote debugging.
-"$(brew --prefix)/bin/chromium" --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
+"$(brew --prefix)/bin/chromium" \
+  --remote-debugging-address=0.0.0.0 \
+  --remote-debugging-port=9222
 ```
 
 ```shell

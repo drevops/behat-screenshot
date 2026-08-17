@@ -22,5 +22,5 @@ default:
         - step
         - datetime
       failed_prefix: failed_
-      filename_pattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
-      filename_pattern_failed: '{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
+      filename_pattern: '{datetime:U}.{feature_file}.feature_{step_line}.{ext}'
+      filename_pattern_failed: '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
