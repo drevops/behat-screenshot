@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Profile;
 
-use Behat\Behat\Hook\Scope\AfterScenarioScope;
-use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Behat\Behat\Tester\Result\StepResult;
 use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Node\ScenarioInterface;
-use Behat\Gherkin\Node\StepNode;
 use Behat\Testwork\Environment\Environment;
-use Behat\Testwork\Tester\Result\TestResult;
+use DrevOps\BehatScreenshot\Tests\Traits\BehatScopeTrait;
 use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
@@ -37,6 +33,7 @@ use PHPUnit\Framework\TestCase;
 #[Group('profile')]
 class AnimationAssemblyProfileTest extends TestCase {
 
+  use BehatScopeTrait;
   use GifParserTrait;
 
   /**
@@ -150,7 +147,7 @@ class AnimationAssemblyProfileTest extends TestCase {
 
     $before_scope = $this->createBeforeScenarioScope();
     $after_step_scope = $this->createAfterStepScope();
-    $after_scenario_scope = $this->createAfterScenarioScope();
+    $after_scenario_scope = $this->createAfterScenarioScope('profile.feature', 1);
 
     $viewport = $this->createPage(self::FRAME_WIDTH, self::VIEWPORT_HEIGHT);
     $long = $tallest > self::VIEWPORT_HEIGHT ? $this->createPage(self::FRAME_WIDTH, $tallest) : $viewport;
@@ -295,34 +292,6 @@ class AnimationAssemblyProfileTest extends TestCase {
     $scenario->method('hasTag')->willReturn(FALSE);
 
     return new BeforeScenarioScope($this->createMock(Environment::class), $feature_node, $scenario);
-  }
-
-  /**
-   * Create an after step scope for a passed step.
-   *
-   * @return \Behat\Behat\Hook\Scope\AfterStepScope
-   *   After step scope.
-   */
-  protected function createAfterStepScope(): AfterStepScope {
-    $result = $this->createMock(StepResult::class);
-    $result->method('isPassed')->willReturn(TRUE);
-
-    return new AfterStepScope($this->createMock(Environment::class), $this->createMock(FeatureNode::class), $this->createMock(StepNode::class), $result);
-  }
-
-  /**
-   * Create an after scenario scope.
-   *
-   * @return \Behat\Behat\Hook\Scope\AfterScenarioScope
-   *   After scenario scope.
-   */
-  protected function createAfterScenarioScope(): AfterScenarioScope {
-    $feature_node = $this->createMock(FeatureNode::class);
-    $feature_node->method('getFile')->willReturn('profile.feature');
-    $scenario = $this->createMock(ScenarioInterface::class);
-    $scenario->method('getLine')->willReturn(1);
-
-    return new AfterScenarioScope($this->createMock(Environment::class), $feature_node, $scenario, $this->createMock(TestResult::class));
   }
 
 }
