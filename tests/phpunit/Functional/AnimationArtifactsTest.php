@@ -23,11 +23,6 @@ class AnimationArtifactsTest extends TestCase {
   use GifParserTrait;
 
   /**
-   * Directory the artifacts are written to.
-   */
-  protected string $dir;
-
-  /**
    * Frame sizes standing in for a scenario that visits pages of every length.
    *
    * @var array<int,array<int,int>>
@@ -48,6 +43,11 @@ class AnimationArtifactsTest extends TestCase {
    * Width cap applied to the both-axes variant.
    */
   protected const MAX_WIDTH = 500;
+
+  /**
+   * Directory the artifacts are written to.
+   */
+  protected string $dir;
 
   protected function setUp(): void {
     parent::setUp();

@@ -13,12 +13,12 @@ use Behat\MinkExtension\Context\RawMinkContext;
  */
 class FeatureContext extends MinkContext implements Context {
 
+  use ScreenshotTrait;
+
   /**
    * Base URL for JavaScript scenarios.
    */
   protected string $javascriptBaseUrl;
-
-  use ScreenshotTrait;
 
   /**
    * FeatureContext constructor.
