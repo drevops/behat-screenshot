@@ -30,21 +30,21 @@ class ScreenshotContextAnimationTest extends TestCase {
 
   #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTag')]
   public function testBeforeScenarioCheckScreenshotsTag(array $scenario_tags, array $feature_tags, array $animation, bool $expected_screenshots, bool $expected_animated): void {
-    $environment = $this->createMock(Environment::class);
-    $feature = $this->createMock(FeatureNode::class);
-    $feature->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $feature_tags, TRUE));
+    $env = $this->createMock(Environment::class);
+    $feature_node = $this->createMock(FeatureNode::class);
+    $feature_node->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $feature_tags, TRUE));
     $scenario = $this->createMock(ScenarioInterface::class);
     $scenario->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $scenario_tags, TRUE));
 
-    $context = new ScreenshotContext();
-    $context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
-    self::setProtectedValue($context, 'animationEncoder', new AnimatedGif());
+    $screenshot_context = new ScreenshotContext();
+    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
+    self::setProtectedValue($screenshot_context, 'animationEncoder', new AnimatedGif());
 
-    $context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($environment, $feature, $scenario));
+    $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
 
-    $this->assertSame($expected_screenshots, $this->getProtectedProperty($context, 'scenarioHasScreenshotsTag'));
-    $this->assertSame($expected_animated, $this->getProtectedProperty($context, 'scenarioIsAnimated'));
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertSame($expected_screenshots, $this->getProtectedProperty($screenshot_context, 'scenarioHasScreenshotsTag'));
+    $this->assertSame($expected_animated, $this->getProtectedProperty($screenshot_context, 'scenarioIsAnimated'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public static function dataProviderBeforeScenarioCheckScreenshotsTag(): array {
@@ -63,67 +63,67 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder = $this->createMock(AnimatedGif::class);
     $encoder->expects($this->once())->method('addFrame')->with('png-bytes');
 
-    $context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
-    $context->expects($this->once())->method('screenshot');
-    $context->method('isAnimatedGifSupported')->willReturn(TRUE);
-    $context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($context, 'lastScreenshotData', 'png-bytes');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
+    $screenshot_context->expects($this->once())->method('screenshot');
+    $screenshot_context->method('isAnimatedGifSupported')->willReturn(TRUE);
+    $screenshot_context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
+    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
 
-    $context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
+    $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
-    $this->assertSame($encoder, $this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertSame($encoder, $this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testCaptureScreenshotAfterStepReusesEncoderAcrossSteps(): void {
     $encoder = $this->createMock(AnimatedGif::class);
     $encoder->expects($this->exactly(2))->method('addFrame')->with('png-bytes');
 
-    $context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
-    $context->method('isAnimatedGifSupported')->willReturn(TRUE);
-    $context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($context, 'lastScreenshotData', 'png-bytes');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
+    $screenshot_context->method('isAnimatedGifSupported')->willReturn(TRUE);
+    $screenshot_context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
+    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
 
-    $context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
-    $context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
+    $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
+    $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
   }
 
   public function testCaptureScreenshotAfterStepSkipsFrameWhenUnsupported(): void {
-    $context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
-    $context->expects($this->once())->method('screenshot');
-    $context->method('isAnimatedGifSupported')->willReturn(FALSE);
-    $context->expects($this->never())->method('getAnimatedGif');
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($context, 'lastScreenshotData', 'png-bytes');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
+    $screenshot_context->expects($this->once())->method('screenshot');
+    $screenshot_context->method('isAnimatedGifSupported')->willReturn(FALSE);
+    $screenshot_context->expects($this->never())->method('getAnimatedGif');
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
+    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
 
-    $context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
+    $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testCaptureScreenshotAfterStepDoesNotCollectWhenNotAnimated(): void {
-    $context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'getAnimatedGif']);
-    $context->expects($this->once())->method('screenshot');
-    $context->expects($this->never())->method('getAnimatedGif');
-    self::setProtectedValue($context, 'scenarioHasScreenshotsTag', TRUE);
-    self::setProtectedValue($context, 'scenarioIsAnimated', FALSE);
-    self::setProtectedValue($context, 'lastScreenshotData', 'png-bytes');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'getAnimatedGif']);
+    $screenshot_context->expects($this->once())->method('screenshot');
+    $screenshot_context->expects($this->never())->method('getAnimatedGif');
+    self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', TRUE);
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', FALSE);
+    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
 
-    $context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
+    $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testCaptureScreenshotAfterStepSkipsFailedStep(): void {
-    $context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'getAnimatedGif']);
-    $context->expects($this->never())->method('screenshot');
-    $context->expects($this->never())->method('getAnimatedGif');
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot', 'getAnimatedGif']);
+    $screenshot_context->expects($this->never())->method('screenshot');
+    $screenshot_context->expects($this->never())->method('getAnimatedGif');
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
 
-    $context->captureScreenshotAfterStep($this->createAfterStepScope(FALSE));
+    $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(FALSE));
 
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateRendersAndSaves(): void {
@@ -131,17 +131,17 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder->method('count')->willReturn(2);
     $encoder->expects($this->once())->method('render')->with(250)->willReturn('gif-data');
 
-    $context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'saveScreenshotContent']);
-    $context->method('makeAnimationFileName')->willReturn('animation.gif');
-    $context->expects($this->once())->method('saveScreenshotContent')->with('animation.gif', 'gif-data');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'saveScreenshotContent']);
+    $screenshot_context->method('makeAnimationFileName')->willReturn('animation.gif');
+    $screenshot_context->expects($this->once())->method('saveScreenshotContent')->with('animation.gif', 'gif-data');
 
-    $context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 250]);
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($context, 'animationEncoder', $encoder);
+    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 250]);
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
+    self::setProtectedValue($screenshot_context, 'animationEncoder', $encoder);
 
-    $context->afterScenarioAnimate($this->createAfterScenarioScope());
+    $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
 
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateUsesDefaultDelay(): void {
@@ -149,39 +149,39 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder->method('count')->willReturn(1);
     $encoder->expects($this->once())->method('render')->with(500)->willReturn('gif-data');
 
-    $context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'saveScreenshotContent']);
-    $context->method('makeAnimationFileName')->willReturn('animation.gif');
-    $context->expects($this->once())->method('saveScreenshotContent')->with('animation.gif', 'gif-data');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'saveScreenshotContent']);
+    $screenshot_context->method('makeAnimationFileName')->willReturn('animation.gif');
+    $screenshot_context->expects($this->once())->method('saveScreenshotContent')->with('animation.gif', 'gif-data');
 
-    $context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], []);
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($context, 'animationEncoder', $encoder);
+    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], []);
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
+    self::setProtectedValue($screenshot_context, 'animationEncoder', $encoder);
 
-    $context->afterScenarioAnimate($this->createAfterScenarioScope());
+    $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
   }
 
   public function testAfterScenarioAnimateSkipsWhenNotAnimated(): void {
     $encoder = $this->createMock(AnimatedGif::class);
     $encoder->expects($this->never())->method('render');
 
-    $context = $this->createPartialMock(ScreenshotContext::class, ['saveScreenshotContent']);
-    $context->expects($this->never())->method('saveScreenshotContent');
-    self::setProtectedValue($context, 'scenarioIsAnimated', FALSE);
-    self::setProtectedValue($context, 'animationEncoder', $encoder);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['saveScreenshotContent']);
+    $screenshot_context->expects($this->never())->method('saveScreenshotContent');
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', FALSE);
+    self::setProtectedValue($screenshot_context, 'animationEncoder', $encoder);
 
-    $context->afterScenarioAnimate($this->createAfterScenarioScope());
+    $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
 
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateSkipsWhenNoEncoder(): void {
-    $context = $this->createPartialMock(ScreenshotContext::class, ['saveScreenshotContent']);
-    $context->expects($this->never())->method('saveScreenshotContent');
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['saveScreenshotContent']);
+    $screenshot_context->expects($this->never())->method('saveScreenshotContent');
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
 
-    $context->afterScenarioAnimate($this->createAfterScenarioScope());
+    $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
 
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateSkipsWhenNoFrames(): void {
@@ -189,14 +189,14 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder->method('count')->willReturn(0);
     $encoder->expects($this->never())->method('render');
 
-    $context = $this->createPartialMock(ScreenshotContext::class, ['saveScreenshotContent']);
-    $context->expects($this->never())->method('saveScreenshotContent');
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($context, 'animationEncoder', $encoder);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['saveScreenshotContent']);
+    $screenshot_context->expects($this->never())->method('saveScreenshotContent');
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
+    self::setProtectedValue($screenshot_context, 'animationEncoder', $encoder);
 
-    $context->afterScenarioAnimate($this->createAfterScenarioScope());
+    $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
 
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateReleasesEncoderWhenRenderFails(): void {
@@ -204,17 +204,17 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder->method('count')->willReturn(1);
     $encoder->method('render')->willThrowException(new \RuntimeException('render failed'));
 
-    $context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'saveScreenshotContent']);
-    $context->expects($this->never())->method('saveScreenshotContent');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'saveScreenshotContent']);
+    $screenshot_context->expects($this->never())->method('saveScreenshotContent');
 
-    $context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE]);
-    self::setProtectedValue($context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($context, 'animationEncoder', $encoder);
+    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE]);
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
+    self::setProtectedValue($screenshot_context, 'animationEncoder', $encoder);
 
     $thrown = NULL;
 
     try {
-      $context->afterScenarioAnimate($this->createAfterScenarioScope());
+      $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
     }
     catch (\Exception $exception) {
       $thrown = $exception;
@@ -222,15 +222,15 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $this->assertInstanceOf(\RuntimeException::class, $thrown);
     $this->assertSame('render failed', $thrown->getMessage());
-    $this->assertNull($this->getProtectedProperty($context, 'animationEncoder'));
+    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
   }
 
   public function testMakeAnimationFileName(): void {
-    $context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
-    $context->method('getCurrentTime')->willReturn(1700000000);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
+    $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
 
     $scope = $this->createAfterScenarioScope('path/to/login.feature', 7);
-    $result = self::callProtectedMethod($context, 'makeAnimationFileName', [$scope]);
+    $result = self::callProtectedMethod($screenshot_context, 'makeAnimationFileName', [$scope]);
 
     $this->assertSame('1700000000.login.feature_7.gif', $result);
   }
@@ -241,10 +241,10 @@ class ScreenshotContextAnimationTest extends TestCase {
 
   #[DataProvider('dataProviderGetAnimatedGif')]
   public function testGetAnimatedGif(array $animation, int $expected_max_width, int $expected_max_height): void {
-    $context = new ScreenshotContext();
-    $context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
+    $screenshot_context = new ScreenshotContext();
+    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
 
-    $encoder = self::callProtectedMethod($context, 'getAnimatedGif');
+    $encoder = self::callProtectedMethod($screenshot_context, 'getAnimatedGif');
 
     $this->assertInstanceOf(AnimatedGif::class, $encoder);
     $this->assertSame($expected_max_width, $this->getProtectedProperty($encoder, 'maxWidth'));
@@ -264,10 +264,10 @@ class ScreenshotContextAnimationTest extends TestCase {
 
   #[DataProvider('dataProviderAnimationSetting')]
   public function testAnimationSetting(array $animation, string $name, int $default, int $expected): void {
-    $context = new ScreenshotContext();
-    $context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
+    $screenshot_context = new ScreenshotContext();
+    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
 
-    $this->assertSame($expected, self::callProtectedMethod($context, 'animationSetting', [$name, $default]));
+    $this->assertSame($expected, self::callProtectedMethod($screenshot_context, 'animationSetting', [$name, $default]));
   }
 
   public static function dataProviderAnimationSetting(): array {
@@ -326,12 +326,12 @@ class ScreenshotContextAnimationTest extends TestCase {
    *   After scenario scope.
    */
   protected function createAfterScenarioScope(?string $feature_file = NULL, int $scenario_line = 0): AfterScenarioScope {
-    $feature = $this->createMock(FeatureNode::class);
-    $feature->method('getFile')->willReturn($feature_file);
+    $feature_node = $this->createMock(FeatureNode::class);
+    $feature_node->method('getFile')->willReturn($feature_file);
     $scenario = $this->createMock(ScenarioInterface::class);
     $scenario->method('getLine')->willReturn($scenario_line);
 
-    return new AfterScenarioScope($this->createMock(Environment::class), $feature, $scenario, $this->createMock(TestResult::class));
+    return new AfterScenarioScope($this->createMock(Environment::class), $feature_node, $scenario, $this->createMock(TestResult::class));
   }
 
 }

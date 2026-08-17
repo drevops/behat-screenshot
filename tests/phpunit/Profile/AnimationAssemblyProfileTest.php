@@ -144,8 +144,8 @@ class AnimationAssemblyProfileTest extends TestCase {
    *   Timings, peak memory and pixel counts for the run.
    */
   protected function profile(int $steps, int $tallest): array {
-    $context = new ProfiledScreenshotContext();
-    $context->setScreenshotParameters('unused', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 500]);
+    $screenshot_context = new ProfiledScreenshotContext();
+    $screenshot_context->setScreenshotParameters('unused', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 500]);
 
     $before_scope = $this->beforeScenarioScope();
     $after_step_scope = $this->afterStepScope();
@@ -159,18 +159,18 @@ class AnimationAssemblyProfileTest extends TestCase {
     memory_reset_peak_usage();
     $baseline = memory_get_usage();
 
-    $context->beforeScenarioCheckScreenshotsTag($before_scope);
+    $screenshot_context->beforeScenarioCheckScreenshotsTag($before_scope);
 
     $started = hrtime(TRUE);
     for ($step = 0; $step < $steps; $step++) {
-      $context->pending = $step === $long_at ? $long : $viewport;
-      $context->captureScreenshotAfterStep($after_step_scope);
+      $screenshot_context->pending = $step === $long_at ? $long : $viewport;
+      $screenshot_context->captureScreenshotAfterStep($after_step_scope);
     }
     $steps_elapsed = (hrtime(TRUE) - $started) / 1e9;
-    $context->pending = '';
+    $screenshot_context->pending = '';
 
     $started = hrtime(TRUE);
-    $context->afterScenarioAnimate($after_scenario_scope);
+    $screenshot_context->afterScenarioAnimate($after_scenario_scope);
     $assembly_elapsed = (hrtime(TRUE) - $started) / 1e9;
 
     $captured = ($steps - 1) * self::FRAME_WIDTH * self::VIEWPORT_HEIGHT + self::FRAME_WIDTH * $tallest;
@@ -183,8 +183,8 @@ class AnimationAssemblyProfileTest extends TestCase {
       'total' => $steps_elapsed + $assembly_elapsed,
       'peak' => (memory_get_peak_usage() - $baseline) / 1048576,
       'captured' => $captured,
-      'encoded' => $this->encodedPixels($context->gif),
-      'bytes' => strlen($context->gif),
+      'encoded' => $this->encodedPixels($screenshot_context->gif),
+      'bytes' => strlen($screenshot_context->gif),
     ];
   }
 
@@ -288,12 +288,12 @@ class AnimationAssemblyProfileTest extends TestCase {
    *   Before scenario scope.
    */
   protected function beforeScenarioScope(): BeforeScenarioScope {
-    $feature = $this->createMock(FeatureNode::class);
-    $feature->method('hasTag')->willReturn(FALSE);
+    $feature_node = $this->createMock(FeatureNode::class);
+    $feature_node->method('hasTag')->willReturn(FALSE);
     $scenario = $this->createMock(ScenarioInterface::class);
     $scenario->method('hasTag')->willReturn(FALSE);
 
-    return new BeforeScenarioScope($this->createMock(Environment::class), $feature, $scenario);
+    return new BeforeScenarioScope($this->createMock(Environment::class), $feature_node, $scenario);
   }
 
   /**
@@ -316,12 +316,12 @@ class AnimationAssemblyProfileTest extends TestCase {
    *   After scenario scope.
    */
   protected function afterScenarioScope(): AfterScenarioScope {
-    $feature = $this->createMock(FeatureNode::class);
-    $feature->method('getFile')->willReturn('profile.feature');
+    $feature_node = $this->createMock(FeatureNode::class);
+    $feature_node->method('getFile')->willReturn('profile.feature');
     $scenario = $this->createMock(ScenarioInterface::class);
     $scenario->method('getLine')->willReturn(1);
 
-    return new AfterScenarioScope($this->createMock(Environment::class), $feature, $scenario, $this->createMock(TestResult::class));
+    return new AfterScenarioScope($this->createMock(Environment::class), $feature_node, $scenario, $this->createMock(TestResult::class));
   }
 
 }
