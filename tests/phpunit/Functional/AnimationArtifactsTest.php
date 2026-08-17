@@ -195,7 +195,7 @@ class AnimationArtifactsTest extends TestCase {
     ob_start();
     imagepng($image);
 
-    return strval(ob_get_clean());
+    return (string) ob_get_clean();
   }
 
   /**
@@ -226,7 +226,7 @@ class AnimationArtifactsTest extends TestCase {
 
       ob_start();
       imagepng($result);
-      $this->write(sprintf('%s-frame-%d.png', $prefix, $index + 1), strval(ob_get_clean()));
+      $this->write(sprintf('%s-frame-%d.png', $prefix, $index + 1), (string) ob_get_clean());
     }
   }
 

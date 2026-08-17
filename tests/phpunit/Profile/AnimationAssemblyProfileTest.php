@@ -240,7 +240,7 @@ class AnimationAssemblyProfileTest extends TestCase {
     ob_start();
     imagepng($image);
 
-    return strval(ob_get_clean());
+    return (string) ob_get_clean();
   }
 
   /**

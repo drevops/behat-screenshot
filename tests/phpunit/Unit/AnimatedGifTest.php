@@ -326,7 +326,7 @@ class AnimatedGifTest extends TestCase {
     imagefilledrectangle($image, 0, 100, 79, 199, (int) imagecolorallocate($image, 0, 0, 255));
     ob_start();
     imagepng($image);
-    $frame = strval(ob_get_clean());
+    $frame = (string) ob_get_clean();
 
     $gif = (new AnimatedGif(0, 100))->encode([$frame], 100);
 
