@@ -147,7 +147,7 @@ class Tokenizer {
    */
   protected static function replaceStepToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     if ($qualifier == 'line' && isset($data['step_line']) && (is_string($data['step_line']) || is_int($data['step_line']))) {
-      return $format ? sprintf($format, intval($data['step_line'])) : strval($data['step_line']);
+      return $format ? sprintf($format, (int) $data['step_line']) : (string) $data['step_line'];
     }
 
     if (isset($data['step_name']) && is_string($data['step_name'])) {
@@ -168,7 +168,7 @@ class Tokenizer {
         throw new \InvalidArgumentException('Timestamp must be numeric.');
       }
 
-      $timestamp = intval($data['timestamp']);
+      $timestamp = (int) $data['timestamp'];
 
       if ($timestamp < 1) {
         throw new \InvalidArgumentException('Timestamp must be greater than 0.');

@@ -326,7 +326,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function iSaveSizedScreenshot(string|int $width = 1440, string|int $height = 900): void {
     try {
-      $this->getSession()->resizeWindow(intval($width), intval($height), 'current');
+      $this->getSession()->resizeWindow((int) $width, (int) $height, 'current');
     }
     catch (UnsupportedDriverActionException) {
       // Nothing to do here - drivers without resize support may proceed.
@@ -350,7 +350,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   public function screenshot(array $options = []): void {
     $is_fullscreen = (isset($options['fullscreen']) && $options['fullscreen']) || $this->alwaysFullscreen;
 
-    $filename = isset($options['filename']) && is_scalar($options['filename']) ? strval($options['filename']) : NULL;
+    $filename = isset($options['filename']) && is_scalar($options['filename']) ? (string) $options['filename'] : NULL;
     $is_failed = isset($options['is_failed']) && is_scalar($options['is_failed']) && $options['is_failed'];
 
     $this->lastScreenshotData = NULL;
