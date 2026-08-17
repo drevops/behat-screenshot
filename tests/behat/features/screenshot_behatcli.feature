@@ -424,9 +424,9 @@ Feature: Screenshot context
 
   # Test for a headless browser using behat-chrome/behat-chrome-extension driver.
   # @see https://gitlab.com/behat-chrome/behat-chrome-extension
-  # Install Chromium with brew: `brew cask install chromedriver`
-  # Launch chrome: /opt/homebrew/Caskroom/chromium/latest/chromium.wrapper.sh --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
-  # Note: this test does not use the Docker container. See README.md for more information.
+  # Install Chromium with brew: `brew install --cask chromium`
+  # Launch chrome: "$(brew --prefix)/bin/chromium" --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
+  # Note: this test does not use the Docker container. See CONTRIBUTING.md for more information.
   @headless
   Scenario: Test Screenshot context using behat-chrome/behat-chrome-extension
     Given screenshot fixture

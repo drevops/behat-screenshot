@@ -1,12 +1,22 @@
 # To ignore OS temporary files use global .gitignore
 # https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files#configuring-ignored-files-for-all-repositories-on-your-computer
 
-/.build
-/.coverage-html
-/.logs
 /.phpunit.cache
-/cobertura.xml
 /composer.lock
-/docker-compose.override.yml
-/screenshots
 /vendor
+/vendor-bin
+
+# Code coverage and test logs.
+/.logs
+
+# Screenshots captured by the default behat.yml.dist configuration.
+/screenshots
+
+# Temporary AI agent and developer artifacts (plans, scratch output, reports).
+/.artifacts/
+
+# Claude Code settings are shared; personal overrides stay local.
+!/.claude/
+/.claude/settings.local.json
+# Claude Code fetches the project update skill on demand; do not commit it.
+/.claude/skills/update-consumer-scaffold/

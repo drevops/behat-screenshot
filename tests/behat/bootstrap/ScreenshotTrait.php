@@ -93,7 +93,7 @@ trait ScreenshotTrait {
     $files = glob($this->screenshotDir . DIRECTORY_SEPARATOR . '*');
 
     if (!empty($files)) {
-      array_map('unlink', $files);
+      array_map(unlink(...), $files);
     }
   }
 

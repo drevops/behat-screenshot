@@ -295,51 +295,9 @@ public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
 }
 ```
 
-## Maintenance
+## Contributing
 
-```shell
-composer install
-composer lint
-composer lint-fix
-composer test-unit
-composer test-bdd
-```
-
-### Profiling animated GIF assembly
-
-Building a scenario's animated GIF happens in the `AfterScenario` handler, so its cost lands as a pause after the scenario's last step rather than as slower steps. The profiler replays a scenario of a given length through the real hooks and reports how long each phase took, how much memory peaked, and how many pixels were encoded compared to how many were captured.
-
-It is excluded from `composer test` because it takes minutes to run.
-
-```shell
-composer profile  # Profile 25, 50 and 100-step scenarios.
-
-BEHAT_SCREENSHOT_PROFILE_STEPS=10,20 composer profile  # Profile other lengths.
-```
-
-The report is printed and written to `.logs/profile/animation-assembly.txt`, which CI collects as a build artifact.
-
-### BDD tests
-
-There are tests for Selenium and Headless drivers. Selenium requires a Docker
-container and headless requires a Chromium browser (we will make this more
-streamlined in the future).
-
-```shell
-# Start Chromium in container for Selenium-based tests.
-docker run -d -p 4444:4444 -p 9222:9222 selenium/standalone-chromium
-
-# Install Chromium with brew.
-brew cask install chromedriver
-# Launch Chromium with remote debugging.
-/opt/homebrew/Caskroom/chromium/latest/chromium.wrapper.sh --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
-```
-
-```shell
-composer test-bdd  # Run BDD tests.
-
-BEHAT_CLI_DEBUG=1 composer test-bdd  # Run BDD tests with debug output.
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, linting, unit and BDD tests, and the animated GIF assembly profiler.
 
 ---
 _Repository created using https://getscaffold.dev/ project scaffold template_

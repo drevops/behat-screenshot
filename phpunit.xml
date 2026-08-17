@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
          bootstrap="vendor/autoload.php"
@@ -11,7 +12,8 @@
          displayDetailsOnTestsThatTriggerWarnings="true"
          displayDetailsOnTestsThatTriggerErrors="true"
          displayDetailsOnTestsThatTriggerNotices="true"
-         displayDetailsOnTestsThatTriggerDeprecations="true">
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnPhpunitDeprecations="true">
     <testsuites>
         <testsuite name="default">
             <directory>tests/phpunit</directory>
@@ -29,13 +31,20 @@
         <include>
             <directory>src</directory>
         </include>
+        <exclude>
+            <directory>tests</directory>
+        </exclude>
     </source>
     <coverage includeUncoveredFiles="true"
               ignoreDeprecatedCodeUnits="true"
               disableCodeCoverageIgnore="false">
         <report>
             <html outputDirectory=".logs/coverage/phpunit/.coverage-html" lowUpperBound="50" highLowerBound="90"/>
+            <text outputFile=".logs/coverage/phpunit/coverage.txt"/>
             <cobertura outputFile=".logs/coverage/phpunit/cobertura.xml"/>
         </report>
     </coverage>
+    <logging>
+        <junit outputFile=".logs/junit.xml"/>
+    </logging>
 </phpunit>
