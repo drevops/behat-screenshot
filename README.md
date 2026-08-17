@@ -71,8 +71,8 @@ default:
       purge: false
       always_fullscreen: false
       failed_prefix: 'failed_'
-      filename_pattern: '{datetime:u}.{feature_file}.feature_{step_line}.{ext}'
-      filename_pattern_failed: '{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
+      filename_pattern: '{datetime:U}.{feature_file}.feature_{step_line}.{ext}'
+      filename_pattern_failed: '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
 ```
 
 In your feature:
@@ -242,30 +242,32 @@ Frames larger than the cap are cropped to it before being encoded, keeping the t
 | `animation.max_height`    | `0`                                                                    | Maximum animated GIF frame height, in pixels. Taller frames are cropped to it, keeping the top of the page at full resolution and full width. `0` leaves the height unbounded. Useful with `always_fullscreen`, where frame height follows the page height.                                      |
 | `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                                                                                                                                                             |
 | `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
-| `info_types`              | `url`, `feature`, `step`, `datetime`                                   | Show additional information on screenshots. Comma-separated list of `url`, `feature`, `step`, `datetime`, or remove to disable. Ordered as listed.                                                                                                                                              |
+| `info_types`              | none                                                                   | List of additional information types to show on screenshots: `url`, `feature`, `step`, `datetime`. Rendered in the order listed. No information is added unless this option is set.                                                                                                            |
 | `failed_prefix`           | `failed_`                                                              | Prefix failed screenshots with `failed_` string. Useful to distinguish failed and intended screenshots.                                                                                                                                                                                         |
-| `filename_pattern`        | `{datetime:u}.{feature_file}.feature_{step_line}.{ext}`                | File name pattern for successful assertions.                                                                                                                                                                                                                                                    |
-| `filename_pattern_failed` | `{datetime:u}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                                                                                                                                                                        |
+| `filename_pattern`        | `{datetime:U}.{feature_file}.feature_{step_line}.{ext}`                | File name pattern for successful assertions.                                                                                                                                                                                                                                                    |
+| `filename_pattern_failed` | `{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                                                                                                                                                                        |
 
 ### File name tokens
 
-| Token              | Substituted with                                                                | Example value(s)                                                  |
-|--------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| `{ext}`            | The extension of the file captured                                              | `html` or `png`                                                   |
-| `{failed_prefix}`  | The value of failed_prefix from configuration                                   | `failed_`, `error_` (do include the `_` suffix, if required)      |
-| `{url}`            | Full URL                                                                        | `http_example_com_mypath_subpath_query_myquery_1_plus_2_fragment` |
-| `{url_origin}`     | Scheme with domain                                                              | `http_example_com`                                                |
-| `{url_relative}`   | Path + query + fragment                                                         | `mypath_subpath_query_myquery_1_plus_2_fragment`                  |
-| `{url_domain}`     | Domain                                                                          | `example_com`                                                     |
-| `{url_path}`       | Path                                                                            | `mypath_subpath`                                                  |
-| `{url_query}`      | Query                                                                           | `myquery_1_plus_2`                                                |
-| `{url_fragment}`   | Fragment                                                                        | `somefragment`                                                    |
-| `{feature_file}`   | The filename of the `.feature` file currently being executed, without extension | `my_example.feature` -> `my_example`                              |
-| `{step_line}`      | Step line number                                                                | `1`, `10`, `100`                                                  |
-| `{step_line:%03d}` | Step line number with leading zeros. Modifiers are from `sprintf()`.            | `001`, `010`, `100`                                               |
-| `{step_name}`      | Step name without `Given/When/Then` and lower-cased.                            | `i_am_on_the_test_page`                                           |
-| `{datetime}`       | Current date and time. defaults to `Ymd_His` format.                            | `20010310_171618`                                                 |
-| `{datetime:U}`     | Current date and time as microtime. Modifiers are from `date()`.                | `1697490961192498`                                                |
+Every character other than a letter, digit, underscore or hyphen is replaced with an underscore, and consecutive replacements collapse into one. The URL examples below are for a page at `http://example.com/mypath/subpath?myquery=1#somefragment`.
+
+| Token              | Substituted with                                                                | Example value(s)                                             |
+|--------------------|---------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `{ext}`            | The extension of the file captured                                              | `html` or `png`                                              |
+| `{failed_prefix}`  | The value of failed_prefix from configuration                                   | `failed_`, `error_` (do include the `_` suffix, if required) |
+| `{url}`            | Full URL                                                                        | `http_example_com_mypath_subpath_myquery_1_somefragment`     |
+| `{url_origin}`     | Scheme with domain                                                              | `http_example_com`                                           |
+| `{url_relative}`   | Path + query + fragment                                                         | `mypath_subpath_myquery_1_somefragment`                      |
+| `{url_domain}`     | Domain                                                                          | `example_com`                                                |
+| `{url_path}`       | Path                                                                            | `mypath_subpath`                                             |
+| `{url_query}`      | Query                                                                           | `myquery_1`                                                  |
+| `{url_fragment}`   | Fragment                                                                        | `somefragment`                                               |
+| `{feature_file}`   | The filename of the `.feature` file currently being executed, without extension | `my_example.feature` -> `my_example`                         |
+| `{step_line}`      | Step line number                                                                | `1`, `10`, `100`                                             |
+| `{step_line:%03d}` | Step line number with leading zeros. Modifiers are from `sprintf()`.            | `001`, `010`, `100`                                          |
+| `{step_name}`      | Step name without `Given/When/Then`, with spaces replaced by underscores        | `I_am_on_the_test_page`                                      |
+| `{datetime}`       | Current date and time. Defaults to the `Ymd_His` format.                        | `20010310_171618`                                            |
+| `{datetime:U}`     | Current date and time as a Unix timestamp. Modifiers are from `date()`.         | `1697490961`                                                 |
 
 ## Auto-purge
 
@@ -292,11 +294,20 @@ BEHAT_SCREENSHOT_PURGE=1 vendor/bin/behat
 
 ## Additional information on screenshots
 
-You can enable additional information on screenshots by setting `info_types` in
-the configuration. The order of the types will be the order of the information
-displayed on the screenshot.
+The `info_types` option controls which built-in information is added to screenshots, and nothing is added unless it is set. The order of the types is the order of the information displayed on the screenshot.
 
-By default, the information displayed is the URL, feature file name, step line:
+```yaml
+default:
+  extensions:
+    DrevOps\BehatScreenshotExtension:
+      info_types:
+        - url
+        - feature
+        - step
+        - datetime
+```
+
+With all four types enabled, the information is prepended to the captured HTML:
 
 ```html
 Current URL: http://example.com<br/>
@@ -310,19 +321,18 @@ Datetime: 2025-01-19 00:01:10
 </html>
 ```
 
-More information can be added by setting the `info_types` configuration option
-and using `addInfo()` method in your context class.
+Custom entries can be added from your own context class with `appendInfo()`. They are rendered alongside the entries produced by `info_types`, and are rendered whether or not `info_types` is set.
 
 ```php
 /**
  * @BeforeScenario
  */
-public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
+public function beforeScenarioAddInfo(BeforeScenarioScope $scope): void {
   $environment = $scope->getEnvironment();
   if ($environment instanceof InitializedContextEnvironment) {
     foreach ($environment->getContexts() as $context) {
       if ($context instanceof ScreenshotContext) {
-        $context->addInfo('Custom info', 'My custom info');
+        $context->appendInfo('Custom info', 'My custom info');
       }
     }
   }
@@ -334,4 +344,4 @@ public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
 See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, linting, unit and BDD tests, and the animated GIF assembly profiler.
 
 ---
-_Repository created using https://getscaffold.dev/ project scaffold template_
+_This repository was created using the [Scaffold](https://getscaffold.dev/) project template_

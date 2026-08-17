@@ -6,10 +6,13 @@ These are the standard operations that should be performed when working with thi
 
 ### Code Quality Checks
 ```
-composer lint       # Run all linting tools
-composer lint-fix   # Automatically fix linting issues 
-composer test       # Run PHPUnit tests without coverage
+composer lint           # Run all linting tools
+composer lint-fix       # Automatically fix linting issues
+composer test           # Run PHPUnit tests without coverage
+composer test-coverage  # Run PHPUnit tests with coverage
 ```
+
+See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 
 ### Coding Standards
 - Follow Drupal coding standards
@@ -20,23 +23,16 @@ composer test       # Run PHPUnit tests without coverage
 
 ### PHPUnit Configuration
 - Uses PHPUnit 11.5 with configuration in phpunit.xml
-- Coverage reports are generated in .logs/coverage directory
-
-## Recent Improvements
-- Fullscreen screenshots use the resize algorithm (temporarily resizes browser window to capture full page)
-- Updated autoloader from PSR-0 to PSR-4
-- Made constants public as per PHP 8.2+ standards
-- Improved error messages for file operations
-- Optimized token replacement logic
-- Updated PHPUnit configuration to remove deprecated attributes
-- Ensured all variables follow Drupal's snake_case naming convention
+- Coverage reports are generated in .logs/coverage/phpunit
 
 ## Code Structure
 The Behat Screenshot extension provides functionality to capture screenshots during Behat test runs. Its main components are:
 
-1. **BehatScreenshotExtension**: Handles configuration and service container integration
-2. **ScreenshotContext**: Provides Behat steps and screenshot capabilities, including fullscreen screenshot functionality
-3. **Tokenizer**: Processes dynamic filename generation with tokens
+1. **BehatScreenshotExtension**: Defines the configuration schema and registers the initializer with the service container
+2. **ScreenshotContextInitializer**: Passes the resolved configuration to every screenshot-aware context and purges the screenshot directory when enabled
+3. **ScreenshotContext**: Provides the Behat steps and hooks; fullscreen capture temporarily resizes the browser window to the full page height
+4. **AnimatedGif**: Assembles a scenario's captured frames into a single animated GIF
+5. **Tokenizer**: Expands the tokens used in filename patterns
 
 ## Best Practices for Contributing
 1. Always run tests before and after changes
