@@ -188,7 +188,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * After step handler to print the last response on error.
    *
-   * @param \Behat\Behat\Hook\Scope\AfterStepScope $event
+   * @param \Behat\Behat\Hook\Scope\AfterStepScope $scope
    *   After scope event.
    *
    * @throws \Behat\Mink\Exception\DriverException
@@ -196,8 +196,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @AfterStep
    */
-  public function printLastResponseOnError(AfterStepScope $event): void {
-    if (!$event->getTestResult()->isPassed() && $this->onFailed) {
+  public function printLastResponseOnError(AfterStepScope $scope): void {
+    if (!$scope->getTestResult()->isPassed() && $this->onFailed) {
       $this->screenshot([
         'is_failed' => TRUE,
         'fullscreen' => $this->alwaysFullscreen,
@@ -208,7 +208,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Capture screenshot after every step when enabled.
    *
-   * @param \Behat\Behat\Hook\Scope\AfterStepScope $event
+   * @param \Behat\Behat\Hook\Scope\AfterStepScope $scope
    *   After step scope event.
    *
    * @throws \Behat\Mink\Exception\DriverException
@@ -216,11 +216,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @AfterStep
    */
-  public function captureScreenshotAfterStep(AfterStepScope $event): void {
+  public function captureScreenshotAfterStep(AfterStepScope $scope): void {
     // Capture on passed steps when per-step screenshots are globally enabled,
     // the @screenshots tag is active, or animation is recording.
     // Failed steps are covered separately by on_failed to avoid duplicates.
-    if (($this->onEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $event->getTestResult()->isPassed()) {
+    if (($this->onEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
       $this->screenshot([
         'fullscreen' => $this->alwaysFullscreen,
       ]);
