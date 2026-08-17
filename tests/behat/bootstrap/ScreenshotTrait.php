@@ -92,7 +92,7 @@ trait ScreenshotTrait {
    * @Given I remove all files from screenshot directory
    */
   public function emptyScreenshotDirectory(): void {
-    $files = glob($this->screenshotDir . DIRECTORY_SEPARATOR . '/*');
+    $files = glob($this->screenshotDir . DIRECTORY_SEPARATOR . '*');
 
     if (!empty($files)) {
       array_map('unlink', $files);

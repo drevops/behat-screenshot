@@ -239,7 +239,7 @@ class AnimationArtifactsTest extends TestCase {
    *   File content.
    */
   protected function write(string $name, string $content): void {
-    file_put_contents($this->dir . DIRECTORY_SEPARATOR . $name, $content);
+    file_put_contents($this->dir . '/' . $name, $content);
   }
 
 }
