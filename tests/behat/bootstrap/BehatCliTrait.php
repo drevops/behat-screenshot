@@ -382,7 +382,7 @@ EOL;
   /**
    * Helper to print file comments.
    */
-  protected static function behatCliPrintFileContents(string $filename, $title = '') {
+  protected static function behatCliPrintFileContents(string $filename, string $title = ''): void {
     if (!is_readable($filename)) {
       throw new \RuntimeException(sprintf('Unable to access file "%s"', $filename));
     }
@@ -399,7 +399,7 @@ EOL;
   /**
    * Helper to check if debug mode is enabled.
    *
-   * @return bool
+   * @return string|false
    *   TRUE to see debug messages for this trait.
    */
   protected static function behatCliIsDebug(): string|false {

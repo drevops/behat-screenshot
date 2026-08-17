@@ -64,7 +64,7 @@ trait ReflectionTrait {
    * @param mixed $value
    *   Value to set to the property.
    */
-  protected static function setProtectedValue($object, $property, mixed $value): void {
+  protected static function setProtectedValue(object $object, string $property, mixed $value): void {
     $class = new \ReflectionClass($object::class);
     $property = $class->getProperty($property);
 
@@ -82,7 +82,7 @@ trait ReflectionTrait {
    * @return mixed
    *   Protected property value.
    */
-  protected static function getProtectedValue($object, $property): mixed {
+  protected static function getProtectedValue(object $object, string $property): mixed {
     $class = new \ReflectionClass($object::class);
     $property = $class->getProperty($property);
 
