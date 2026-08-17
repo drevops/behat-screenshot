@@ -9,10 +9,8 @@ trait ScreenshotTrait {
 
   /**
    * Screenshot directory.
-   *
-   * @var string
    */
-  protected $screenshotDir;
+  protected string $screenshotDir;
 
   /**
    * Init test parameters.
