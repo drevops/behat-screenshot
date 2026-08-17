@@ -540,7 +540,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
     // Use a non-HTML output to make this output universal.
     return implode("\n", array_map(
-      fn(string $key, $value): string => sprintf('%s: %s', $key, $value),
+      static fn(string $key, $value): string => sprintf('%s: %s', $key, $value),
       array_keys($this->info),
       $this->info,
     ));

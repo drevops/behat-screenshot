@@ -91,7 +91,7 @@ trait GifParserTrait {
    */
   protected function frameGeometry(string $gif): array {
     return array_map(
-      fn(array $frame): array => array_intersect_key($frame, array_flip(['left', 'top', 'width', 'height'])),
+      static fn(array $frame): array => array_intersect_key($frame, array_flip(['left', 'top', 'width', 'height'])),
       $this->parseFrames($gif)
     );
   }
