@@ -90,6 +90,34 @@ class ScreenshotContextInfoTest extends TestCase {
   }
 
   /**
+   * Data provider for testCompileInfo.
+   */
+  public static function dataProviderCompileInfo(): array {
+    return [
+      [
+        ['url'],
+        ['Current URL'],
+      ],
+      [
+        ['feature'],
+        ['Feature'],
+      ],
+      [
+        ['step'],
+        ['Step'],
+      ],
+      [
+        ['datetime'],
+        ['Datetime'],
+      ],
+      [
+        ['url', 'feature', 'step', 'datetime'],
+        ['Current URL', 'Feature', 'Step', 'Datetime'],
+      ],
+    ];
+  }
+
+  /**
    * Test compileInfo with URL exception.
    */
   public function testCompileInfoUrlException(): void {
@@ -240,34 +268,6 @@ class ScreenshotContextInfoTest extends TestCase {
         putenv('BEHAT_SCREENSHOT_TOKEN_HOST');
       }
     }
-  }
-
-  /**
-   * Data provider for testCompileInfo.
-   */
-  public static function dataProviderCompileInfo(): array {
-    return [
-      [
-        ['url'],
-        ['Current URL'],
-      ],
-      [
-        ['feature'],
-        ['Feature'],
-      ],
-      [
-        ['step'],
-        ['Step'],
-      ],
-      [
-        ['datetime'],
-        ['Datetime'],
-      ],
-      [
-        ['url', 'feature', 'step', 'datetime'],
-        ['Current URL', 'Feature', 'Step', 'Datetime'],
-      ],
-    ];
   }
 
 }
