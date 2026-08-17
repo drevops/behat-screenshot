@@ -23,23 +23,22 @@ class Tokenizer {
    * @throws \Exception
    */
   public static function replaceTokens(string $text, array $data = []): string {
-    $tokens = self::scanTokens($text);
+    // A replacement may itself contain tokens - a step name carrying a {url},
+    // for instance - so keep scanning the result until no unseen token is
+    // left. Each token is expanded at most once, which resolves nesting while
+    // guaranteeing the loop terminates on a self-referential value.
+    $expanded = [];
 
-    if (empty($tokens)) {
-      return $text;
+    while (TRUE) {
+      $tokens = array_diff_key(self::scanTokens($text), $expanded);
+
+      if ($tokens === []) {
+        return $text;
+      }
+
+      $expanded += $tokens;
+      $text = strtr($text, self::extractTokens($tokens, $data));
     }
-
-    $replacements = self::extractTokens($tokens, $data);
-
-    // Move {step_name} token to the last position as it may contain other
-    // tokens.
-    if (isset($replacements['{step_name}'])) {
-      $step_name_value = $replacements['{step_name}'];
-      unset($replacements['{step_name}']);
-      $replacements['{step_name}'] = $step_name_value;
-    }
-
-    return strtr($text, $replacements);
   }
 
   /**

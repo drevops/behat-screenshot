@@ -231,6 +231,25 @@ class TokenizerTest extends TestCase {
         $data,
         '{nontoken}.png',
       ],
+      // A step name carrying a token has that token resolved too.
+      [
+        '{step_name}.{ext}',
+        ['step_name' => 'Visit {url} page', 'url' => 'http://example.com/foo', 'ext' => 'png'] + $data,
+        'Visit_http_example_com_foo_page.png',
+      ],
+      // A token nested inside a step name that resolves to nothing known is
+      // left alone rather than looped over.
+      [
+        '{step_name}.{ext}',
+        ['step_name' => 'Visit {nontoken} page'] + $data,
+        'Visit_{nontoken}_page.png',
+      ],
+      // A step name that refers to itself expands once and then terminates.
+      [
+        '{step_name}.{ext}',
+        ['step_name' => 'Loop {step_name} end'] + $data,
+        'Loop_{step_name}_end.png',
+      ],
     ];
   }
 
