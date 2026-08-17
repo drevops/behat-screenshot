@@ -25,7 +25,7 @@ class ScreenshotContextInfoTest extends TestCase {
 
   use ReflectionTrait;
 
-  public function testRenderInfo(): void {
+  public function testRenderInfoJoinsLabelValuePairsWithNewlines(): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->appendInfo('Test Label', 'Test Value');
     $screenshot_context->appendInfo('Another Label', 'Another Value');
@@ -34,14 +34,14 @@ class ScreenshotContextInfoTest extends TestCase {
     $this->assertSame($expected, $screenshot_context->renderInfo());
   }
 
-  public function testRenderInfoWithEmptyInfo(): void {
+  public function testRenderInfoReturnsEmptyStringWhenNothingAppended(): void {
     $screenshot_context = new ScreenshotContext();
 
     $this->assertSame('', $screenshot_context->renderInfo());
   }
 
-  #[DataProvider('dataProviderCompileInfo')]
-  public function testCompileInfo(array $info_types, array $expected_keys): void {
+  #[DataProvider('dataProviderRenderInfoCompilesConfiguredInfoTypes')]
+  public function testRenderInfoCompilesConfiguredInfoTypes(array $info_types, array $expected_keys): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $feature_node->method('getTitle')->willReturn('Test Feature Title');
@@ -80,32 +80,32 @@ class ScreenshotContextInfoTest extends TestCase {
     }
   }
 
-  public static function dataProviderCompileInfo(): array {
+  public static function dataProviderRenderInfoCompilesConfiguredInfoTypes(): array {
     return [
-      [
+      'url only' => [
         ['url'],
         ['Current URL'],
       ],
-      [
+      'feature only' => [
         ['feature'],
         ['Feature'],
       ],
-      [
+      'step only' => [
         ['step'],
         ['Step'],
       ],
-      [
+      'datetime only' => [
         ['datetime'],
         ['Datetime'],
       ],
-      [
+      'all info types' => [
         ['url', 'feature', 'step', 'datetime'],
         ['Current URL', 'Feature', 'Step', 'Datetime'],
       ],
     ];
   }
 
-  public function testCompileInfoUrlException(): void {
+  public function testRenderInfoMarksUrlNotAvailableOnException(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $step_node = $this->createMock(StepNode::class);
@@ -139,7 +139,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $this->assertSame('not available', $info['Current URL']);
   }
 
-  public function testScreenshotUnsupportedDriver(): void {
+  public function testScreenshotSavesOnlyHtmlWhenImageUnsupported(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
@@ -166,14 +166,14 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->screenshot();
   }
 
-  public function testGetCurrentTime(): void {
+  public function testGetCurrentTimeReturnsPositiveInteger(): void {
     $screenshot_context = new ScreenshotContext();
     $time = self::callProtectedMethod($screenshot_context, 'getCurrentTime');
     $this->assertIsInt($time);
     $this->assertGreaterThan(0, $time);
   }
 
-  public function testMakeFileNameWithHostReplacement(): void {
+  public function testMakeFileNameReplacesUrlHostFromEnvironment(): void {
     $original_value = getenv('BEHAT_SCREENSHOT_TOKEN_HOST');
 
     try {

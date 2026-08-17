@@ -291,14 +291,14 @@ class AnimatedGifTest extends TestCase {
     ], $this->frameGeometry($gif));
   }
 
-  #[DataProvider('dataProviderConstrainFrameSize')]
-  public function testConstrainFrameSize(int $max_width, int $max_height, int $width, int $height, array $expected_size): void {
+  #[DataProvider('dataProviderConstrainCapsFramesToTheConfiguredMaximums')]
+  public function testConstrainCapsFramesToTheConfiguredMaximums(int $max_width, int $max_height, int $width, int $height, array $expected_size): void {
     $gif = (new AnimatedGif($max_width, $max_height))->encode([$this->createPngFrame($width, $height, [10, 20, 30])], 100);
 
     $this->assertSame($expected_size, $this->canvasSize($gif));
   }
 
-  public static function dataProviderConstrainFrameSize(): array {
+  public static function dataProviderConstrainCapsFramesToTheConfiguredMaximums(): array {
     return [
       'no caps' => [0, 0, 400, 200, [400, 200]],
       'width cap leaves height alone' => [100, 0, 400, 200, [100, 200]],

@@ -28,8 +28,8 @@ class ScreenshotContextAnimationTest extends TestCase {
 
   use ReflectionTrait;
 
-  #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTag')]
-  public function testBeforeScenarioCheckScreenshotsTag(array $scenario_tags, array $feature_tags, array $animation, bool $expected_screenshots, bool $expected_animated): void {
+  #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTagSetsFlagsFromTagsAndConfig')]
+  public function testBeforeScenarioCheckScreenshotsTagSetsFlagsFromTagsAndConfig(array $scenario_tags, array $feature_tags, array $animation, bool $expected_screenshots, bool $expected_animated): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $feature_node->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $feature_tags, TRUE));
@@ -47,7 +47,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
-  public static function dataProviderBeforeScenarioCheckScreenshotsTag(): array {
+  public static function dataProviderBeforeScenarioCheckScreenshotsTagSetsFlagsFromTagsAndConfig(): array {
     return [
       'no tags, no config' => [[], [], [], FALSE, FALSE],
       'scenario screenshots tag' => [['screenshots'], [], [], TRUE, FALSE],
@@ -225,7 +225,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
-  public function testMakeAnimationFileName(): void {
+  public function testMakeAnimationFileNameCombinesTimestampFeatureAndLine(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
     $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
 
@@ -235,12 +235,12 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertSame('1700000000.login.feature_7.gif', $result);
   }
 
-  public function testIsAnimatedGifSupported(): void {
+  public function testIsAnimatedGifSupportedReturnsTrueWhenGdIsAvailable(): void {
     $this->assertTrue(self::callProtectedMethod(new ScreenshotContext(), 'isAnimatedGifSupported'));
   }
 
-  #[DataProvider('dataProviderGetAnimatedGif')]
-  public function testGetAnimatedGif(array $animation, int $expected_max_width, int $expected_max_height): void {
+  #[DataProvider('dataProviderGetAnimatedGifCreatesEncoderWithSizeCapsFromSettings')]
+  public function testGetAnimatedGifCreatesEncoderWithSizeCapsFromSettings(array $animation, int $expected_max_width, int $expected_max_height): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
 
@@ -251,7 +251,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertSame($expected_max_height, self::getProtectedValue($encoder, 'maxHeight'));
   }
 
-  public static function dataProviderGetAnimatedGif(): array {
+  public static function dataProviderGetAnimatedGifCreatesEncoderWithSizeCapsFromSettings(): array {
     return [
       'no settings' => [[], 0, 0],
       'both caps set' => [['max_width' => 800, 'max_height' => 2000], 800, 2000],
@@ -262,15 +262,15 @@ class ScreenshotContextAnimationTest extends TestCase {
     ];
   }
 
-  #[DataProvider('dataProviderAnimationSetting')]
-  public function testAnimationSetting(array $animation, string $name, int $default, int $expected): void {
+  #[DataProvider('dataProviderAnimationSettingReturnsIntegerValueOrDefault')]
+  public function testAnimationSettingReturnsIntegerValueOrDefault(array $animation, string $name, int $default, int $expected): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
 
     $this->assertSame($expected, self::callProtectedMethod($screenshot_context, 'animationSetting', [$name, $default]));
   }
 
-  public static function dataProviderAnimationSetting(): array {
+  public static function dataProviderAnimationSettingReturnsIntegerValueOrDefault(): array {
     return [
       'absent setting' => [[], 'frame_delay', 500, 500],
       'integer setting' => [['frame_delay' => 250], 'frame_delay', 500, 250],

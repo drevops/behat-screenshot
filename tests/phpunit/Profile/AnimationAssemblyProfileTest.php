@@ -69,7 +69,7 @@ class AnimationAssemblyProfileTest extends TestCase {
     }
   }
 
-  public function testAnimationAssemblyCost(): void {
+  public function testAnimationAssemblyProducesGifForEveryProfiledScenario(): void {
     $steps = $this->stepCounts();
 
     $report = [

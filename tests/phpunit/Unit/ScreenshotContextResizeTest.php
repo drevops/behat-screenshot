@@ -23,7 +23,7 @@ class ScreenshotContextResizeTest extends TestCase {
 
   use ReflectionTrait;
 
-  public function testGetScreenshotFullscreenWithResize(): void {
+  public function testGetScreenshotFullscreenWithResizeResizesThenRestoresWindow(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'getScreenshot',
@@ -75,7 +75,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $this->assertSame('test-screenshot-data', $result);
   }
 
-  public function testGetScreenshotFullscreenWithResizeInvalidDimensions(): void {
+  public function testGetScreenshotFullscreenWithResizeSkipsResizeOnInvalidDimensions(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'getScreenshot',
@@ -111,7 +111,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $this->assertSame('test-screenshot-data', $result);
   }
 
-  public function testGetScreenshotFullscreenUsingResizeAlgorithm(): void {
+  public function testGetScreenshotFullscreenDelegatesToResizeAlgorithm(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getScreenshotFullscreenWithResize',
     ]);
@@ -135,7 +135,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $this->assertSame('test-resize-screenshot-data', $result);
   }
 
-  public function testScreenshotWithResizeAlgorithm(): void {
+  public function testScreenshotSavesHtmlAndImageWhenFullscreenEnabled(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $step_node = $this->createMock(StepNode::class);

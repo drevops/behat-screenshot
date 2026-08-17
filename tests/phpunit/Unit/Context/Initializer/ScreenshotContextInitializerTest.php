@@ -18,7 +18,7 @@ use Symfony\Component\Finder\Finder;
 #[CoversClass(ScreenshotContextInitializer::class)]
 class ScreenshotContextInitializerTest extends TestCase {
 
-  public function testInitializeContextNonScreenshotAware(): void {
+  public function testInitializeContextIgnoresNonScreenshotAwareContext(): void {
     $context = $this->createMock(Context::class);
 
     $initializer = new ScreenshotContextInitializer(
@@ -40,7 +40,7 @@ class ScreenshotContextInitializerTest extends TestCase {
     $this->assertInstanceOf(ScreenshotContextInitializer::class, $initializer);
   }
 
-  public function testInitializeContext(): void {
+  public function testInitializeContextPassesParametersToContext(): void {
     $context = $this->createMock(ScreenshotAwareContextInterface::class);
     $context->expects($this->once())
       ->method('setScreenshotParameters')
@@ -73,7 +73,7 @@ class ScreenshotContextInitializerTest extends TestCase {
     $initializer->initializeContext($context);
   }
 
-  public function testInitializeContextWithEnv(): void {
+  public function testInitializeContextAppliesEnvOverridesAndPurgesOnce(): void {
     $original_dir_value = getenv('BEHAT_SCREENSHOT_DIR');
     $original_purge_value = getenv('BEHAT_SCREENSHOT_PURGE');
 

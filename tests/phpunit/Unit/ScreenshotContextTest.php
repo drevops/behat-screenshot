@@ -30,7 +30,7 @@ class ScreenshotContextTest extends TestCase {
 
   use ReflectionTrait;
 
-  public function testBeforeScenarioInit(): void {
+  public function testBeforeScenarioInitPropagatesDriverStartException(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $scenario = $this->createMock(ScenarioInterface::class);
@@ -49,7 +49,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->beforeScenarioInit($scope);
   }
 
-  public function testBeforeStepInit(): void {
+  public function testBeforeStepInitStoresScopeForLaterRetrieval(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $step_node = $this->createMock(StepNode::class);
@@ -61,7 +61,7 @@ class ScreenshotContextTest extends TestCase {
     $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
-  public function testPrintLastResponseOnError(): void {
+  public function testPrintLastResponseOnErrorTakesScreenshotOnFailedStep(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $step_node = $this->createMock(StepNode::class);
@@ -85,7 +85,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->printLastResponseOnError($scope);
   }
 
-  public function testIsaveSizedScreenshot(): void {
+  public function testIsaveSizedScreenshotIgnoresUnsupportedResize(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'screenshot']);
     $session = $this->createMock(Session::class);
     $exception = new UnsupportedDriverActionException('Not supported', $this->createMock(Selenium2Driver::class));
@@ -95,13 +95,13 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->iSaveSizedScreenshot();
   }
 
-  public function testIsaveScreenshotWithName(): void {
+  public function testIsaveScreenshotWithNameDelegatesToScreenshot(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())->method('screenshot');
     $screenshot_context->iSaveScreenshotWithName('test-file-name');
   }
 
-  public function testIsaveFullscreenScreenshotWithName(): void {
+  public function testIsaveFullscreenScreenshotWithNamePassesNameAndFullscreen(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())
       ->method('screenshot')
@@ -109,7 +109,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->iSaveFullscreenScreenshotWithName('test-fullscreen-name');
   }
 
-  public function testIsaveFullscreenScreenshot(): void {
+  public function testIsaveFullscreenScreenshotRequestsFullscreenCapture(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())
       ->method('screenshot')
@@ -117,7 +117,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->iSaveFullscreenScreenshot();
   }
 
-  public function testScreenshot(): void {
+  public function testScreenshotSavesHtmlAndPngContent(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
@@ -135,7 +135,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->screenshot();
   }
 
-  public function testScreenshotThrowException(): void {
+  public function testScreenshotSavesNothingWhenDriverHasNoContent(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
@@ -153,8 +153,8 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->screenshot();
   }
 
-  #[DataProvider('dataProviderSaveScreenshotContent')]
-  public function testSaveScreenshotContent(string $filename, string $data): void {
+  #[DataProvider('dataProviderSaveScreenshotContentWritesDataToFile')]
+  public function testSaveScreenshotContentWritesDataToFile(string $filename, string $data): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
@@ -175,15 +175,15 @@ class ScreenshotContextTest extends TestCase {
     unlink($filepath);
   }
 
-  public static function dataProviderSaveScreenshotContent(): array {
+  public static function dataProviderSaveScreenshotContentWritesDataToFile(): array {
     return [
-      ['test-save-screenshot-1.txt', 'test-data-1'],
-      ['test-save-screenshot-2.txt', 'test-data-2'],
+      'first file' => ['test-save-screenshot-1.txt', 'test-data-1'],
+      'second file' => ['test-save-screenshot-2.txt', 'test-data-2'],
     ];
   }
 
-  #[DataProvider('dataProviderMakeFileName')]
-  public function testMakeFileName(
+  #[DataProvider('dataProviderMakeFileNameReplacesTokensInPatterns')]
+  public function testMakeFileNameReplacesTokensInPatterns(
     string $ext,
     mixed $filename,
     bool $on_failed,
@@ -239,9 +239,9 @@ class ScreenshotContextTest extends TestCase {
     $this->assertSame($expected, $filename_processed);
   }
 
-  public static function dataProviderMakeFileName(): array {
+  public static function dataProviderMakeFileNameReplacesTokensInPatterns(): array {
     return [
-      [
+      'no filename uses default pattern' => [
         'html',
         NULL,
         FALSE,
@@ -255,7 +255,7 @@ class ScreenshotContextTest extends TestCase {
         '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.test-feature-file.feature_12.html',
       ],
-      [
+      'custom pattern with step name' => [
         'png',
         '{datetime:U}.{feature_file}.feature_{step_name}.feature_{step_line}.{ext}',
         FALSE,
@@ -269,7 +269,7 @@ class ScreenshotContextTest extends TestCase {
         '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
       ],
-      [
+      'pattern without ext token' => [
         'png',
         '{datetime:U}.{feature_file}.feature_{step_name}.feature_{step_line}',
         FALSE,
@@ -283,7 +283,7 @@ class ScreenshotContextTest extends TestCase {
         '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
       ],
-      [
+      'failed step uses failed pattern' => [
         'png',
         '{datetime:U}.{feature_file}.feature_{step_name}.feature_{step_line}',
         TRUE,
@@ -297,7 +297,7 @@ class ScreenshotContextTest extends TestCase {
         '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         '1721791661.failed_test-feature-file.feature_12.png',
       ],
-      [
+      'url unavailable' => [
         'png',
         '{datetime:U}.{feature_file}.feature_{step_name}.feature_{step_line}',
         FALSE,
