@@ -17,7 +17,10 @@ use DrevOps\BehatScreenshotExtension\Tokenizer;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * Class ScreenshotContext.
+ * Captures HTML and image screenshots during a Behat run.
+ *
+ * Provides the screenshot steps, the hooks that capture on failure and after
+ * every step, and the per-scenario animated GIF assembly.
  */
 class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContextInterface {
 
@@ -469,7 +472,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     }
     // @codeCoverageIgnoreStart
     catch (UnsupportedDriverActionException) {
-      // Drivers without screenshot support do not have them created.
       return;
     }
     // @codeCoverageIgnoreEnd
@@ -505,7 +507,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   protected function getScreenshotFullscreenWithResize(): string {
     $session = $this->getSession();
-    $session->getDriver();
 
     $original_width = self::DEFAULT_WINDOW_WIDTH;
     $original_height = self::DEFAULT_WINDOW_HEIGHT;
@@ -554,9 +555,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     }
 
     $fullscreen_width = $original_width ?: self::DEFAULT_WINDOW_WIDTH;
-    $fullscreen_height = $scroll_height;
-
-    $fullscreen_height += self::FULLSCREEN_HEIGHT_BUFFER;
+    $fullscreen_height = $scroll_height + self::FULLSCREEN_HEIGHT_BUFFER;
 
     $session->resizeWindow($fullscreen_width, $fullscreen_height, self::WINDOW_NAME_CURRENT);
 

@@ -11,7 +11,9 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
- * Class ScreenshotContextInitializer.
+ * Passes the extension configuration to every screenshot-aware context.
+ *
+ * Purges the screenshot directory once per run when purging is enabled.
  */
 class ScreenshotContextInitializer implements ContextInitializer {
 
