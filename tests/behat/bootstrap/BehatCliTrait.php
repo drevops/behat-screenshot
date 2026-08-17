@@ -382,7 +382,7 @@ EOL;
    */
   protected static function behatCliPrintFileContents(string $filename, string $title = ''): void {
     if (!is_readable($filename)) {
-      throw new \RuntimeException(sprintf('Unable to access file "%s"', $filename));
+      throw new \RuntimeException(sprintf('Unable to access file "%s".', $filename));
     }
 
     $content = file_get_contents($filename);
@@ -420,7 +420,7 @@ EOL;
     if (empty($matches)) {
       $finder = Finder::create();
       $files = PHP_EOL . implode(PHP_EOL, iterator_to_array($finder->in($this->workingDir)));
-      throw new \Exception(sprintf("Unable to find files matching wildcard '%s'. Found files: %s", $wildcard, $files));
+      throw new \Exception(sprintf("Unable to find files matching wildcard '%s'. Found files: %s.", $wildcard, $files));
     }
   }
 
@@ -495,7 +495,7 @@ EOL;
     if (!empty($matches)) {
       $finder = Finder::create();
       $files = PHP_EOL . implode(PHP_EOL, iterator_to_array($finder->in($this->workingDir)));
-      throw new \Exception(sprintf("Files matching wildcard '%s' were found, but were not supposed to. Found files: %s", $wildcard, $files));
+      throw new \Exception(sprintf("Files matching wildcard '%s' were found, but were not supposed to. Found files: %s.", $wildcard, $files));
     }
   }
 

@@ -212,7 +212,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       // Drivers without visual screenshot support do not have them created.
     }
     catch (DriverException $exception) {
-      throw new \RuntimeException(sprintf("Unable to connect to the driver's server: %s", $exception->getMessage()), $exception->getCode(), $exception);
+      throw new \RuntimeException(sprintf("Unable to connect to the driver's server: %s.", $exception->getMessage()), $exception->getCode(), $exception);
     }
   }
 
