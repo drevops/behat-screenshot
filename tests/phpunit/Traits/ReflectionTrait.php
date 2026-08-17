@@ -86,7 +86,7 @@ trait ReflectionTrait {
     $class = new \ReflectionClass($object::class);
     $property = $class->getProperty($property);
 
-    return $property->getValue($class);
+    return $property->getValue($object);
   }
 
 }

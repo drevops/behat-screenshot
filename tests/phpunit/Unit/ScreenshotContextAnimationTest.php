@@ -42,9 +42,9 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
 
-    $this->assertSame($expected_screenshots, $this->getProtectedProperty($screenshot_context, 'scenarioHasScreenshotsTag'));
-    $this->assertSame($expected_animated, $this->getProtectedProperty($screenshot_context, 'scenarioIsAnimated'));
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertSame($expected_screenshots, self::getProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag'));
+    $this->assertSame($expected_animated, self::getProtectedValue($screenshot_context, 'scenarioIsAnimated'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public static function dataProviderBeforeScenarioCheckScreenshotsTag(): array {
@@ -72,7 +72,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
-    $this->assertSame($encoder, $this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertSame($encoder, self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testCaptureScreenshotAfterStepReusesEncoderAcrossSteps(): void {
@@ -99,7 +99,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testCaptureScreenshotAfterStepDoesNotCollectWhenNotAnimated(): void {
@@ -112,7 +112,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testCaptureScreenshotAfterStepSkipsFailedStep(): void {
@@ -123,7 +123,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(FALSE));
 
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateRendersAndSaves(): void {
@@ -141,7 +141,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
 
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateUsesDefaultDelay(): void {
@@ -171,7 +171,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
 
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateSkipsWhenNoEncoder(): void {
@@ -181,7 +181,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
 
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateSkipsWhenNoFrames(): void {
@@ -196,7 +196,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $screenshot_context->afterScenarioAnimate($this->createAfterScenarioScope());
 
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testAfterScenarioAnimateReleasesEncoderWhenRenderFails(): void {
@@ -222,7 +222,7 @@ class ScreenshotContextAnimationTest extends TestCase {
 
     $this->assertInstanceOf(\RuntimeException::class, $thrown);
     $this->assertSame('render failed', $thrown->getMessage());
-    $this->assertNull($this->getProtectedProperty($screenshot_context, 'animationEncoder'));
+    $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
   public function testMakeAnimationFileName(): void {
@@ -247,8 +247,8 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder = self::callProtectedMethod($screenshot_context, 'getAnimatedGif');
 
     $this->assertInstanceOf(AnimatedGif::class, $encoder);
-    $this->assertSame($expected_max_width, $this->getProtectedProperty($encoder, 'maxWidth'));
-    $this->assertSame($expected_max_height, $this->getProtectedProperty($encoder, 'maxHeight'));
+    $this->assertSame($expected_max_width, self::getProtectedValue($encoder, 'maxWidth'));
+    $this->assertSame($expected_max_height, self::getProtectedValue($encoder, 'maxHeight'));
   }
 
   public static function dataProviderGetAnimatedGif(): array {
@@ -279,23 +279,6 @@ class ScreenshotContextAnimationTest extends TestCase {
       'non-numeric setting' => [['frame_delay' => 'fast'], 'frame_delay', 500, 500],
       'null setting' => [['frame_delay' => NULL], 'frame_delay', 500, 500],
     ];
-  }
-
-  /**
-   * Read a protected property value from an object.
-   *
-   * @param object $object
-   *   Object to read from.
-   * @param string $property
-   *   Property name.
-   *
-   * @return mixed
-   *   Property value.
-   */
-  protected function getProtectedProperty(object $object, string $property): mixed {
-    $reflection = new \ReflectionProperty($object, $property);
-
-    return $reflection->getValue($object);
   }
 
   /**

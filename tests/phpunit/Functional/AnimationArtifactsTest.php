@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\BehatScreenshot\Tests\Functional;
 
 use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\AnimatedGif;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +22,7 @@ use PHPUnit\Framework\TestCase;
 class AnimationArtifactsTest extends TestCase {
 
   use GifParserTrait;
+  use ReflectionTrait;
 
   /**
    * Frame sizes standing in for a scenario that visits pages of every length.
@@ -211,7 +213,6 @@ class AnimationArtifactsTest extends TestCase {
    */
   protected function writeConstrainedFrames(string $prefix, array $frames, int $max_width, int $max_height): void {
     $encoder = new AnimatedGif($max_width, $max_height);
-    $constrain = new \ReflectionMethod($encoder, 'constrain');
 
     foreach ($frames as $index => $frame) {
       $image = imagecreatefromstring($frame);
@@ -219,7 +220,7 @@ class AnimationArtifactsTest extends TestCase {
         continue;
       }
 
-      $result = $constrain->invoke($encoder, $image);
+      $result = self::callProtectedMethod($encoder, 'constrain', [$image]);
       if (!$result instanceof \GdImage) {
         continue;
       }

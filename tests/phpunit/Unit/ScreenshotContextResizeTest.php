@@ -10,6 +10,7 @@ use Behat\Gherkin\Node\StepNode;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
+use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +20,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(ScreenshotContext::class)]
 class ScreenshotContextResizeTest extends TestCase {
+
+  use ReflectionTrait;
 
   /**
    * Test the getScreenshotFullscreenWithResize method.
@@ -75,11 +78,7 @@ class ScreenshotContextResizeTest extends TestCase {
     // Mock the screenshot result.
     $screenshot_context->method('getScreenshot')->willReturn('test-screenshot-data');
 
-    // Create reflection to test protected method.
-    $reflection = new \ReflectionClass($screenshot_context);
-    $method = $reflection->getMethod('getScreenshotFullscreenWithResize');
-
-    $result = $method->invoke($screenshot_context);
+    $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreenWithResize');
     $this->assertSame('test-screenshot-data', $result);
   }
 
@@ -121,11 +120,7 @@ class ScreenshotContextResizeTest extends TestCase {
     // Mock the screenshot result.
     $screenshot_context->method('getScreenshot')->willReturn('test-screenshot-data');
 
-    // Create reflection to test protected method.
-    $reflection = new \ReflectionClass($screenshot_context);
-    $method = $reflection->getMethod('getScreenshotFullscreenWithResize');
-
-    $result = $method->invoke($screenshot_context);
+    $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreenWithResize');
     $this->assertSame('test-screenshot-data', $result);
   }
 
@@ -153,11 +148,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $screenshot_context->method('getScreenshotFullscreenWithResize')
       ->willReturn('test-resize-screenshot-data');
 
-    // Create reflection to access protected method.
-    $reflection = new \ReflectionClass($screenshot_context);
-    $method = $reflection->getMethod('getScreenshotFullscreen');
-
-    $result = $method->invoke($screenshot_context);
+    $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreen');
     $this->assertSame('test-resize-screenshot-data', $result);
   }
 

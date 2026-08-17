@@ -11,6 +11,7 @@ use Behat\Mink\Driver\DriverInterface;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
+use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -21,6 +22,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(ScreenshotContext::class)]
 class ScreenshotContextInfoTest extends TestCase {
+
+  use ReflectionTrait;
 
   /**
    * Test renderInfo and appendInfo methods.
@@ -87,10 +90,7 @@ class ScreenshotContextInfoTest extends TestCase {
     // Get the info.
     $screenshot_context->renderInfo();
 
-    // Use reflection to access protected property.
-    $reflection = new \ReflectionObject($screenshot_context);
-    $info_property = $reflection->getProperty('info');
-    $info = $info_property->getValue($screenshot_context);
+    $info = self::getProtectedValue($screenshot_context, 'info');
     $this->assertIsArray($info);
 
     // Check that all expected keys exist.
@@ -160,10 +160,7 @@ class ScreenshotContextInfoTest extends TestCase {
     // Get the info.
     $screenshot_context->renderInfo();
 
-    // Use reflection to access protected property.
-    $reflection = new \ReflectionObject($screenshot_context);
-    $info_property = $reflection->getProperty('info');
-    $info = $info_property->getValue($screenshot_context);
+    $info = self::getProtectedValue($screenshot_context, 'info');
     $this->assertIsArray($info);
 
     $this->assertArrayHasKey('Current URL', $info);
@@ -206,10 +203,7 @@ class ScreenshotContextInfoTest extends TestCase {
    */
   public function testGetCurrentTime(): void {
     $screenshot_context = new ScreenshotContext();
-    $reflection = new \ReflectionObject($screenshot_context);
-    $method = $reflection->getMethod('getCurrentTime');
-
-    $time = $method->invoke($screenshot_context);
+    $time = self::callProtectedMethod($screenshot_context, 'getCurrentTime');
     $this->assertIsInt($time);
     $this->assertGreaterThan(0, $time);
   }
@@ -258,11 +252,7 @@ class ScreenshotContextInfoTest extends TestCase {
         []
       );
 
-      // Access protected method.
-      $reflection = new \ReflectionObject($screenshot_context);
-      $method = $reflection->getMethod('makeFileName');
-
-      $result = $method->invokeArgs($screenshot_context, ['png', NULL, FALSE]);
+      $result = self::callProtectedMethod($screenshot_context, 'makeFileName', ['png', NULL, FALSE]);
       $this->assertIsString($result);
 
       // The Tokenizer replaces non-alphanumeric characters with underscores.

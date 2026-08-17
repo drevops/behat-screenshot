@@ -16,6 +16,7 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
+use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -26,6 +27,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(ScreenshotContext::class)]
 class ScreenshotContextTest extends TestCase {
+
+  use ReflectionTrait;
 
   public function testBeforeScenarioInit(): void {
     $env = $this->createMock(Environment::class);
@@ -164,9 +167,7 @@ class ScreenshotContextTest extends TestCase {
       [],
       []
     );
-    $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
-    $method = $screenshot_context_reflection->getMethod('saveScreenshotContent');
-    $method->invokeArgs($screenshot_context, [$filename, $data]);
+    self::callProtectedMethod($screenshot_context, 'saveScreenshotContent', [$filename, $data]);
     $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
     $this->assertFileExists($filepath);
     $this->assertSame($data, file_get_contents($filepath));
@@ -236,9 +237,7 @@ class ScreenshotContextTest extends TestCase {
       []
     );
 
-    $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
-    $method = $screenshot_context_reflection->getMethod('makeFileName');
-    $filename_processed = $method->invokeArgs($screenshot_context, [$ext, $filename, $on_failed]);
+    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFileName', [$ext, $filename, $on_failed]);
 
     $this->assertSame($expected, $filename_processed);
   }
