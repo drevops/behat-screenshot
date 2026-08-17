@@ -34,7 +34,7 @@ docker run -d -p 4444:4444 -p 9222:9222 selenium/standalone-chromium
 brew install --cask chromium
 # Launch Chromium with remote debugging.
 "$(brew --prefix)/bin/chromium" \
-  --remote-debugging-address=0.0.0.0 \
+  --remote-debugging-address=127.0.0.1 \
   --remote-debugging-port=9222
 ```
 

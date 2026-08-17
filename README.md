@@ -294,7 +294,7 @@ BEHAT_SCREENSHOT_PURGE=1 vendor/bin/behat
 
 ## Additional information on screenshots
 
-No additional information is added to screenshots unless `info_types` is set in the configuration. The order of the types is the order of the information displayed on the screenshot.
+The `info_types` option controls which built-in information is added to screenshots, and nothing is added unless it is set. The order of the types is the order of the information displayed on the screenshot.
 
 ```yaml
 default:
@@ -321,7 +321,7 @@ Datetime: 2025-01-19 00:01:10
 </html>
 ```
 
-Custom entries can be added from your own context class with `appendInfo()`. They are rendered alongside the entries produced by `info_types`.
+Custom entries can be added from your own context class with `appendInfo()`. They are rendered alongside the entries produced by `info_types`, and are rendered whether or not `info_types` is set.
 
 ```php
 /**
