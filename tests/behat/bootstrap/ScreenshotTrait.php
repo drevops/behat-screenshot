@@ -28,7 +28,7 @@ trait ScreenshotTrait {
       $this->screenshotDir = $parameters['screenshot_dir'];
     }
     else {
-      throw new RuntimeException('Screenshots dir is not set.');
+      throw new \RuntimeException('Screenshots dir is not set.');
     }
   }
 
