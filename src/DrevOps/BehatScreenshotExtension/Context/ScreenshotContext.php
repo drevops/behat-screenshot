@@ -8,6 +8,7 @@ use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
+use Behat\Gherkin\Node\TaggedNodeInterface;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
@@ -54,6 +55,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * Tag enabling animated GIF assembly for a scenario or feature.
    */
   public const TAG_SCREENSHOTS_ANIMATED = 'screenshots:animated';
+
+  /**
+   * Tag disabling animated GIF assembly for a scenario or feature.
+   */
+  public const TAG_SCREENSHOTS_ANIMATED_SKIP = 'screenshots:animated:skip';
 
   /**
    * Extra window height ensuring the whole page is captured, in pixels.
@@ -186,8 +192,37 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $feature = $scope->getFeature();
 
     $this->scenarioHasScreenshotsTag = $scenario->hasTag(self::TAG_SCREENSHOTS) || $feature->hasTag(self::TAG_SCREENSHOTS);
-    $this->scenarioIsAnimated = !empty($this->animation['enabled']) || $scenario->hasTag(self::TAG_SCREENSHOTS_ANIMATED) || $feature->hasTag(self::TAG_SCREENSHOTS_ANIMATED);
+    $this->scenarioIsAnimated = $this->resolveIsAnimated($scenario, $feature);
     $this->animationEncoder = NULL;
+  }
+
+  /**
+   * Resolve whether the current scenario should produce an animated GIF.
+   *
+   * Scopes are consulted from the most specific to the least specific, so a
+   * scenario tag decides on its own and a feature tag only applies when the
+   * scenario carries neither tag. Within a scope the skip tag wins, making a
+   * node tagged with both an opt-in and an opt-out deterministic. The
+   * animation.enabled setting applies only when no scope is tagged.
+   *
+   * @param \Behat\Gherkin\Node\TaggedNodeInterface ...$nodes
+   *   Tagged nodes in order of decreasing specificity.
+   *
+   * @return bool
+   *   TRUE when the scenario should produce an animated GIF.
+   */
+  protected function resolveIsAnimated(TaggedNodeInterface ...$nodes): bool {
+    foreach ($nodes as $node) {
+      if ($node->hasTag(self::TAG_SCREENSHOTS_ANIMATED_SKIP)) {
+        return FALSE;
+      }
+
+      if ($node->hasTag(self::TAG_SCREENSHOTS_ANIMATED)) {
+        return TRUE;
+      }
+    }
+
+    return !empty($this->animation['enabled']);
   }
 
   /**

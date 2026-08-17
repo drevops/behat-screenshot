@@ -180,6 +180,31 @@ The `@screenshots:animated` tag is read at both the scenario and feature level. 
 
 Each frame keeps the size it was captured at. Frames smaller than the tallest or widest frame of the scenario are shown at the top-left of the animation against a white background, rather than being scaled up or stretched.
 
+#### Skipping animation for a scenario
+
+Animation captures a screenshot after every passed step, so its cost grows with the number of steps in a scenario. To keep animation on across the suite while excluding individual scenarios, use the `@screenshots:animated:skip` tag:
+
+```gherkin
+@javascript @screenshots:animated:skip
+Scenario: Long workflow that should not be recorded
+  Given I am on "http://example.com"
+  # No animated GIF is written, and no per-step screenshots are captured for it.
+```
+
+Tags are resolved from the most specific scope down, so a scenario tag decides on its own, a feature tag applies only when the scenario carries neither tag, and `animation.enabled` applies only when neither scope is tagged:
+
+| Scenario tag                   | Feature tag                    | `animation.enabled` | Animated |
+|--------------------------------|--------------------------------|---------------------|----------|
+| `@screenshots:animated:skip`   | -                              | `true`              | No       |
+| `@screenshots:animated`        | `@screenshots:animated:skip`   | `false`             | Yes      |
+| `@screenshots:animated:skip`   | `@screenshots:animated`        | `true`              | No       |
+| -                              | `@screenshots:animated:skip`   | `true`              | No       |
+| -                              | -                              | `true`              | Yes      |
+
+A scenario or feature carrying both tags at once is not animated - the skip tag wins within a scope.
+
+Skipping animation does not disable the per-step screenshots requested by `on_every_step` or the `@screenshots` tag; those are captured independently. It removes only the captures that animation itself requires.
+
 #### Limiting frame size
 
 With `always_fullscreen: true` every frame is as tall as the page it captured, so one long page - an admin listing, a search result set - produces very large frames and a correspondingly large GIF. Cap them with `max_width` and `max_height`:
@@ -202,7 +227,7 @@ Frames larger than the cap are cropped to it before being encoded, keeping the t
 | `dir`                     | `%paths.base%/screenshots`                                             | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. Override with `BEHAT_SCREENSHOT_DIR` env var.                                                                                                                                       |
 | `on_failed`               | `true`                                                                 | Capture screenshot on failed test.                                                                                                                                                                                                                                                              |
 | `on_every_step`           | `false`                                                                | Automatically capture screenshots after every step. Can be enabled globally via config or per-scenario using the `@screenshots` tag. Only captures on passed steps to avoid duplicates with `on_failed`.                                                                                        |
-| `animation.enabled`       | `false`                                                                | Build an animated GIF per scenario from the per-step screenshots, automatically enabling per-step capture. Can be enabled per-scenario with the `@screenshots:animated` tag (read at scenario or feature level). Requires the `gd` PHP extension.                                                |
+| `animation.enabled`       | `false`                                                                | Build an animated GIF per scenario from the per-step screenshots, automatically enabling per-step capture. Can be enabled per-scenario with the `@screenshots:animated` tag and disabled per-scenario with the `@screenshots:animated:skip` tag (both read at scenario or feature level, and both taking precedence over this setting). Requires the `gd` PHP extension. |
 | `animation.frame_delay`   | `500`                                                                  | Delay between animated GIF frames, in milliseconds.                                                                                                                                                                                                                                             |
 | `animation.max_width`     | `0`                                                                    | Maximum animated GIF frame width, in pixels. Wider frames are cropped to it, keeping the left-hand side. `0` leaves the width unbounded.                                                                                                                                                        |
 | `animation.max_height`    | `0`                                                                    | Maximum animated GIF frame height, in pixels. Taller frames are cropped to it, keeping the top of the page at full resolution and full width. `0` leaves the height unbounded. Useful with `always_fullscreen`, where frame height follows the page height.                                      |

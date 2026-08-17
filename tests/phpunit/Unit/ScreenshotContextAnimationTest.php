@@ -53,6 +53,14 @@ class ScreenshotContextAnimationTest extends TestCase {
       'feature animated tag' => [[], ['screenshots:animated'], [], FALSE, TRUE],
       'animation enabled via config' => [[], [], ['enabled' => TRUE], FALSE, TRUE],
       'animation disabled via config' => [[], [], ['enabled' => FALSE], FALSE, FALSE],
+      'feature animated tag over disabled config' => [[], ['screenshots:animated'], ['enabled' => FALSE], FALSE, TRUE],
+      'scenario skip tag over enabled config' => [['screenshots:animated:skip'], [], ['enabled' => TRUE], FALSE, FALSE],
+      'feature skip tag over enabled config' => [[], ['screenshots:animated:skip'], ['enabled' => TRUE], FALSE, FALSE],
+      'scenario skip tag with disabled config' => [['screenshots:animated:skip'], [], ['enabled' => FALSE], FALSE, FALSE],
+      'scenario skip tag over scenario animated tag' => [['screenshots:animated', 'screenshots:animated:skip'], [], [], FALSE, FALSE],
+      'feature skip tag over feature animated tag' => [[], ['screenshots:animated', 'screenshots:animated:skip'], [], FALSE, FALSE],
+      'scenario animated tag over feature skip tag' => [['screenshots:animated'], ['screenshots:animated:skip'], ['enabled' => FALSE], FALSE, TRUE],
+      'scenario skip tag over feature animated tag' => [['screenshots:animated:skip'], ['screenshots:animated'], ['enabled' => TRUE], FALSE, FALSE],
     ];
   }
 
