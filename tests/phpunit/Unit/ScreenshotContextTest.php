@@ -67,18 +67,6 @@ class ScreenshotContextTest extends TestCase {
     $result->method('isPassed')->willReturn(FALSE);
     $scope = new AfterStepScope($env, $feature_node, $step_node, $result);
 
-    $screenshot_context = new ScreenshotContext();
-    $screenshot_context->setScreenshotParameters(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      FALSE,
-      FALSE,
-      '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
-      [],
-      []
-    );
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
