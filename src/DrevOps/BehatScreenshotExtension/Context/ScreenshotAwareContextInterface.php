@@ -7,7 +7,7 @@ namespace DrevOps\BehatScreenshotExtension\Context;
 use Behat\Behat\Context\Context;
 
 /**
- * Interface ScreenshotContext.
+ * Defines a context capable of capturing screenshots.
  */
 interface ScreenshotAwareContextInterface extends Context {
 

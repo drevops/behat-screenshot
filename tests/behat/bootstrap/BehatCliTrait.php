@@ -31,7 +31,8 @@ trait BehatCliTrait {
    * @AfterScenario @behatcli
    */
   public function behatCliAfterScenarioPrintOutput(AfterScenarioScope $scope): void {
-    // Copy the screenshots to the working directory.
+    // Copy screenshots from the inner Behat run's working directory into
+    // the outer run's screenshot directory.
     $context = $scope->getEnvironment()->getContext(ScreenshotContext::class);
     if ($context instanceof ScreenshotContext) {
       $src = $this->workingDir . DIRECTORY_SEPARATOR . 'screenshots';
@@ -60,7 +61,7 @@ trait BehatCliTrait {
   }
 
   /**
-   * Create FeatureContext.php file.
+   * Create FeatureContextTest.php file.
    *
    * @param array $traits
    *   Optional array of trait classes.
@@ -377,7 +378,7 @@ EOL;
   }
 
   /**
-   * Helper to print file comments.
+   * Helper to print file contents.
    */
   protected static function behatCliPrintFileContents(string $filename, string $title = ''): void {
     if (!is_readable($filename)) {
@@ -397,7 +398,8 @@ EOL;
    * Helper to check if debug mode is enabled.
    *
    * @return string|false
-   *   TRUE to see debug messages for this trait.
+   *   Value of the BEHAT_CLI_DEBUG environment variable, or FALSE when it is
+   *   not set. Debug output is enabled when the value is a non-empty string.
    */
   protected static function behatCliIsDebug(): string|false {
     return getenv('BEHAT_CLI_DEBUG');

@@ -214,7 +214,8 @@ class ScreenshotContextInfoTest extends TestCase {
       $result = self::callProtectedMethod($screenshot_context, 'makeFileName', ['png', NULL, FALSE]);
       $this->assertIsString($result);
 
-      // The Tokenizer replaces non-alphanumeric characters with underscores.
+      // The Tokenizer collapses each run of characters other than word
+      // characters and hyphens into a single underscore.
       $this->assertStringContainsString('example_org', $result);
       $this->assertStringNotContainsString('localhost', $result);
     }

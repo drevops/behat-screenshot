@@ -49,7 +49,7 @@ class Tokenizer {
    *   The text to scan for tokens.
    *
    * @return array<string,string>
-   *   The tokens keyed by the token name.
+   *   Inner token names keyed by the full token string.
    */
   public static function scanTokens(string $text): array {
     $pattern = '/\{(.*?)}/';
