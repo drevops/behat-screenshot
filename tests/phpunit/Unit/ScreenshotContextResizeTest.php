@@ -57,15 +57,15 @@ class ScreenshotContextResizeTest extends TestCase {
 
         if ($call_count === 1) {
           // First call: resize to fullscreen.
-          $this->assertEquals(1440, $width);
-          $this->assertEquals(2200, $height);
-          $this->assertEquals('current', $name);
+          $this->assertSame(1440, $width);
+          $this->assertSame(2200, $height);
+          $this->assertSame('current', $name);
         }
         elseif ($call_count === 2) {
           // Second call: restore to original.
-          $this->assertEquals(1440, $width);
-          $this->assertEquals(900, $height);
-          $this->assertEquals('current', $name);
+          $this->assertSame(1440, $width);
+          $this->assertSame(900, $height);
+          $this->assertSame('current', $name);
         }
       });
 
@@ -80,7 +80,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $method = $reflection->getMethod('getScreenshotFullscreenWithResize');
 
     $result = $method->invoke($screenshot_context);
-    $this->assertEquals('test-screenshot-data', $result);
+    $this->assertSame('test-screenshot-data', $result);
   }
 
   /**
@@ -126,7 +126,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $method = $reflection->getMethod('getScreenshotFullscreenWithResize');
 
     $result = $method->invoke($screenshot_context);
-    $this->assertEquals('test-screenshot-data', $result);
+    $this->assertSame('test-screenshot-data', $result);
   }
 
   /**
@@ -158,7 +158,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $method = $reflection->getMethod('getScreenshotFullscreen');
 
     $result = $method->invoke($screenshot_context);
-    $this->assertEquals('test-resize-screenshot-data', $result);
+    $this->assertSame('test-resize-screenshot-data', $result);
   }
 
   /**

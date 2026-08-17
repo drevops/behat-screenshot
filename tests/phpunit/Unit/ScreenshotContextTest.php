@@ -55,7 +55,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = new ScreenshotContext();
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
     $screenshot_context->beforeStepInit($scope);
-    $this->assertEquals($scope, $screenshot_context->getBeforeStepScope());
+    $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
   public function testPrintLastResponseOnError(): void {
@@ -169,7 +169,7 @@ class ScreenshotContextTest extends TestCase {
     $method->invokeArgs($screenshot_context, [$filename, $data]);
     $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
     $this->assertFileExists($filepath);
-    $this->assertEquals(file_get_contents($filepath), $data);
+    $this->assertSame($data, file_get_contents($filepath));
 
     unlink($filepath);
   }
@@ -240,7 +240,7 @@ class ScreenshotContextTest extends TestCase {
     $method = $screenshot_context_reflection->getMethod('makeFileName');
     $filename_processed = $method->invokeArgs($screenshot_context, [$ext, $filename, $on_failed]);
 
-    $this->assertEquals($expected, $filename_processed);
+    $this->assertSame($expected, $filename_processed);
   }
 
   public static function dataProviderMakeFileName(): array {

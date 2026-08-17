@@ -31,7 +31,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->appendInfo('Another Label', 'Another Value');
 
     $expected = "Test Label: Test Value\nAnother Label: Another Value";
-    $this->assertEquals($expected, $screenshot_context->renderInfo());
+    $this->assertSame($expected, $screenshot_context->renderInfo());
   }
 
   /**
@@ -167,7 +167,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $this->assertIsArray($info);
 
     $this->assertArrayHasKey('Current URL', $info);
-    $this->assertEquals('not available', $info['Current URL']);
+    $this->assertSame('not available', $info['Current URL']);
   }
 
   /**

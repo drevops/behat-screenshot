@@ -193,7 +193,7 @@ class AnimatedGifTest extends TestCase {
     // are not guaranteed to be identical across libgd versions, so the GIFs
     // are compared on the structure the encoder is responsible for rather than
     // byte for byte.
-    $this->assertEquals($this->gifSignature($expected), $this->gifSignature($produced));
+    $this->assertSame($this->gifSignature($expected), $this->gifSignature($produced));
     $this->assertSame([80, 60], $this->firstFrameSize($produced));
   }
 
