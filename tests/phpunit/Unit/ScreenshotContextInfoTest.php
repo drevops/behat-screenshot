@@ -35,6 +35,16 @@ class ScreenshotContextInfoTest extends TestCase {
   }
 
   /**
+   * Test the ScreenshotContext::renderInfo method with no info added.
+   */
+  public function testRenderInfoWithEmptyInfo(): void {
+    $screenshot_context = new ScreenshotContext();
+
+    // No info has been added.
+    $this->assertSame('', $screenshot_context->renderInfo());
+  }
+
+  /**
    * Test compileInfo method with different info types.
    *
    * @param array $info_types
