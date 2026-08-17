@@ -43,7 +43,7 @@ trait BehatCliTrait {
           mkdir($dst, 0777, TRUE);
         }
 
-        $finder = new Finder();
+        $finder = Finder::create();
         $fs = new Filesystem();
 
         foreach ($finder->in($src)->files() as $file) {
