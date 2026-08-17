@@ -175,9 +175,6 @@ class ScreenshotContextTest extends TestCase {
     unlink($filepath);
   }
 
-  /**
-   * Data provider for testSaveScreenshotContent method.
-   */
   public static function dataProviderSaveScreenshotContent(): array {
     return [
       ['test-save-screenshot-1.txt', 'test-data-1'],

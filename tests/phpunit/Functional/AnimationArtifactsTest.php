@@ -13,10 +13,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * Produce inspectable animation artifacts for a mixed-height scenario.
  *
- * Frame geometry is asserted here as it is elsewhere, and the encoded GIFs and
- * cropped frames are also written to .logs/animation so the visual outcome can
- * be checked by eye. CI uploads .logs as a build artifact, and .logs is
- * ignored by git, so the images never enter the repository.
+ * Frame geometry is asserted here as it is elsewhere. The encoded GIFs and
+ * cropped frames are also written to .logs/animation so the visual outcome
+ * can be checked by eye.
+ *
+ * CI uploads .logs as a build artifact, and .logs is ignored by git, so the
+ * images never enter the repository.
  */
 #[CoversClass(AnimatedGif::class)]
 class AnimationArtifactsTest extends TestCase {
@@ -72,8 +74,6 @@ class AnimationArtifactsTest extends TestCase {
     $gif = (new AnimatedGif())->encode($frames, 500);
     $this->write('uncapped.gif', $gif);
 
-    // Every frame is written at the size it was captured, against a canvas as
-    // tall as the longest page.
     $this->assertSame([800, 6000], $this->canvasSize($gif));
     $this->assertSame([[800, 400], [800, 1200], [800, 6000], [800, 400]], $this->frameSizes($gif));
   }
@@ -85,7 +85,6 @@ class AnimationArtifactsTest extends TestCase {
     $this->write('cropped-height.gif', $gif);
     $this->writeConstrainedFrames('cropped-height', $frames, 0, self::MAX_HEIGHT);
 
-    // Frames within the cap are untouched and every frame keeps its width.
     $this->assertSame([800, self::MAX_HEIGHT], $this->canvasSize($gif));
     $this->assertSame([[800, 400], [800, 1200], [800, self::MAX_HEIGHT], [800, 400]], $this->frameSizes($gif));
   }

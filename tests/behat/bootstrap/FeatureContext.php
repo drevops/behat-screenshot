@@ -28,9 +28,8 @@ class FeatureContext extends MinkContext implements Context {
    */
   public function __construct(array $parameters) {
     $this->screenshotInitParams($parameters);
-    // Set the screenshot token host to override any real host.
+    // Override any real host in the screenshot token.
     putenv('BEHAT_SCREENSHOT_TOKEN_HOST=example.com');
-    // Set the JavaScript override base URL.
     $this->javascriptBaseUrl = getenv('BEHAT_JAVASCRIPT_BASE_URL') ?: 'http://host.docker.internal:8888';
   }
 

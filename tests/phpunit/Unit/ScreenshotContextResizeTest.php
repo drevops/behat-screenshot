@@ -23,9 +23,6 @@ class ScreenshotContextResizeTest extends TestCase {
 
   use ReflectionTrait;
 
-  /**
-   * Test the getScreenshotFullscreenWithResize method.
-   */
   public function testGetScreenshotFullscreenWithResize(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
@@ -35,8 +32,6 @@ class ScreenshotContextResizeTest extends TestCase {
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
 
-    // Mock the JavaScript evaluation to return both original and document
-    // dimensions.
     $session->method('evaluateScript')
       ->willReturnOnConsecutiveCalls(
         // First call: get original window dimensions.
@@ -51,7 +46,6 @@ class ScreenshotContextResizeTest extends TestCase {
         ]
       );
 
-    // Expect resize to be called twice: once to expand, once to restore.
     $session->expects($this->exactly(2))
       ->method('resizeWindow')
       ->willReturnCallback(function ($width, $height, $name): void {
@@ -75,16 +69,12 @@ class ScreenshotContextResizeTest extends TestCase {
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
 
-    // Mock the screenshot result.
     $screenshot_context->method('getScreenshot')->willReturn('test-screenshot-data');
 
     $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreenWithResize');
     $this->assertSame('test-screenshot-data', $result);
   }
 
-  /**
-   * Test resize algorithm when JavaScript does not return valid dimensions.
-   */
   public function testGetScreenshotFullscreenWithResizeInvalidDimensions(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
@@ -110,23 +100,17 @@ class ScreenshotContextResizeTest extends TestCase {
         ]
       );
 
-    // Should not resize when dimensions are invalid, but returns regular
-    // screenshot.
     $session->expects($this->never())->method('resizeWindow');
 
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
 
-    // Mock the screenshot result.
     $screenshot_context->method('getScreenshot')->willReturn('test-screenshot-data');
 
     $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreenWithResize');
     $this->assertSame('test-screenshot-data', $result);
   }
 
-  /**
-   * Test the getScreenshotFullscreen method using the resize algorithm.
-   */
   public function testGetScreenshotFullscreenUsingResizeAlgorithm(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getScreenshotFullscreenWithResize',
@@ -144,7 +128,6 @@ class ScreenshotContextResizeTest extends TestCase {
       []
     );
 
-    // Mock the resize method to return test data.
     $screenshot_context->method('getScreenshotFullscreenWithResize')
       ->willReturn('test-resize-screenshot-data');
 
@@ -152,9 +135,6 @@ class ScreenshotContextResizeTest extends TestCase {
     $this->assertSame('test-resize-screenshot-data', $result);
   }
 
-  /**
-   * Test full screenshot with resize in the screenshot method.
-   */
   public function testScreenshotWithResizeAlgorithm(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
@@ -195,7 +175,6 @@ class ScreenshotContextResizeTest extends TestCase {
       []
     );
 
-    // Mock the fullscreen screenshot method.
     $screenshot_context->method('getScreenshotFullscreen')
       ->willReturn('test-fullscreen-screenshot-data');
 

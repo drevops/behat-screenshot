@@ -10,15 +10,15 @@ namespace DrevOps\BehatScreenshotExtension;
 class Tokenizer {
 
   /**
-   * Replace tokens from the text.
+   * Replace tokens in the text.
    *
    * @param string $text
-   *   Text may contain tokens.
+   *   Text that may contain tokens.
    * @param array<mixed> $data
    *   Extra data to provide context to replace token.
    *
    * @return string
-   *   String after replace tokens.
+   *   Text with tokens replaced.
    *
    * @throws \Exception
    */
@@ -43,10 +43,10 @@ class Tokenizer {
   }
 
   /**
-   * Scan tokens of specific text.
+   * Scan the text for tokens.
    *
    * @param string $text
-   *   The text to scan tokens.
+   *   The text to scan for tokens.
    *
    * @return array<string,string>
    *   The tokens keyed by the token name.
@@ -65,15 +65,15 @@ class Tokenizer {
   }
 
   /**
-   * Build replacements tokens.
+   * Build token replacements.
    *
    * @param array<string,string> $tokens
-   *   Token.
+   *   Tokens.
    * @param array<mixed> $data
    *   Extra data to provide context to replace token.
    *
    * @return array<string,string>
-   *   Replacements has key as token and value as token replacement.
+   *   Token replacements keyed by the original token.
    */
   protected static function extractTokens(array $tokens, array $data): array {
     $replacements = [];

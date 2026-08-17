@@ -56,7 +56,6 @@ class AnimatedGifTest extends TestCase {
 
     $gif = (new AnimatedGif())->encode($frames, 200);
 
-    // Each image block declares the size of the frame it was captured at.
     $this->assertSame([
       ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 100],
       ['left' => 0, 'top' => 0, 'width' => 64, 'height' => 48],
@@ -65,7 +64,6 @@ class AnimatedGifTest extends TestCase {
   }
 
   public function testEncodeDoesNotStretchSmallerFrames(): void {
-    // A small red frame followed by a larger blue frame.
     $frames = [
       $this->createPngFrame(40, 30, [255, 0, 0]),
       $this->createPngFrame(80, 60, [0, 0, 255]),
@@ -73,8 +71,6 @@ class AnimatedGifTest extends TestCase {
 
     $gif = (new AnimatedGif())->encode($frames, 100);
 
-    // The logical screen is the larger frame's size, while the small frame
-    // keeps its own size at the top-left rather than being stretched to fill.
     $this->assertSame([80, 60], $this->canvasSize($gif));
     $this->assertSame([40, 30], $this->firstFrameSize($gif));
     $this->assertColorNear([255, 0, 0], $this->pixelColor($gif, 5, 5));
@@ -143,9 +139,9 @@ class AnimatedGifTest extends TestCase {
 
     $gif = (new AnimatedGif())->encode($frames, 500);
 
-    // The logical screen still covers the tall frame, but the other 119 frames
-    // are encoded at their own size rather than padded up to it: 2,668,800
-    // pixels instead of the 46,080,000 a shared canvas would encode.
+    // The logical screen still covers the tall frame. The other 119 frames
+    // are encoded at their own size, not padded to it: 2,668,800 pixels
+    // instead of 46,080,000 for a shared canvas.
     $this->assertSame([160, 2400], $this->canvasSize($gif));
     $this->assertSame(2668800, $this->encodedPixels($gif));
   }
@@ -190,8 +186,8 @@ class AnimatedGifTest extends TestCase {
     $expected = (string) file_get_contents($dir . '/expected.gif');
 
     // The per-frame colour tables and LZW byte stream are produced by GD and
-    // are not guaranteed to be identical across libgd versions, so the GIFs
-    // are compared on the structure the encoder is responsible for rather than
+    // are not guaranteed to be identical across libgd versions. The GIFs are
+    // compared on the structure the encoder is responsible for rather than
     // byte for byte.
     $this->assertSame($this->gifSignature($expected), $this->gifSignature($produced));
     $this->assertSame([80, 60], $this->firstFrameSize($produced));
@@ -206,7 +202,6 @@ class AnimatedGifTest extends TestCase {
     $gif = (new AnimatedGif())->encode($frames, 100);
 
     $this->assertStringStartsWith('GIF89a', $gif);
-    // Only the single decodable frame ends up in the animation.
     $this->assertCount(1, $this->parseFrames($gif));
     $this->assertSame([30, 20], $this->canvasSize($gif));
   }
@@ -326,7 +321,6 @@ class AnimatedGifTest extends TestCase {
   }
 
   public function testConstrainKeepsTheTopLeftOfAnOversizedFrame(): void {
-    // A frame whose top half is red and bottom half is blue.
     $image = imagecreatetruecolor(80, 200);
     imagefilledrectangle($image, 0, 0, 79, 99, (int) imagecolorallocate($image, 255, 0, 0));
     imagefilledrectangle($image, 0, 100, 79, 199, (int) imagecolorallocate($image, 0, 0, 255));
@@ -349,7 +343,6 @@ class AnimatedGifTest extends TestCase {
 
     $gif = (new AnimatedGif(100, 0))->encode($frames, 100);
 
-    // Only the oversized frame is cropped; the smaller one is left alone.
     $this->assertSame([
       ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 200],
       ['left' => 0, 'top' => 0, 'width' => 50, 'height' => 40],

@@ -25,9 +25,6 @@ class ScreenshotContextInfoTest extends TestCase {
 
   use ReflectionTrait;
 
-  /**
-   * Test renderInfo and appendInfo methods.
-   */
   public function testRenderInfo(): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->appendInfo('Test Label', 'Test Value');
@@ -37,27 +34,14 @@ class ScreenshotContextInfoTest extends TestCase {
     $this->assertSame($expected, $screenshot_context->renderInfo());
   }
 
-  /**
-   * Test the ScreenshotContext::renderInfo method with no info added.
-   */
   public function testRenderInfoWithEmptyInfo(): void {
     $screenshot_context = new ScreenshotContext();
 
-    // No info has been added.
     $this->assertSame('', $screenshot_context->renderInfo());
   }
 
-  /**
-   * Test compileInfo method with different info types.
-   *
-   * @param array $info_types
-   *   The info types to compile.
-   * @param array $expected_keys
-   *   The expected info keys.
-   */
   #[DataProvider('dataProviderCompileInfo')]
   public function testCompileInfo(array $info_types, array $expected_keys): void {
-    // Setup mocks.
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $feature_node->method('getTitle')->willReturn('Test Feature Title');
@@ -73,7 +57,6 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);
     $screenshot_context->method('getSession')->willReturn($session);
 
-    // Initialize.
     $screenshot_context->beforeStepInit($scope);
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
@@ -87,21 +70,16 @@ class ScreenshotContextInfoTest extends TestCase {
       []
     );
 
-    // Get the info.
     $screenshot_context->renderInfo();
 
     $info = self::getProtectedValue($screenshot_context, 'info');
     $this->assertIsArray($info);
 
-    // Check that all expected keys exist.
     foreach ($expected_keys as $key) {
       $this->assertArrayHasKey($key, $info);
     }
   }
 
-  /**
-   * Data provider for testCompileInfo.
-   */
   public static function dataProviderCompileInfo(): array {
     return [
       [
@@ -127,11 +105,7 @@ class ScreenshotContextInfoTest extends TestCase {
     ];
   }
 
-  /**
-   * Test compileInfo with URL exception.
-   */
   public function testCompileInfoUrlException(): void {
-    // Setup mocks.
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $step_node = $this->createMock(StepNode::class);
@@ -143,7 +117,6 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);
     $screenshot_context->method('getSession')->willReturn($session);
 
-    // Initialize.
     $screenshot_context->beforeStepInit($scope);
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
@@ -157,7 +130,6 @@ class ScreenshotContextInfoTest extends TestCase {
       []
     );
 
-    // Get the info.
     $screenshot_context->renderInfo();
 
     $info = self::getProtectedValue($screenshot_context, 'info');
@@ -167,9 +139,6 @@ class ScreenshotContextInfoTest extends TestCase {
     $this->assertSame('not available', $info['Current URL']);
   }
 
-  /**
-   * Test screenshot with UnsupportedDriverActionException.
-   */
   public function testScreenshotUnsupportedDriver(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
@@ -181,7 +150,6 @@ class ScreenshotContextInfoTest extends TestCase {
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(DriverInterface::class);
 
-    // Setup driver to return content but throw exception on screenshot.
     $driver->method('getContent')->willReturn('test-content');
     $driver->method('getScreenshot')->willThrowException(
       new UnsupportedDriverActionException('Not supported', $driver)
@@ -192,15 +160,12 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->method('makeFileName')->willReturn('test-file-name');
     $screenshot_context->method('renderInfo')->willReturn('');
 
-    // Expect saveScreenshotContent to be called exactly once (for HTML only)
+    // Only the HTML content is saved.
     $screenshot_context->expects($this->once())->method('saveScreenshotContent');
 
     $screenshot_context->screenshot();
   }
 
-  /**
-   * Test getCurrentTime method.
-   */
   public function testGetCurrentTime(): void {
     $screenshot_context = new ScreenshotContext();
     $time = self::callProtectedMethod($screenshot_context, 'getCurrentTime');
@@ -208,18 +173,12 @@ class ScreenshotContextInfoTest extends TestCase {
     $this->assertGreaterThan(0, $time);
   }
 
-  /**
-   * Test makeFileName with BEHAT_SCREENSHOT_TOKEN_HOST environment variable.
-   */
   public function testMakeFileNameWithHostReplacement(): void {
-    // Store original env value if it exists.
     $original_value = getenv('BEHAT_SCREENSHOT_TOKEN_HOST');
 
     try {
-      // Set environment variable.
       putenv('BEHAT_SCREENSHOT_TOKEN_HOST=example.org');
 
-      // Setup mocks.
       $env = $this->createMock(Environment::class);
       $feature_node = $this->createMock(FeatureNode::class);
       $feature_node->method('getFile')->willReturn('test-feature-file');
@@ -260,7 +219,6 @@ class ScreenshotContextInfoTest extends TestCase {
       $this->assertStringNotContainsString('localhost', $result);
     }
     finally {
-      // Restore original env value.
       if ($original_value !== FALSE) {
         putenv('BEHAT_SCREENSHOT_TOKEN_HOST=' . $original_value);
       }

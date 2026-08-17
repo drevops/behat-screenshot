@@ -11,8 +11,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
- * Trait BehatCliTrait.
- *
  * Additional shortcut steps for BehatCliContext.
  */
 trait BehatCliTrait {
@@ -181,7 +179,7 @@ EOL;
   public function behatCliWriteScenarioSteps(PyStringNode $content, string $tags = ''): void {
     $content = strtr((string) $content, ["'''" => '"""']);
 
-    // Make sure that indentation in provided content is accurate.
+    // Normalize indentation in the provided content.
     $content_lines = explode(PHP_EOL, $content);
     foreach ($content_lines as $k => $content_line) {
       $content_lines[$k] = str_repeat(' ', 4) . trim($content_line);
@@ -332,7 +330,6 @@ EOL;
       static::behatCliPrintFileContents($filename, 'FullscreenTestContext');
     }
 
-    // Update the behat.yml to include this context.
     $behat_yml_path = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
     if (file_exists($behat_yml_path)) {
       $behat_yml = file_get_contents($behat_yml_path);
@@ -446,7 +443,6 @@ EOL;
     $path = $matches[0];
     $file_content = trim(file_get_contents($path));
 
-    // Normalize the line endings in the output.
     if ("\n" !== PHP_EOL) {
       $file_content = str_replace(PHP_EOL, "\n", $file_content);
     }
@@ -475,7 +471,6 @@ EOL;
     $path = $matches[0];
     $file_content = trim(file_get_contents($path));
 
-    // Normalize the line endings in the output.
     if ("\n" !== PHP_EOL) {
       $file_content = str_replace(PHP_EOL, "\n", $file_content);
     }

@@ -78,7 +78,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected string $filenamePattern;
 
   /**
-   * Filename pattern failed.
+   * Filename pattern for failed tests.
    */
   protected string $filenamePatternFailed;
 
@@ -131,9 +131,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Detect screenshot tags and reset per-scenario animation state.
    *
-   * Tags are read at both the scenario and feature level, so either may
-   * enable the behaviour.
-   *
    * @param \Behat\Behat\Hook\Scope\BeforeScenarioScope $scope
    *   Scenario scope.
    *
@@ -160,7 +157,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $driver = $this->getSession()->getDriver();
 
     try {
-      // Start driver's session manually if it is not already started.
       if (!$driver->isStarted()) {
         $driver->start();
       }
@@ -168,8 +164,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $this->getSession()->resizeWindow(1440, 900, 'current');
     }
     catch (UnsupportedDriverActionException $exception) {
-      // Nothing to do here - drivers without support for visual screenshots
-      // simply do not have them created.
+      // Drivers without visual screenshot support do not have them created.
     }
     catch (DriverException $exception) {
       throw new \RuntimeException(sprintf("Unable to connect to the driver's server: %s", $exception->getMessage()), $exception->getCode(), $exception);
@@ -217,8 +212,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @AfterStep
    */
   public function captureScreenshotAfterStep(AfterStepScope $scope): void {
-    // Capture on passed steps when per-step screenshots are globally enabled,
-    // the @screenshots tag is active, or animation is recording.
     // Failed steps are covered separately by on_failed to avoid duplicates.
     if (($this->onEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
       $this->screenshot([
@@ -266,9 +259,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
 
-    // The encoder is always released, even when rendering or writing the
-    // animated GIF fails, so a non-critical artifact does not leak frames into
-    // the next scenario.
+    // The encoder is always released, even when rendering or writing fails,
+    // so a non-critical artifact does not leak frames into the next scenario.
     try {
       $content = $encoder->render($this->animationSetting('frame_delay', 500));
       $this->saveScreenshotContent($this->makeAnimationFileName($scope), $content);
@@ -329,7 +321,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $this->getSession()->resizeWindow((int) $width, (int) $height, 'current');
     }
     catch (UnsupportedDriverActionException) {
-      // Nothing to do here - drivers without resize support may proceed.
+      // Drivers without resize support may proceed.
     }
 
     $this->screenshot();
@@ -363,24 +355,22 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $content = empty($info) ? $content : nl2br($info) . "<hr/>\n" . $content;
     }
     catch (DriverException) {
-      // Do nothing if the driver does not have any content - most
-      // likely the page has not been loaded yet.
+      // The driver has no content, likely because the page is not loaded yet.
       return;
     }
 
     $filename_html = $this->makeFileName('html', $filename, $is_failed);
     $this->saveScreenshotContent($filename_html, $content);
 
-    // Drivers that do not support making screenshots, including Goutte
-    // driver which is shipped with Behat, throw exception. For such drivers,
-    // screenshot stored as an HTML page (without referenced assets).
+    // Drivers that do not support screenshots, including the Goutte driver
+    // shipped with Behat, throw an exception. For such drivers, the screenshot
+    // is stored as an HTML page (without referenced assets).
     try {
       $content = $is_fullscreen ? $this->getScreenshotFullscreen() : $this->getScreenshot();
     }
     // @codeCoverageIgnoreStart
     catch (UnsupportedDriverActionException) {
-      // Nothing to do here - drivers without support for screenshots
-      // simply do not have them created.
+      // Drivers without screenshot support do not have them created.
       return;
     }
     // @codeCoverageIgnoreEnd
@@ -418,12 +408,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $session = $this->getSession();
     $session->getDriver();
 
-    // Store original window size to restore it later.
     // Default to the standard size set in beforeScenarioInit().
     $original_width = 1440;
     $original_height = 900;
 
-    // Get the current window size using JavaScript.
     try {
       $original_dimensions = $session->evaluateScript("
         return {
@@ -460,7 +448,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return $this->getScreenshot();
     }
 
-    // Ensure we have numeric values.
     $scroll_height = isset($dimensions['scrollHeight']) && is_numeric($dimensions['scrollHeight'])
       ? (int) $dimensions['scrollHeight']
       : 0;
@@ -468,29 +455,24 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return $this->getScreenshot();
     }
 
-    // Use a reasonable width, but set height to match the document height.
     $fullscreen_width = $original_width ?: 1440;
     $fullscreen_height = $scroll_height;
 
     // Add some buffer to ensure the entire page is captured.
     $fullscreen_height += 200;
 
-    // Resize the window to capture the full page height.
     $session->resizeWindow($fullscreen_width, $fullscreen_height, 'current');
 
-    // Add a small delay to ensure the resize completes before taking
-    // screenshot.
+    // Wait for the resize to complete before taking the screenshot.
     usleep(100000);
 
-    // Take the screenshot.
     $screenshot = $this->getScreenshot();
 
-    // Always restore the original window size.
     try {
       $session->resizeWindow($original_width, $original_height, 'current');
     }
     catch (\Exception) {
-      // Ignore errors during restoration - best effort attempt.
+      // Restoration is best effort - errors are ignored.
     }
 
     return $screenshot;
@@ -614,7 +596,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $filename = $this->filenamePattern;
     }
 
-    // Make sure {ext} token is on filename.
     if (!str_ends_with($filename, '.{ext}')) {
       $filename .= '.{ext}';
     }

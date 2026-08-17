@@ -27,7 +27,7 @@ interface ScreenshotAwareContextInterface extends Context {
    * @param string $filename_pattern
    *   File name pattern.
    * @param string $filename_pattern_failed
-   *   File name pattern failed.
+   *   File name pattern for failed tests.
    * @param array<int,string> $info_types
    *   Show these info types in the screenshot.
    * @param array<string,mixed> $animation

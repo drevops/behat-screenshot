@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace DrevOps\BehatScreenshot\Tests\Traits;
 
 /**
- * Trait GifParserTrait.
- *
  * Decodes the structure of a GIF stream for assertions.
  *
  * The block layout is decoded here rather than through AnimatedGif's own
- * helpers, so a fault in how the encoder lays out blocks cannot be hidden by
- * reading them back with the same code that wrote them.
+ * helpers. Reading blocks back with the code that wrote them would hide a
+ * fault in how the encoder lays them out.
  *
  * @phpstan-ignore trait.unused
  */
