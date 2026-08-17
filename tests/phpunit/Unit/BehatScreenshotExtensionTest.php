@@ -21,12 +21,12 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 #[CoversClass(BehatScreenshotExtension::class)]
 class BehatScreenshotExtensionTest extends TestCase {
 
-  public function testGetConfigKey(): void {
+  public function testGetConfigKeyReturnsExtensionKey(): void {
     $extension = new BehatScreenshotExtension();
     $this->assertSame('drevops_behat_screenshot', $extension->getConfigKey());
   }
 
-  public function testLoad(): void {
+  public function testLoadRegistersInitializerWithConfigArguments(): void {
     $container = new ContainerBuilder();
     $config = [
       'dir' => '%paths.base%/screenshots',
@@ -65,7 +65,7 @@ class BehatScreenshotExtensionTest extends TestCase {
     );
   }
 
-  public function testConfigure(): void {
+  public function testConfigureDefinesTenConfigOptions(): void {
     $builder = new ArrayNodeDefinition('root');
 
     $extension = new BehatScreenshotExtension();
