@@ -30,7 +30,6 @@
         "ergebnis/composer-normalize": "^2.44",
         "lullabot/mink-selenium2-driver": "^1.7",
         "lullabot/php-webdriver": "^2.0.4",
-        "php-mock/php-mock-phpunit": "^2.13",
         "phpstan/phpstan": "^2",
         "phpunit/phpunit": "^11",
         "rector/rector": "^2",
