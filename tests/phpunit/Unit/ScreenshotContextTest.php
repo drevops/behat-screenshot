@@ -179,7 +179,6 @@ class ScreenshotContextTest extends TestCase {
     );
     $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
     $method = $screenshot_context_reflection->getMethod('saveScreenshotContent');
-    $method->setAccessible(TRUE);
     $method->invokeArgs($screenshot_context, [$filename, $data]);
     $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
     $this->assertFileExists($filepath);
@@ -252,7 +251,6 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
     $method = $screenshot_context_reflection->getMethod('makeFileName');
-    $method->setAccessible(TRUE);
     $filename_processed = $method->invokeArgs($screenshot_context, [$ext, $filename, $on_failed]);
 
     $this->assertEquals($expected, $filename_processed);

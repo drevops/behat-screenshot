@@ -294,7 +294,6 @@ class ScreenshotContextAnimationTest extends TestCase {
    */
   protected function getProtectedProperty(object $object, string $property): mixed {
     $reflection = new \ReflectionProperty($object, $property);
-    $reflection->setAccessible(TRUE);
 
     return $reflection->getValue($object);
   }

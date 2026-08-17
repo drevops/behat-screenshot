@@ -136,7 +136,6 @@ class AnimatedGif implements \Countable {
     // ob_get_clean() returns FALSE when no output buffer is active; strval()
     // maps that to the same empty string a failed encode produces.
     $gif = strval(ob_get_clean());
-    imagedestroy($image);
 
     // @codeCoverageIgnoreStart
     if ($gif === '') {
@@ -210,7 +209,7 @@ class AnimatedGif implements \Countable {
    * applies whether or not a maximum is configured.
    *
    * @param \GdImage $image
-   *   Source image. Destroyed once a cropped copy replaces it.
+   *   Source image.
    *
    * @return \GdImage
    *   The source image when it already fits, a cropped copy otherwise.
@@ -234,8 +233,6 @@ class AnimatedGif implements \Countable {
     }
 
     // @codeCoverageIgnoreEnd
-    imagedestroy($image);
-
     return $cropped;
   }
 

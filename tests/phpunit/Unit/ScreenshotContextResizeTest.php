@@ -78,7 +78,6 @@ class ScreenshotContextResizeTest extends TestCase {
     // Create reflection to test protected method.
     $reflection = new \ReflectionClass($screenshot_context);
     $method = $reflection->getMethod('getScreenshotFullscreenWithResize');
-    $method->setAccessible(TRUE);
 
     $result = $method->invoke($screenshot_context);
     $this->assertEquals('test-screenshot-data', $result);
@@ -125,7 +124,6 @@ class ScreenshotContextResizeTest extends TestCase {
     // Create reflection to test protected method.
     $reflection = new \ReflectionClass($screenshot_context);
     $method = $reflection->getMethod('getScreenshotFullscreenWithResize');
-    $method->setAccessible(TRUE);
 
     $result = $method->invoke($screenshot_context);
     $this->assertEquals('test-screenshot-data', $result);
@@ -158,7 +156,6 @@ class ScreenshotContextResizeTest extends TestCase {
     // Create reflection to access protected method.
     $reflection = new \ReflectionClass($screenshot_context);
     $method = $reflection->getMethod('getScreenshotFullscreen');
-    $method->setAccessible(TRUE);
 
     $result = $method->invoke($screenshot_context);
     $this->assertEquals('test-resize-screenshot-data', $result);
