@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit\Context\Initializer;
+namespace DrevOps\BehatScreenshot\Tests\Unit;
 
 use Behat\Behat\Context\Context;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
