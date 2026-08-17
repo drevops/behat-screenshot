@@ -86,7 +86,7 @@ class ScreenshotContextTest extends TestCase {
   public function testIsaveSizedScreenshot(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'screenshot']);
     $session = $this->createMock(Session::class);
-    $exception = $this->createMock(UnsupportedDriverActionException::class);
+    $exception = new UnsupportedDriverActionException('Not supported', $this->createMock(Selenium2Driver::class));
     $session->method('resizeWindow')->willThrowException($exception);
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->expects($this->once())->method('screenshot');
@@ -141,7 +141,7 @@ class ScreenshotContextTest extends TestCase {
     ]);
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
-    $exception = $this->createMock(DriverException::class);
+    $exception = new DriverException('Test Exception.');
     $driver->method('getContent')->willThrowException($exception);
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
