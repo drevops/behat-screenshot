@@ -62,6 +62,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   public const TAG_SCREENSHOTS_ANIMATED_SKIP = 'screenshots:animated:skip';
 
   /**
+   * Environment variable disabling animated GIF assembly for the whole suite.
+   */
+  public const ENV_ANIMATION_SKIP = 'BEHAT_SCREENSHOT_ANIMATION_SKIP';
+
+  /**
    * Extra window height ensuring the whole page is captured, in pixels.
    */
   public const FULLSCREEN_HEIGHT_BUFFER = 200;
@@ -199,11 +204,14 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Resolve whether the current scenario should produce an animated GIF.
    *
-   * Scopes are consulted from the most specific to the least specific, so a
-   * scenario tag decides on its own and a feature tag only applies when the
-   * scenario carries neither tag. Within a scope the skip tag wins, making a
-   * node tagged with both an opt-in and an opt-out deterministic. The
-   * animation.enabled setting applies only when no scope is tagged.
+   * The environment variable is a suite-wide switch that overrides everything
+   * a feature file or the configuration can say, so a run can be stripped of
+   * animation without editing either. Below it, scopes are consulted from the
+   * most specific to the least specific, so a scenario tag decides on its own
+   * and a feature tag only applies when the scenario carries neither tag.
+   * Within a scope the skip tag wins, making a node tagged with both an opt-in
+   * and an opt-out deterministic. The animation.enabled setting applies only
+   * when no scope is tagged.
    *
    * @param \Behat\Gherkin\Node\TaggedNodeInterface ...$nodes
    *   Tagged nodes in order of decreasing specificity.
@@ -212,6 +220,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   TRUE when the scenario should produce an animated GIF.
    */
   protected function resolveIsAnimated(TaggedNodeInterface ...$nodes): bool {
+    if ($this->isAnimationSkippedForSuite()) {
+      return FALSE;
+    }
+
     foreach ($nodes as $node) {
       if ($node->hasTag(self::TAG_SCREENSHOTS_ANIMATED_SKIP)) {
         return FALSE;
@@ -223,6 +235,16 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     }
 
     return !empty($this->animation['enabled']);
+  }
+
+  /**
+   * Check whether animation is disabled for the whole suite.
+   *
+   * @return bool
+   *   TRUE when the environment variable holds a truthy value.
+   */
+  protected function isAnimationSkippedForSuite(): bool {
+    return (bool) getenv(self::ENV_ANIMATION_SKIP);
   }
 
   /**

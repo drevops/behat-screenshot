@@ -64,6 +64,54 @@ class ScreenshotContextAnimationTest extends TestCase {
     ];
   }
 
+  #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable')]
+  public function testBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable(?string $env_value, array $scenario_tags, array $feature_tags, array $animation, bool $expected_animated): void {
+    $original_value = getenv(ScreenshotContext::ENV_ANIMATION_SKIP);
+
+    try {
+      if ($env_value === NULL) {
+        putenv(ScreenshotContext::ENV_ANIMATION_SKIP);
+      }
+      else {
+        putenv(ScreenshotContext::ENV_ANIMATION_SKIP . '=' . $env_value);
+      }
+
+      $env = $this->createMock(Environment::class);
+      $feature_node = $this->createMock(FeatureNode::class);
+      $feature_node->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $feature_tags, TRUE));
+      $scenario = $this->createMock(ScenarioInterface::class);
+      $scenario->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $scenario_tags, TRUE));
+
+      $screenshot_context = new ScreenshotContext();
+      $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
+
+      $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
+
+      $this->assertSame($expected_animated, self::getProtectedValue($screenshot_context, 'scenarioIsAnimated'));
+    }
+    finally {
+      if ($original_value !== FALSE) {
+        putenv(ScreenshotContext::ENV_ANIMATION_SKIP . '=' . $original_value);
+      }
+      else {
+        putenv(ScreenshotContext::ENV_ANIMATION_SKIP);
+      }
+    }
+  }
+
+  public static function dataProviderBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable(): array {
+    return [
+      'variable unset with config enabled' => [NULL, [], [], ['enabled' => TRUE], TRUE],
+      'variable set with config enabled' => ['1', [], [], ['enabled' => TRUE], FALSE],
+      'variable set with config disabled' => ['1', [], [], ['enabled' => FALSE], FALSE],
+      'variable set over scenario animated tag' => ['1', ['screenshots:animated'], [], [], FALSE],
+      'variable set over feature animated tag' => ['1', [], ['screenshots:animated'], [], FALSE],
+      'variable empty with config enabled' => ['', [], [], ['enabled' => TRUE], TRUE],
+      'variable zero with config enabled' => ['0', [], [], ['enabled' => TRUE], TRUE],
+      'variable zero with scenario animated tag' => ['0', ['screenshots:animated'], [], [], TRUE],
+    ];
+  }
+
   public function testCaptureScreenshotAfterStepCollectsAnimationFrame(): void {
     $encoder = $this->createMock(AnimatedGif::class);
     $encoder->expects($this->once())->method('addFrame')->with('png-bytes');

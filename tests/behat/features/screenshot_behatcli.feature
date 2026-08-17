@@ -422,6 +422,26 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/*.gif" should not exist
 
   @selenium
+  Scenario: Test Screenshot context skips an animated GIF for the whole suite when the environment variable is set
+    Given screenshot fixture
+    And screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension:
+            dir: "%paths.base%/screenshots"
+            purge: true
+      """
+    And scenario steps tagged with "@phpserver @javascript @screenshots:animated":
+      """
+      When I am on the phpserver test page
+      And I save screenshot
+      """
+    And "BEHAT_SCREENSHOT_ANIMATION_SKIP" environment variable is set to "1"
+    When I run "behat --no-colors --strict"
+    Then it should pass
+    And behat cli file wildcard "screenshots/*.png" should exist
+    And behat cli file wildcard "screenshots/*.gif" should not exist
+
+  @selenium
   Scenario: Test Screenshot context with JS full-screen short screenshot
     Given short screenshot fixture
     And screenshot context behat configuration with value:
