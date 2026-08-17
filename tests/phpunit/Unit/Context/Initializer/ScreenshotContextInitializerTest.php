@@ -18,9 +18,6 @@ use Symfony\Component\Finder\Finder;
 #[CoversClass(ScreenshotContextInitializer::class)]
 class ScreenshotContextInitializerTest extends TestCase {
 
-  /**
-   * Test initializeContext with a non-screenshot aware context.
-   */
   public function testInitializeContextNonScreenshotAware(): void {
     $context = $this->createMock(Context::class);
 
@@ -37,16 +34,12 @@ class ScreenshotContextInitializerTest extends TestCase {
       []
     );
 
-    // No error should be thrown, just verifying it runs without error.
     $initializer->initializeContext($context);
 
-    // This is just to ensure the test isn't marked as risky.
+    // The assertion keeps the test from being marked as risky.
     $this->assertInstanceOf(ScreenshotContextInitializer::class, $initializer);
   }
 
-  /**
-   * Test initializeContext with a screenshot aware context.
-   */
   public function testInitializeContext(): void {
     $context = $this->createMock(ScreenshotAwareContextInterface::class);
     $context->expects($this->once())
@@ -67,7 +60,7 @@ class ScreenshotContextInitializerTest extends TestCase {
       'screenshots',
       TRUE,
       'failed_',
-      // don't purge.
+      // Do not purge.
       FALSE,
       TRUE,
       FALSE,
@@ -80,9 +73,6 @@ class ScreenshotContextInitializerTest extends TestCase {
     $initializer->initializeContext($context);
   }
 
-  /**
-   * Test initializeContext with ENV override.
-   */
   public function testInitializeContextWithEnv(): void {
     $original_dir_value = getenv('BEHAT_SCREENSHOT_DIR');
     $original_purge_value = getenv('BEHAT_SCREENSHOT_PURGE');
@@ -128,7 +118,6 @@ class ScreenshotContextInitializerTest extends TestCase {
         ->method('remove')
         ->with($finder);
 
-      // Create a partial mock of the initializer to override filesystem.
       $initializer = $this->getMockBuilder(ScreenshotContextInitializer::class)
         ->setConstructorArgs([
           'screenshots',
@@ -151,7 +140,7 @@ class ScreenshotContextInitializerTest extends TestCase {
 
       $initializer->initializeContext($context);
 
-      // Test that we don't purge on second call.
+      // The second call must not purge again.
       $context2 = $this->createMock(ScreenshotAwareContextInterface::class);
       $context2->expects($this->once())
         ->method('setScreenshotParameters')
@@ -170,7 +159,6 @@ class ScreenshotContextInitializerTest extends TestCase {
       $initializer->initializeContext($context2);
     }
     finally {
-      // Restore original env values.
       if ($original_dir_value !== FALSE) {
         putenv('BEHAT_SCREENSHOT_DIR=' . $original_dir_value);
       }

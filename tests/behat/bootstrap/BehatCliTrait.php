@@ -11,8 +11,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 /**
- * Trait BehatCliTrait.
- *
  * Additional shortcut steps for BehatCliContext.
  */
 trait BehatCliTrait {
@@ -43,7 +41,7 @@ trait BehatCliTrait {
           mkdir($dst, 0777, TRUE);
         }
 
-        $finder = new Finder();
+        $finder = Finder::create();
         $fs = new Filesystem();
 
         foreach ($finder->in($src)->files() as $file) {
@@ -53,11 +51,11 @@ trait BehatCliTrait {
     }
 
     if (static::behatCliIsDebug()) {
-      print "-------------------- OUTPUT START --------------------" . PHP_EOL;
+      print '-------------------- OUTPUT START --------------------' . PHP_EOL;
       print PHP_EOL;
       print $this->getOutput();
       print PHP_EOL;
-      print "-------------------- OUTPUT FINISH -------------------" . PHP_EOL;
+      print '-------------------- OUTPUT FINISH -------------------' . PHP_EOL;
     }
   }
 
@@ -77,7 +75,7 @@ trait BehatCliTrait {
     ];
     foreach ($traits as $path => $trait) {
       $trait_name = $trait;
-      if (strpos($trait, '\\') !== FALSE) {
+      if (str_contains($trait, '\\')) {
         $tokens['{{USE_DECLARATION}}'] .= sprintf('use %s;' . PHP_EOL, $trait);
         $trait_name_parts = explode('\\', $trait);
         $trait_name = end($trait_name_parts);
@@ -181,7 +179,7 @@ EOL;
   public function behatCliWriteScenarioSteps(PyStringNode $content, string $tags = ''): void {
     $content = strtr((string) $content, ["'''" => '"""']);
 
-    // Make sure that indentation in provided content is accurate.
+    // Normalize indentation in the provided content.
     $content_lines = explode(PHP_EOL, $content);
     foreach ($content_lines as $k => $content_line) {
       $content_lines[$k] = str_repeat(' ', 4) . trim($content_line);
@@ -217,7 +215,7 @@ EOL;
    */
   public function behatCliWriteFullBehatYml(PyStringNode $content): void {
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
-    $this->createFile($filename, $content->getRaw());
+    $this->createFile($filename, (string) $content);
 
     if (static::behatCliIsDebug()) {
       static::behatCliPrintFileContents($filename, 'Behat Config');
@@ -332,11 +330,10 @@ EOL;
       static::behatCliPrintFileContents($filename, 'FullscreenTestContext');
     }
 
-    // Update the behat.yml to include this context.
     $behat_yml_path = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
     if (file_exists($behat_yml_path)) {
       $behat_yml = file_get_contents($behat_yml_path);
-      if (strpos($behat_yml, 'FullscreenTestContext') === FALSE) {
+      if (!str_contains($behat_yml, 'FullscreenTestContext')) {
         $behat_yml = str_replace(
           'ScreenshotContext',
           "ScreenshotContext\n        - FullscreenTestContext",
@@ -382,7 +379,7 @@ EOL;
   /**
    * Helper to print file comments.
    */
-  protected static function behatCliPrintFileContents(string $filename, $title = '') {
+  protected static function behatCliPrintFileContents(string $filename, string $title = ''): void {
     if (!is_readable($filename)) {
       throw new \RuntimeException(sprintf('Unable to access file "%s"', $filename));
     }
@@ -399,7 +396,7 @@ EOL;
   /**
    * Helper to check if debug mode is enabled.
    *
-   * @return bool
+   * @return string|false
    *   TRUE to see debug messages for this trait.
    */
   protected static function behatCliIsDebug(): string|false {
@@ -420,7 +417,7 @@ EOL;
 
     if (empty($matches)) {
       $finder = Finder::create();
-      $files = PHP_EOL . implode(PHP_EOL, \iterator_to_array($finder->in($this->workingDir)));
+      $files = PHP_EOL . implode(PHP_EOL, iterator_to_array($finder->in($this->workingDir)));
       throw new \Exception(sprintf("Unable to find files matching wildcard '%s'. Found files: %s", $wildcard, $files));
     }
   }
@@ -446,7 +443,6 @@ EOL;
     $path = $matches[0];
     $file_content = trim(file_get_contents($path));
 
-    // Normalize the line endings in the output.
     if ("\n" !== PHP_EOL) {
       $file_content = str_replace(PHP_EOL, "\n", $file_content);
     }
@@ -464,7 +460,7 @@ EOL;
    *
    * @Given /^behat screenshot file matching "([^"]*)" should not contain:$/
    */
-  public function behatCliAssertFileNotShouldContain(string $wildcard, PyStringNode $text): void {
+  public function behatCliAssertFileShouldNotContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
 
     $matches = glob($wildcard);
@@ -475,7 +471,6 @@ EOL;
     $path = $matches[0];
     $file_content = trim(file_get_contents($path));
 
-    // Normalize the line endings in the output.
     if ("\n" !== PHP_EOL) {
       $file_content = str_replace(PHP_EOL, "\n", $file_content);
     }
@@ -497,7 +492,7 @@ EOL;
 
     if (!empty($matches)) {
       $finder = Finder::create();
-      $files = PHP_EOL . implode(PHP_EOL, \iterator_to_array($finder->in($this->workingDir)));
+      $files = PHP_EOL . implode(PHP_EOL, iterator_to_array($finder->in($this->workingDir)));
       throw new \Exception(sprintf("Files matching wildcard '%s' were found, but were not supposed to. Found files: %s", $wildcard, $files));
     }
   }

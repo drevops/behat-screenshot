@@ -54,7 +54,7 @@ Feature: Screenshot context
     Then it should pass
     And behat cli file wildcard "screenshots/*.stub.feature_007\.html" should exist
 
-  Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_DIR set to custom dir.
+  Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_DIR set to custom dir
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
@@ -72,7 +72,7 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should exist
 
-  Scenario: Test Screenshot context with 'dir' set to '%paths.base%/screenshots' env variable BEHAT_SCREENSHOT_DIR set to custom dir.
+  Scenario: Test Screenshot context with 'dir' set to '%paths.base%/screenshots' env variable BEHAT_SCREENSHOT_DIR set to custom dir
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
@@ -227,7 +227,7 @@ Feature: Screenshot context
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6\.html" should not exist
 
-  Scenario: Test Screenshot context with 'purge' set to 'false', but env variable set to 'true' which will purge files between runs.
+  Scenario: Test Screenshot context with 'purge' set to 'false', but env variable set to 'true' which will purge files between runs
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
@@ -255,8 +255,7 @@ Feature: Screenshot context
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6\.html" should not exist
 
-  Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_PURGE set to '1' which will purge files between
-  runs and env variable BEHAT_SCREENSHOT_DIR set to 'screenshots_custom'.
+  Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_PURGE set to '1' which will purge files between runs and env variable BEHAT_SCREENSHOT_DIR set to 'screenshots_custom'
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
@@ -287,7 +286,7 @@ Feature: Screenshot context
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6\.html" should not exist
 
-  Scenario: Test Screenshot context with 'info_types' set to 'true' will output current URL to screenshot files.
+  Scenario: Test Screenshot context with 'info_types' set to 'true' will output current URL to screenshot files
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
@@ -323,7 +322,7 @@ Feature: Screenshot context
       Datetime:
       """
 
-  Scenario: Test Screenshot context with 'info_types' set to 'false' will not output current URL to screenshot files.
+  Scenario: Test Screenshot context with 'info_types' set to 'false' will not output current URL to screenshot files
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
@@ -341,6 +340,7 @@ Feature: Screenshot context
       """
       Current URL: http://0.0.0.0:8888/screenshot.html
       """
+
   @selenium
   Scenario: Test Screenshot context with JS and all parameters defined in behat.yml
     Given screenshot fixture

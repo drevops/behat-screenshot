@@ -10,15 +10,15 @@ namespace DrevOps\BehatScreenshotExtension;
 class Tokenizer {
 
   /**
-   * Replace tokens from the text.
+   * Replace tokens in the text.
    *
    * @param string $text
-   *   Text may contain tokens.
+   *   Text that may contain tokens.
    * @param array<mixed> $data
    *   Extra data to provide context to replace token.
    *
    * @return string
-   *   String after replace tokens.
+   *   Text with tokens replaced.
    *
    * @throws \Exception
    */
@@ -43,12 +43,12 @@ class Tokenizer {
   }
 
   /**
-   * Scan tokens of specific text.
+   * Scan the text for tokens.
    *
    * @param string $text
-   *   The text to scan tokens.
+   *   The text to scan for tokens.
    *
-   * @return string[]
+   * @return array<string,string>
    *   The tokens keyed by the token name.
    */
   public static function scanTokens(string $text): array {
@@ -65,15 +65,15 @@ class Tokenizer {
   }
 
   /**
-   * Build replacements tokens.
+   * Build token replacements.
    *
-   * @param string[] $tokens
-   *   Token.
+   * @param array<string,string> $tokens
+   *   Tokens.
    * @param array<mixed> $data
    *   Extra data to provide context to replace token.
    *
-   * @return array<string, string>
-   *   Replacements has key as token and value as token replacement.
+   * @return array<string,string>
+   *   Token replacements keyed by the original token.
    */
   protected static function extractTokens(array $tokens, array $data): array {
     $replacements = [];
@@ -146,8 +146,8 @@ class Tokenizer {
    * Replace {step} token.
    */
   protected static function replaceStepToken(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
-    if ($qualifier == 'line' && isset($data['step_line']) && (is_string($data['step_line']) || is_int($data['step_line']))) {
-      return $format ? sprintf($format, intval($data['step_line'])) : strval($data['step_line']);
+    if ($qualifier === 'line' && isset($data['step_line']) && (is_string($data['step_line']) || is_int($data['step_line']))) {
+      return $format ? sprintf($format, (int) $data['step_line']) : (string) $data['step_line'];
     }
 
     if (isset($data['step_name']) && is_string($data['step_name'])) {
@@ -168,7 +168,7 @@ class Tokenizer {
         throw new \InvalidArgumentException('Timestamp must be numeric.');
       }
 
-      $timestamp = intval($data['timestamp']);
+      $timestamp = (int) $data['timestamp'];
 
       if ($timestamp < 1) {
         throw new \InvalidArgumentException('Timestamp must be greater than 0.');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\BehatScreenshot\Tests\Functional;
 
 use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\AnimatedGif;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -12,20 +13,18 @@ use PHPUnit\Framework\TestCase;
 /**
  * Produce inspectable animation artifacts for a mixed-height scenario.
  *
- * Frame geometry is asserted here as it is elsewhere, and the encoded GIFs and
- * cropped frames are also written to .logs/animation so the visual outcome can
- * be checked by eye. CI uploads .logs as a build artifact, and .logs is
- * ignored by git, so the images never enter the repository.
+ * Frame geometry is asserted here as it is elsewhere. The encoded GIFs and
+ * cropped frames are also written to .logs/animation so the visual outcome
+ * can be checked by eye.
+ *
+ * CI uploads .logs as a build artifact, and .logs is ignored by git, so the
+ * images never enter the repository.
  */
 #[CoversClass(AnimatedGif::class)]
 class AnimationArtifactsTest extends TestCase {
 
   use GifParserTrait;
-
-  /**
-   * Directory the artifacts are written to.
-   */
-  protected string $dir;
+  use ReflectionTrait;
 
   /**
    * Frame sizes standing in for a scenario that visits pages of every length.
@@ -49,6 +48,11 @@ class AnimationArtifactsTest extends TestCase {
    */
   protected const MAX_WIDTH = 500;
 
+  /**
+   * Directory the artifacts are written to.
+   */
+  protected string $dir;
+
   protected function setUp(): void {
     parent::setUp();
 
@@ -70,8 +74,6 @@ class AnimationArtifactsTest extends TestCase {
     $gif = (new AnimatedGif())->encode($frames, 500);
     $this->write('uncapped.gif', $gif);
 
-    // Every frame is written at the size it was captured, against a canvas as
-    // tall as the longest page.
     $this->assertSame([800, 6000], $this->canvasSize($gif));
     $this->assertSame([[800, 400], [800, 1200], [800, 6000], [800, 400]], $this->frameSizes($gif));
   }
@@ -83,7 +85,6 @@ class AnimationArtifactsTest extends TestCase {
     $this->write('cropped-height.gif', $gif);
     $this->writeConstrainedFrames('cropped-height', $frames, 0, self::MAX_HEIGHT);
 
-    // Frames within the cap are untouched and every frame keeps its width.
     $this->assertSame([800, self::MAX_HEIGHT], $this->canvasSize($gif));
     $this->assertSame([[800, 400], [800, 1200], [800, self::MAX_HEIGHT], [800, 400]], $this->frameSizes($gif));
   }
@@ -211,7 +212,6 @@ class AnimationArtifactsTest extends TestCase {
    */
   protected function writeConstrainedFrames(string $prefix, array $frames, int $max_width, int $max_height): void {
     $encoder = new AnimatedGif($max_width, $max_height);
-    $constrain = new \ReflectionMethod($encoder, 'constrain');
 
     foreach ($frames as $index => $frame) {
       $image = imagecreatefromstring($frame);
@@ -219,7 +219,7 @@ class AnimationArtifactsTest extends TestCase {
         continue;
       }
 
-      $result = $constrain->invoke($encoder, $image);
+      $result = self::callProtectedMethod($encoder, 'constrain', [$image]);
       if (!$result instanceof \GdImage) {
         continue;
       }
@@ -239,7 +239,7 @@ class AnimationArtifactsTest extends TestCase {
    *   File content.
    */
   protected function write(string $name, string $content): void {
-    file_put_contents($this->dir . DIRECTORY_SEPARATOR . $name, $content);
+    file_put_contents($this->dir . '/' . $name, $content);
   }
 
 }

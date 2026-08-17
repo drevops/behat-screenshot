@@ -19,7 +19,7 @@ class BehatScreenshotExtensionTest extends TestCase {
 
   public function testGetConfigKey(): void {
     $extension = new BehatScreenshotExtension();
-    $this->assertEquals('drevops_behat_screenshot', $extension->getConfigKey());
+    $this->assertSame('drevops_behat_screenshot', $extension->getConfigKey());
   }
 
   public function testLoad(): void {
@@ -43,8 +43,8 @@ class BehatScreenshotExtensionTest extends TestCase {
     $this->assertTrue($container->hasDefinition('drevops_behat_screenshot.screenshot_context_initializer'));
 
     $definition = $container->getDefinition('drevops_behat_screenshot.screenshot_context_initializer');
-    $this->assertEquals(ScreenshotContextInitializer::class, $definition->getClass());
-    $this->assertEquals(
+    $this->assertSame(ScreenshotContextInitializer::class, $definition->getClass());
+    $this->assertSame(
       [
         $config['dir'],
         $config['on_failed'],

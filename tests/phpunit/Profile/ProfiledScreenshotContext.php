@@ -9,9 +9,9 @@ use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 /**
  * A screenshot context whose captures are supplied rather than driven.
  *
- * Standing in for the browser lets a scenario be replayed at any length
- * without a running driver, while the hooks, the frame collection and the
- * scenario-end assembly all remain the real ones.
+ * A scenario of any length can be replayed without a running driver. The
+ * hooks, the frame collection and the scenario-end assembly remain the real
+ * ones.
  */
 class ProfiledScreenshotContext extends ScreenshotContext {
 

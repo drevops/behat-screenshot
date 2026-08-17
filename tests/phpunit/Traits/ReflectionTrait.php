@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace DrevOps\BehatScreenshot\Tests\Traits;
 
 /**
- * Trait ReflectionTrait.
- *
  * Provides methods to work with class reflection.
  *
  * @phpstan-ignore trait.unused
@@ -42,13 +40,10 @@ trait ReflectionTrait {
 
     $method = $class->getMethod($name);
 
-    // If the method is static, we won't pass an object instance to invokeArgs()
-    // Otherwise, we ensure to pass the object instance.
     $invoke_object = $method->isStatic() ? NULL : (is_object($object) ? $object : NULL);
 
-    // Ensure we have an object for non-static methods.
     if (!$method->isStatic() && $invoke_object === NULL) {
-      throw new \InvalidArgumentException("An object instance is required for non-static methods");
+      throw new \InvalidArgumentException('An object instance is required for non-static methods');
     }
 
     return $method->invokeArgs($invoke_object, $args);
@@ -60,11 +55,11 @@ trait ReflectionTrait {
    * @param object $object
    *   Object to set the value on.
    * @param string $property
-   *   Property name to set the value. Property should exists in the object.
+   *   Property name to set the value. Property should exist in the object.
    * @param mixed $value
    *   Value to set to the property.
    */
-  protected static function setProtectedValue($object, $property, mixed $value): void {
+  protected static function setProtectedValue(object $object, string $property, mixed $value): void {
     $class = new \ReflectionClass($object::class);
     $property = $class->getProperty($property);
 
@@ -77,16 +72,16 @@ trait ReflectionTrait {
    * @param object $object
    *   Object to set the value on.
    * @param string $property
-   *   Property name to get the value. Property should exists in the object.
+   *   Property name to get the value. Property should exist in the object.
    *
    * @return mixed
    *   Protected property value.
    */
-  protected static function getProtectedValue($object, $property): mixed {
+  protected static function getProtectedValue(object $object, string $property): mixed {
     $class = new \ReflectionClass($object::class);
     $property = $class->getProperty($property);
 
-    return $property->getValue($class);
+    return $property->getValue($object);
   }
 
 }

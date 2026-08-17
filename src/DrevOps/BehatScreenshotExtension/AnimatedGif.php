@@ -7,15 +7,15 @@ namespace DrevOps\BehatScreenshotExtension;
 /**
  * Assembles an animated GIF from a sequence of raster image frames.
  *
- * GD cannot write multi-frame GIFs, so each frame is first encoded to a
- * single-frame GIF with GD - which performs the colour quantisation and LZW
- * compression - and the resulting frames are then stitched into a GIF89a
- * stream with the looping and per-frame delay control blocks.
+ * GD cannot write multi-frame GIFs, so each frame is encoded to a
+ * single-frame GIF with GD, which performs the colour quantisation and LZW
+ * compression. The resulting frames are then stitched into a GIF89a stream
+ * with the looping and per-frame delay control blocks.
  *
- * Every frame keeps the size it was captured at. GIF89a gives each image block
- * its own geometry, so a frame smaller than the logical screen is written as
- * is rather than padded up to the largest frame - the number of pixels encoded
- * is the number of pixels captured.
+ * Every frame keeps the size it was captured at, or the size it was cropped
+ * to when a maximum is configured. GIF89a gives each image block its own
+ * geometry, so a frame smaller than the logical screen is not padded to the
+ * largest frame.
  */
 class AnimatedGif implements \Countable {
 
@@ -110,9 +110,8 @@ class AnimatedGif implements \Countable {
   /**
    * Add a frame to the animation.
    *
-   * The frame is quantised and compressed on the spot, so the caller can
-   * release the raw image data rather than hold every frame until the
-   * animation is rendered.
+   * The frame is quantised and compressed immediately, so the raw image data
+   * does not have to be held until the animation is rendered.
    *
    * @param string $frame
    *   Raw image data, in any format readable by GD (e.g. PNG).
@@ -203,10 +202,12 @@ class AnimatedGif implements \Countable {
   /**
    * Crop an image to the configured maximum dimensions.
    *
-   * Each axis is capped on its own and the top-left of the frame is kept, so
-   * the retained area holds its captured resolution and frames that share a
-   * width still share it after cropping. The format's own 16-bit ceiling
-   * applies whether or not a maximum is configured.
+   * Each axis is capped on its own and the top-left of the frame is kept.
+   * The retained area holds its captured resolution, and frames that share a
+   * width still share it after cropping.
+   *
+   * The format's own 16-bit ceiling applies whether or not a maximum is
+   * configured.
    *
    * @param \GdImage $image
    *   Source image.

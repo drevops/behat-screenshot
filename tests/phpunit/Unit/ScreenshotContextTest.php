@@ -16,6 +16,7 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
+use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -27,12 +28,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ScreenshotContext::class)]
 class ScreenshotContextTest extends TestCase {
 
+  use ReflectionTrait;
+
   public function testBeforeScenarioInit(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $scenario = $this->createMock(ScenarioInterface::class);
-    $scenario
-      ->expects($this->any())->method('hasTag')->with('javascript')->willReturn(TRUE);
+    $scenario->method('hasTag')->with('javascript')->willReturn(TRUE);
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
     $driver->method('start')->willThrowException(new \RuntimeException('Test Exception.'));
@@ -56,7 +58,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = new ScreenshotContext();
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
     $screenshot_context->beforeStepInit($scope);
-    $this->assertEquals($scope, $screenshot_context->getBeforeStepScope());
+    $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
   public function testPrintLastResponseOnError(): void {
@@ -67,18 +69,6 @@ class ScreenshotContextTest extends TestCase {
     $result->method('isPassed')->willReturn(FALSE);
     $scope = new AfterStepScope($env, $feature_node, $step_node, $result);
 
-    $screenshot_context = new ScreenshotContext();
-    $screenshot_context->setScreenshotParameters(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      FALSE,
-      FALSE,
-      '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
-      [],
-      []
-    );
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
@@ -98,20 +88,20 @@ class ScreenshotContextTest extends TestCase {
   public function testIsaveSizedScreenshot(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'screenshot']);
     $session = $this->createMock(Session::class);
-    $exception = $this->createMock(UnsupportedDriverActionException::class);
+    $exception = new UnsupportedDriverActionException('Not supported', $this->createMock(Selenium2Driver::class));
     $session->method('resizeWindow')->willThrowException($exception);
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->expects($this->once())->method('screenshot');
     $screenshot_context->iSaveSizedScreenshot();
   }
 
-  public function testIsaveSizedScreenshotWithName(): void {
+  public function testIsaveScreenshotWithName(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())->method('screenshot');
     $screenshot_context->iSaveScreenshotWithName('test-file-name');
   }
 
-  public function testIsSaveFullscreenScreenshotWithName(): void {
+  public function testIsaveFullscreenScreenshotWithName(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())
       ->method('screenshot')
@@ -119,7 +109,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->iSaveFullscreenScreenshotWithName('test-fullscreen-name');
   }
 
-  public function testIsSaveFullscreenScreenshot(): void {
+  public function testIsaveFullscreenScreenshot(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
     $screenshot_context->expects($this->once())
       ->method('screenshot')
@@ -153,7 +143,7 @@ class ScreenshotContextTest extends TestCase {
     ]);
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
-    $exception = $this->createMock(DriverException::class);
+    $exception = new DriverException('Test Exception.');
     $driver->method('getContent')->willThrowException($exception);
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
@@ -163,8 +153,8 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->screenshot();
   }
 
-  #[DataProvider('dataProviderSaveScreenshotData')]
-  public function testSaveScreenshotData(string $filename, string $data): void {
+  #[DataProvider('dataProviderSaveScreenshotContent')]
+  public function testSaveScreenshotContent(string $filename, string $data): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
@@ -177,20 +167,15 @@ class ScreenshotContextTest extends TestCase {
       [],
       []
     );
-    $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
-    $method = $screenshot_context_reflection->getMethod('saveScreenshotContent');
-    $method->invokeArgs($screenshot_context, [$filename, $data]);
+    self::callProtectedMethod($screenshot_context, 'saveScreenshotContent', [$filename, $data]);
     $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
     $this->assertFileExists($filepath);
-    $this->assertEquals(file_get_contents($filepath), $data);
+    $this->assertSame($data, file_get_contents($filepath));
 
     unlink($filepath);
   }
 
-  /**
-   * Data provider for testSaveScreenshotData method.
-   */
-  public static function dataProviderSaveScreenshotData(): array {
+  public static function dataProviderSaveScreenshotContent(): array {
     return [
       ['test-save-screenshot-1.txt', 'test-data-1'],
       ['test-save-screenshot-2.txt', 'test-data-2'],
@@ -249,11 +234,9 @@ class ScreenshotContextTest extends TestCase {
       []
     );
 
-    $screenshot_context_reflection = new \ReflectionClass($screenshot_context);
-    $method = $screenshot_context_reflection->getMethod('makeFileName');
-    $filename_processed = $method->invokeArgs($screenshot_context, [$ext, $filename, $on_failed]);
+    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFileName', [$ext, $filename, $on_failed]);
 
-    $this->assertEquals($expected, $filename_processed);
+    $this->assertSame($expected, $filename_processed);
   }
 
   public static function dataProviderMakeFileName(): array {

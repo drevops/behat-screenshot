@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit\Tokenizer;
+namespace DrevOps\BehatScreenshot\Tests\Unit;
 
 use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Tokenizer;
@@ -19,9 +19,9 @@ class TokenizerTest extends TestCase {
   use ReflectionTrait;
 
   #[DataProvider('dataProviderScanTokens')]
-  public function testScanTokens(string $textContainsTokens, array $expectedTokens): void {
-    $tokens = Tokenizer::scanTokens($textContainsTokens);
-    $this->assertEquals($expectedTokens, $tokens);
+  public function testScanTokens(string $text_contains_tokens, array $expected_tokens): void {
+    $tokens = Tokenizer::scanTokens($text_contains_tokens);
+    $this->assertSame($expected_tokens, $tokens);
   }
 
   public static function dataProviderScanTokens(): array {
@@ -50,8 +50,8 @@ class TokenizerTest extends TestCase {
 
   #[DataProvider('dataProviderReplaceExtToken')]
   public function testReplaceExtToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
-    $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceExtToken', [$token, $name, $qualifier, $format, $data]);
-    $this->assertEquals($expected, $replacement);
+    $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceExtToken', [$token, $name, $qualifier, $format, $data]);
+    $this->assertSame($expected, $replacement);
   }
 
   public static function dataProviderReplaceExtToken(): array {
@@ -65,8 +65,8 @@ class TokenizerTest extends TestCase {
 
   #[DataProvider('dataProviderReplaceStepToken')]
   public function testReplaceStepToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
-    $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceStepToken', [$token, $name, $qualifier, $format, $data]);
-    $this->assertEquals($replacement, $expected);
+    $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceStepToken', [$token, $name, $qualifier, $format, $data]);
+    $this->assertSame($expected, $replacement);
   }
 
   public static function dataProviderReplaceStepToken(): array {
@@ -93,10 +93,10 @@ class TokenizerTest extends TestCase {
       $this->expectExceptionMessage($exception);
     }
 
-    $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceDatetimeToken', [$token, $name, $qualifier, $format, $data]);
+    $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceDatetimeToken', [$token, $name, $qualifier, $format, $data]);
 
     if (!$exception) {
-      $this->assertEquals($replacement, $expected);
+      $this->assertSame($expected, $replacement);
     }
   }
 
@@ -115,8 +115,8 @@ class TokenizerTest extends TestCase {
 
   #[DataProvider('dataProviderReplaceFeatureToken')]
   public function testReplaceFeatureToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
-    $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceFeatureToken', [$token, $name, $qualifier, $format, $data]);
-    $this->assertEquals($expected, $replacement);
+    $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceFeatureToken', [$token, $name, $qualifier, $format, $data]);
+    $this->assertSame($expected, $replacement);
   }
 
   public static function dataProviderReplaceFeatureToken(): array {
@@ -131,8 +131,8 @@ class TokenizerTest extends TestCase {
 
   #[DataProvider('dataProviderReplaceFailedPrefixToken')]
   public function testReplaceFailedPrefixToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
-    $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceFailedPrefixToken', [$token, $name, $qualifier, $format, $data]);
-    $this->assertEquals($expected, $replacement);
+    $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceFailedPrefixToken', [$token, $name, $qualifier, $format, $data]);
+    $this->assertSame($expected, $replacement);
   }
 
   public static function dataProviderReplaceFailedPrefixToken(): array {
@@ -145,8 +145,8 @@ class TokenizerTest extends TestCase {
 
   #[DataProvider('dataProviderReplaceUrlToken')]
   public function testReplaceUrlToken(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
-    $replacement = $this->callProtectedMethod(Tokenizer::class, 'replaceUrlToken', [$token, $name, $qualifier, $format, $data]);
-    $this->assertEquals($expected, $replacement);
+    $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceUrlToken', [$token, $name, $qualifier, $format, $data]);
+    $this->assertSame($expected, $replacement);
   }
 
   public static function dataProviderReplaceUrlToken(): array {
@@ -184,9 +184,9 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceTokens')]
-  public function testReplaceTokens(string $stringContainsTokens, array $data, string $expected): void {
-    $replacement = Tokenizer::replaceTokens($stringContainsTokens, $data);
-    $this->assertEquals($expected, $replacement);
+  public function testReplaceTokens(string $string_contains_tokens, array $data, string $expected): void {
+    $replacement = Tokenizer::replaceTokens($string_contains_tokens, $data);
+    $this->assertSame($expected, $replacement);
   }
 
   public static function dataProviderReplaceTokens(): array {

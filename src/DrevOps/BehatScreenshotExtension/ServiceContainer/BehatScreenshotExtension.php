@@ -42,7 +42,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
    *
    * @codeCoverageIgnore
    */
-  public function initialize(ExtensionManager $extensionManager): void {
+  public function initialize(ExtensionManager $extension_manager): void {
   }
 
   /**
