@@ -53,11 +53,11 @@ trait BehatCliTrait {
     }
 
     if (static::behatCliIsDebug()) {
-      print "-------------------- OUTPUT START --------------------" . PHP_EOL;
+      print '-------------------- OUTPUT START --------------------' . PHP_EOL;
       print PHP_EOL;
       print $this->getOutput();
       print PHP_EOL;
-      print "-------------------- OUTPUT FINISH -------------------" . PHP_EOL;
+      print '-------------------- OUTPUT FINISH -------------------' . PHP_EOL;
     }
   }
 

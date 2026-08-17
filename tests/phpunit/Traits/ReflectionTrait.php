@@ -48,7 +48,7 @@ trait ReflectionTrait {
 
     // Ensure we have an object for non-static methods.
     if (!$method->isStatic() && $invoke_object === NULL) {
-      throw new \InvalidArgumentException("An object instance is required for non-static methods");
+      throw new \InvalidArgumentException('An object instance is required for non-static methods');
     }
 
     return $method->invokeArgs($invoke_object, $args);
