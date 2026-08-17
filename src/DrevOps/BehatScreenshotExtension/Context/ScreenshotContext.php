@@ -181,7 +181,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * After step handler to print the last response on error.
+   * Save screenshot after a failed step when enabled.
    *
    * @param \Behat\Behat\Hook\Scope\AfterStepScope $scope
    *   After scope event.
@@ -399,7 +399,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Save fullscreen screenshot by temporarily resizing the browser window.
+   * Get fullscreen screenshot by temporarily resizing the browser window.
    *
    * @return string
    *   Screenshot data.
@@ -573,8 +573,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
   /**
    * Make screenshot filename.
-   *
-   * Format: microseconds.featurefilename_linenumber.ext.
    *
    * @param string $ext
    *   File extension without dot.

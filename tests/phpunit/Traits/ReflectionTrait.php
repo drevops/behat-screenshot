@@ -70,7 +70,7 @@ trait ReflectionTrait {
    * Get protected value from the object.
    *
    * @param object $object
-   *   Object to set the value on.
+   *   Object to get the value from.
    * @param string $property
    *   Property name to get the value. Property should exist in the object.
    *

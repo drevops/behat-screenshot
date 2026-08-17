@@ -84,8 +84,8 @@ class ScreenshotContextResizeTest extends TestCase {
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
 
-    // Mock the JavaScript evaluation to return invalid dimensions for both
-    // calls.
+    // Mock the JavaScript evaluation to return invalid scroll dimensions on
+    // the second call.
     $session->method('evaluateScript')
       ->willReturnOnConsecutiveCalls(
         // First call: get original window dimensions.
@@ -178,7 +178,8 @@ class ScreenshotContextResizeTest extends TestCase {
     $screenshot_context->method('getScreenshotFullscreen')
       ->willReturn('test-fullscreen-screenshot-data');
 
-    // In PHPUnit 11, we can't use withConsecutive, so we test calls separately.
+    // PHPUnit 11 has no withConsecutive(), so only the call count is
+    // asserted.
     $screenshot_context->expects($this->exactly(2))
       ->method('saveScreenshotContent');
 

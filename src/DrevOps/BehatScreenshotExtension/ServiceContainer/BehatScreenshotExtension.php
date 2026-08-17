@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 
 /**
- * Class ScreenshotExtension.
+ * Behat extension for capturing screenshots during test runs.
  */
 class BehatScreenshotExtension implements ExtensionInterface {
 
