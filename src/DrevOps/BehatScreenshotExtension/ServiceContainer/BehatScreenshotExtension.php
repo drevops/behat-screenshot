@@ -8,6 +8,7 @@ use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
 use Behat\Testwork\ServiceContainer\ExtensionManager;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -80,7 +81,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
           ->end()
           ->integerNode('frame_delay')
             ->min(0)
-            ->defaultValue(500)
+            ->defaultValue(ScreenshotContext::DEFAULT_FRAME_DELAY)
           ->end()
           ->integerNode('max_width')
             ->min(0)
