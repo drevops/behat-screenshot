@@ -464,7 +464,7 @@ EOL;
    *
    * @Given /^behat screenshot file matching "([^"]*)" should not contain:$/
    */
-  public function behatCliAssertFileNotShouldContain(string $wildcard, PyStringNode $text): void {
+  public function behatCliAssertFileShouldNotContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
 
     $matches = glob($wildcard);
