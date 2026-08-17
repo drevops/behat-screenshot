@@ -38,7 +38,7 @@ trait ScreenshotTrait {
    * @Given /^(?:|I )am on (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/
    * @Given /^(?:|I )go to (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/
    */
-  public function goToScreenshotTestPage(string $query = '', string $fragment = ''): void {
+  public function screenshotGoToTestPage(string $query = '', string $fragment = ''): void {
     $path = 'screenshot.html';
     if (!empty($query)) {
       $path = $path . '?' . $query;
@@ -58,7 +58,7 @@ trait ScreenshotTrait {
    *
    * @Given /^file wildcard "([^"]*)" should exist$/
    */
-  public function assertFileShouldExist(string $wildcard): void {
+  public function screenshotAssertFileShouldExist(string $wildcard): void {
     $wildcard = $this->screenshotDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 
@@ -75,7 +75,7 @@ trait ScreenshotTrait {
    *
    * @Given /^file wildcard "([^"]*)" should not exist$/
    */
-  public function assertFileShouldNotExist(string $wildcard): void {
+  public function screenshotAssertFileShouldNotExist(string $wildcard): void {
     $wildcard = $this->screenshotDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 
@@ -89,7 +89,7 @@ trait ScreenshotTrait {
    *
    * @Given I remove all files from screenshot directory
    */
-  public function emptyScreenshotDirectory(): void {
+  public function screenshotEmptyDirectory(): void {
     $files = glob($this->screenshotDir . DIRECTORY_SEPARATOR . '*');
 
     if (!empty($files)) {
