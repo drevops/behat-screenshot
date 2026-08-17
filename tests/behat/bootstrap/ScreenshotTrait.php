@@ -63,7 +63,7 @@ trait ScreenshotTrait {
     $matches = glob($wildcard);
 
     if (empty($matches)) {
-      throw new \Exception(sprintf("Unable to find files matching wildcard '%s'", $wildcard));
+      throw new \Exception(sprintf("Unable to find files matching wildcard '%s'.", $wildcard));
     }
   }
 
@@ -80,7 +80,7 @@ trait ScreenshotTrait {
     $matches = glob($wildcard);
 
     if (!empty($matches)) {
-      throw new \Exception(sprintf("Files matching wildcard '%s' were found, but were not supposed to", $wildcard));
+      throw new \Exception(sprintf("Files matching wildcard '%s' were found, but were not supposed to.", $wildcard));
     }
   }
 

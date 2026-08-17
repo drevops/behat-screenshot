@@ -29,13 +29,13 @@ trait ReflectionTrait {
     $object_or_class = is_object($object) ? $object::class : $object;
 
     if (!class_exists($object_or_class)) {
-      throw new \InvalidArgumentException(sprintf('Class %s does not exist', $object_or_class));
+      throw new \InvalidArgumentException(sprintf('Class %s does not exist.', $object_or_class));
     }
 
     $class = new \ReflectionClass($object_or_class);
 
     if (!$class->hasMethod($name)) {
-      throw new \InvalidArgumentException(sprintf('Method %s does not exist', $name));
+      throw new \InvalidArgumentException(sprintf('Method %s does not exist.', $name));
     }
 
     $method = $class->getMethod($name);
@@ -43,7 +43,7 @@ trait ReflectionTrait {
     $invoke_object = $method->isStatic() ? NULL : (is_object($object) ? $object : NULL);
 
     if (!$method->isStatic() && $invoke_object === NULL) {
-      throw new \InvalidArgumentException('An object instance is required for non-static methods');
+      throw new \InvalidArgumentException('An object instance is required for non-static methods.');
     }
 
     return $method->invokeArgs($invoke_object, $args);
