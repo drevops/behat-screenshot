@@ -147,12 +147,12 @@ class AnimationAssemblyProfileTest extends TestCase {
     $screenshot_context = new ProfiledScreenshotContext();
     $screenshot_context->setScreenshotParameters('unused', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 500]);
 
-    $before_scope = $this->beforeScenarioScope();
-    $after_step_scope = $this->afterStepScope();
-    $after_scenario_scope = $this->afterScenarioScope();
+    $before_scope = $this->createBeforeScenarioScope();
+    $after_step_scope = $this->createAfterStepScope();
+    $after_scenario_scope = $this->createAfterScenarioScope();
 
-    $viewport = $this->page(self::FRAME_WIDTH, self::VIEWPORT_HEIGHT);
-    $long = $tallest > self::VIEWPORT_HEIGHT ? $this->page(self::FRAME_WIDTH, $tallest) : $viewport;
+    $viewport = $this->createPage(self::FRAME_WIDTH, self::VIEWPORT_HEIGHT);
+    $long = $tallest > self::VIEWPORT_HEIGHT ? $this->createPage(self::FRAME_WIDTH, $tallest) : $viewport;
     $long_at = intdiv($steps, 2);
 
     gc_collect_cycles();
@@ -222,7 +222,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    * @return string
    *   Binary PNG data.
    */
-  protected function page(int $width, int $height): string {
+  protected function createPage(int $width, int $height): string {
     $image = imagecreatetruecolor(max(1, $width), max(1, $height));
     imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, (int) imagecolorallocate($image, 250, 250, 252));
     imagefilledrectangle($image, 0, 0, $width - 1, 60, (int) imagecolorallocate($image, 28, 42, 88));
@@ -287,7 +287,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    * @return \Behat\Behat\Hook\Scope\BeforeScenarioScope
    *   Before scenario scope.
    */
-  protected function beforeScenarioScope(): BeforeScenarioScope {
+  protected function createBeforeScenarioScope(): BeforeScenarioScope {
     $feature_node = $this->createMock(FeatureNode::class);
     $feature_node->method('hasTag')->willReturn(FALSE);
     $scenario = $this->createMock(ScenarioInterface::class);
@@ -302,7 +302,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    * @return \Behat\Behat\Hook\Scope\AfterStepScope
    *   After step scope.
    */
-  protected function afterStepScope(): AfterStepScope {
+  protected function createAfterStepScope(): AfterStepScope {
     $result = $this->createMock(StepResult::class);
     $result->method('isPassed')->willReturn(TRUE);
 
@@ -315,7 +315,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    * @return \Behat\Behat\Hook\Scope\AfterScenarioScope
    *   After scenario scope.
    */
-  protected function afterScenarioScope(): AfterScenarioScope {
+  protected function createAfterScenarioScope(): AfterScenarioScope {
     $feature_node = $this->createMock(FeatureNode::class);
     $feature_node->method('getFile')->willReturn('profile.feature');
     $scenario = $this->createMock(ScenarioInterface::class);
