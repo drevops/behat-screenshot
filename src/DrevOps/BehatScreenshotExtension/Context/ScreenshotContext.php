@@ -21,6 +21,51 @@ use Symfony\Component\Filesystem\Filesystem;
 class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContextInterface {
 
   /**
+   * Default delay between animated GIF frames, in milliseconds.
+   */
+  public const DEFAULT_FRAME_DELAY = 500;
+
+  /**
+   * Default browser window width, in pixels.
+   */
+  protected const DEFAULT_WINDOW_WIDTH = 1440;
+
+  /**
+   * Default browser window height, in pixels.
+   */
+  protected const DEFAULT_WINDOW_HEIGHT = 900;
+
+  /**
+   * Mink window name for the current browser window.
+   */
+  protected const WINDOW_NAME_CURRENT = 'current';
+
+  /**
+   * Filename suffix carrying the file extension token.
+   */
+  protected const FILENAME_EXTENSION_SUFFIX = '.{ext}';
+
+  /**
+   * Tag enabling per-step screenshots for a scenario or feature.
+   */
+  protected const TAG_SCREENSHOTS = 'screenshots';
+
+  /**
+   * Tag enabling animated GIF assembly for a scenario or feature.
+   */
+  protected const TAG_SCREENSHOTS_ANIMATED = 'screenshots:animated';
+
+  /**
+   * Extra window height ensuring the whole page is captured, in pixels.
+   */
+  protected const FULLSCREEN_HEIGHT_BUFFER = 200;
+
+  /**
+   * Delay after a window resize before capturing, in microseconds.
+   */
+  protected const WINDOW_RESIZE_SETTLE_MICROSECONDS = 100000;
+
+  /**
    * Screenshot directory path.
    */
   protected string $dir = '';
@@ -140,8 +185,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $scenario = $scope->getScenario();
     $feature = $scope->getFeature();
 
-    $this->scenarioHasScreenshotsTag = $scenario->hasTag('screenshots') || $feature->hasTag('screenshots');
-    $this->scenarioIsAnimated = !empty($this->animation['enabled']) || $scenario->hasTag('screenshots:animated') || $feature->hasTag('screenshots:animated');
+    $this->scenarioHasScreenshotsTag = $scenario->hasTag(self::TAG_SCREENSHOTS) || $feature->hasTag(self::TAG_SCREENSHOTS);
+    $this->scenarioIsAnimated = !empty($this->animation['enabled']) || $scenario->hasTag(self::TAG_SCREENSHOTS_ANIMATED) || $feature->hasTag(self::TAG_SCREENSHOTS_ANIMATED);
     $this->animationEncoder = NULL;
   }
 
@@ -161,7 +206,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
         $driver->start();
       }
 
-      $this->getSession()->resizeWindow(1440, 900, 'current');
+      $this->getSession()->resizeWindow(self::DEFAULT_WINDOW_WIDTH, self::DEFAULT_WINDOW_HEIGHT, self::WINDOW_NAME_CURRENT);
     }
     catch (UnsupportedDriverActionException $exception) {
       // Drivers without visual screenshot support do not have them created.
@@ -260,7 +305,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // The encoder is always released, even when rendering or writing fails,
     // so a non-critical artifact does not leak frames into the next scenario.
     try {
-      $content = $encoder->render($this->animationSetting('frame_delay', 500));
+      $content = $encoder->render($this->animationSetting('frame_delay', self::DEFAULT_FRAME_DELAY));
       $this->saveScreenshotContent($this->makeAnimationFileName($scope), $content);
     }
     finally {
@@ -314,9 +359,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @When I save :width x :height screenshot
    * @Then save :width x :height screenshot
    */
-  public function iSaveSizedScreenshot(string|int $width = 1440, string|int $height = 900): void {
+  public function iSaveSizedScreenshot(string|int $width = self::DEFAULT_WINDOW_WIDTH, string|int $height = self::DEFAULT_WINDOW_HEIGHT): void {
     try {
-      $this->getSession()->resizeWindow((int) $width, (int) $height, 'current');
+      $this->getSession()->resizeWindow((int) $width, (int) $height, self::WINDOW_NAME_CURRENT);
     }
     catch (UnsupportedDriverActionException) {
       // Drivers without resize support may proceed.
@@ -405,9 +450,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $session = $this->getSession();
     $session->getDriver();
 
-    // Default to the standard size set in beforeScenarioInit().
-    $original_width = 1440;
-    $original_height = 900;
+    $original_width = self::DEFAULT_WINDOW_WIDTH;
+    $original_height = self::DEFAULT_WINDOW_HEIGHT;
 
     try {
       $original_dimensions = $session->evaluateScript("
@@ -419,9 +463,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
       if (!empty($original_dimensions) && is_array($original_dimensions)) {
         $original_width = isset($original_dimensions['width']) && is_numeric($original_dimensions['width'])
-          ? (int) $original_dimensions['width'] : 1440;
+          ? (int) $original_dimensions['width'] : self::DEFAULT_WINDOW_WIDTH;
         $original_height = isset($original_dimensions['height']) && is_numeric($original_dimensions['height'])
-          ? (int) $original_dimensions['height'] : 900;
+          ? (int) $original_dimensions['height'] : self::DEFAULT_WINDOW_HEIGHT;
       }
     }
     catch (\Exception) {
@@ -452,21 +496,19 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return $this->getScreenshot();
     }
 
-    $fullscreen_width = $original_width ?: 1440;
+    $fullscreen_width = $original_width ?: self::DEFAULT_WINDOW_WIDTH;
     $fullscreen_height = $scroll_height;
 
-    // Add some buffer to ensure the entire page is captured.
-    $fullscreen_height += 200;
+    $fullscreen_height += self::FULLSCREEN_HEIGHT_BUFFER;
 
-    $session->resizeWindow($fullscreen_width, $fullscreen_height, 'current');
+    $session->resizeWindow($fullscreen_width, $fullscreen_height, self::WINDOW_NAME_CURRENT);
 
-    // Wait for the resize to complete before taking the screenshot.
-    usleep(100000);
+    usleep(self::WINDOW_RESIZE_SETTLE_MICROSECONDS);
 
     $screenshot = $this->getScreenshot();
 
     try {
-      $session->resizeWindow($original_width, $original_height, 'current');
+      $session->resizeWindow($original_width, $original_height, self::WINDOW_NAME_CURRENT);
     }
     catch (\Exception) {
       // Restoration is best effort - errors are ignored.
@@ -591,8 +633,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $filename = $this->filenamePattern;
     }
 
-    if (!str_ends_with($filename, '.{ext}')) {
-      $filename .= '.{ext}';
+    if (!str_ends_with($filename, self::FILENAME_EXTENSION_SUFFIX)) {
+      $filename .= self::FILENAME_EXTENSION_SUFFIX;
     }
 
     $feature = $this->getBeforeStepScope()->getFeature();
