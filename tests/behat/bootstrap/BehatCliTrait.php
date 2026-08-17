@@ -217,7 +217,7 @@ EOL;
    */
   public function behatCliWriteFullBehatYml(PyStringNode $content): void {
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
-    $this->createFile($filename, $content->getRaw());
+    $this->createFile($filename, (string) $content);
 
     if (static::behatCliIsDebug()) {
       static::behatCliPrintFileContents($filename, 'Behat Config');
