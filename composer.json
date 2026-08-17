@@ -29,6 +29,7 @@
         "dantleech/gherkin-lint": "^0.2.3",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.2.1",
         "dmore/behat-chrome-extension": "^1.4.1",
+        "dmore/chrome-mink-driver": "^2.10",
         "drevops/behat-phpserver": "^2.3",
         "drevops/phpcs-standard": "^0.7",
         "drupal/coder": "^9.0.1",
