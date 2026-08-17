@@ -28,42 +28,42 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Default browser window width, in pixels.
    */
-  protected const DEFAULT_WINDOW_WIDTH = 1440;
+  public const DEFAULT_WINDOW_WIDTH = 1440;
 
   /**
    * Default browser window height, in pixels.
    */
-  protected const DEFAULT_WINDOW_HEIGHT = 900;
+  public const DEFAULT_WINDOW_HEIGHT = 900;
 
   /**
    * Mink window name for the current browser window.
    */
-  protected const WINDOW_NAME_CURRENT = 'current';
+  public const WINDOW_NAME_CURRENT = 'current';
 
   /**
    * Filename suffix carrying the file extension token.
    */
-  protected const FILENAME_EXTENSION_SUFFIX = '.{ext}';
+  public const FILENAME_EXTENSION_SUFFIX = '.{ext}';
 
   /**
    * Tag enabling per-step screenshots for a scenario or feature.
    */
-  protected const TAG_SCREENSHOTS = 'screenshots';
+  public const TAG_SCREENSHOTS = 'screenshots';
 
   /**
    * Tag enabling animated GIF assembly for a scenario or feature.
    */
-  protected const TAG_SCREENSHOTS_ANIMATED = 'screenshots:animated';
+  public const TAG_SCREENSHOTS_ANIMATED = 'screenshots:animated';
 
   /**
    * Extra window height ensuring the whole page is captured, in pixels.
    */
-  protected const FULLSCREEN_HEIGHT_BUFFER = 200;
+  public const FULLSCREEN_HEIGHT_BUFFER = 200;
 
   /**
    * Delay after a window resize before capturing, in microseconds.
    */
-  protected const WINDOW_RESIZE_SETTLE_MICROSECONDS = 100000;
+  public const WINDOW_RESIZE_SETTLE_MICROSECONDS = 100000;
 
   /**
    * Screenshot directory path.
@@ -503,18 +503,21 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
     $session->resizeWindow($fullscreen_width, $fullscreen_height, self::WINDOW_NAME_CURRENT);
 
-    usleep(self::WINDOW_RESIZE_SETTLE_MICROSECONDS);
-
-    $screenshot = $this->getScreenshot();
-
+    // The window is restored in a finally block so that a capture failure
+    // does not leave the browser enlarged for the rest of the scenario.
     try {
-      $session->resizeWindow($original_width, $original_height, self::WINDOW_NAME_CURRENT);
-    }
-    catch (\Exception) {
-      // Restoration is best effort - errors are ignored.
-    }
+      usleep(self::WINDOW_RESIZE_SETTLE_MICROSECONDS);
 
-    return $screenshot;
+      return $this->getScreenshot();
+    }
+    finally {
+      try {
+        $session->resizeWindow($original_width, $original_height, self::WINDOW_NAME_CURRENT);
+      }
+      catch (\Exception) {
+        // Restoration is best effort - errors are ignored.
+      }
+    }
   }
 
   /**
