@@ -107,4 +107,33 @@ class BehatScreenshotExtensionTest extends TestCase {
     ];
   }
 
+  #[DataProvider('dataProviderConfigureAcceptsOnlyBooleansForAnimation')]
+  public function testConfigureAcceptsOnlyBooleansForAnimation(mixed $value, bool $is_accepted): void {
+    $tree_builder = new TreeBuilder('root');
+
+    $extension = new BehatScreenshotExtension();
+    $extension->configure($tree_builder->getRootNode());
+
+    if (!$is_accepted) {
+      $this->expectException(InvalidTypeException::class);
+    }
+
+    $processed = (new Processor())->process($tree_builder->buildTree(), [['animation' => ['enabled' => $value]]]);
+
+    if ($is_accepted) {
+      $this->assertSame($value, $processed['animation']['enabled']);
+    }
+  }
+
+  public static function dataProviderConfigureAcceptsOnlyBooleansForAnimation(): array {
+    return [
+      'enabled' => [TRUE, TRUE],
+      'disabled' => [FALSE, TRUE],
+      'quoted true' => ['true', FALSE],
+      'quoted false' => ['false', FALSE],
+      'integer one' => [1, FALSE],
+      'integer zero' => [0, FALSE],
+    ];
+  }
+
 }
