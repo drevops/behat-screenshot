@@ -21,13 +21,14 @@ permissions:
 
 jobs:
   test:
-    name: PHP ${{ matrix.php-versions }}
+    name: PHP ${{ matrix.php-versions }}, Deps ${{ matrix.deps }}
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         php-versions: ['8.2', '8.3', '8.4', '8.5']
+        deps: ['normal', 'lowest']
 
     services:
       chrome:
@@ -45,7 +46,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: /tmp/composer-cache
-          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-${{ matrix.deps }}-${{ hashFiles('**/composer.lock') }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
@@ -60,7 +61,11 @@ jobs:
           if [ "${{ matrix.php-versions }}" == "8.2" ]; then
             composer remove --dev drevops/phpcs-standard --no-update
           fi
-          composer install
+          if [ "${{ matrix.deps }}" == "lowest" ]; then
+            composer update --prefer-lowest --prefer-stable
+          else
+            composer install
+          fi
 
       - name: Validate composer.json
         run: |
@@ -68,7 +73,7 @@ jobs:
           composer normalize --dry-run
 
       - name: Check coding standards
-        if: matrix.php-versions == '8.3'
+        if: matrix.php-versions == '8.3' && matrix.deps == 'normal'
         run: composer lint
         continue-on-error: ${{ vars.CI_LINT_IGNORE_FAILURE == '1' }}
 
@@ -92,14 +97,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ${{github.job}}-logs-${{ matrix.php-versions }}
+          name: ${{github.job}}-logs-${{ matrix.php-versions }}-${{ matrix.deps }}
           path: .logs
           include-hidden-files: true
           if-no-files-found: error
 
       - name: Upload test results to Codecov
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
-        if: ${{ env.CODECOV_TOKEN != '' }}
+        if: ${{ matrix.deps == 'normal' && env.CODECOV_TOKEN != '' }}
         with:
           files: .logs/junit.xml
           report_type: test_results
@@ -109,7 +114,7 @@ jobs:
 
       - name: Upload coverage report to Codecov
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
-        if: ${{ env.CODECOV_TOKEN != '' }}
+        if: ${{ matrix.deps == 'normal' && env.CODECOV_TOKEN != '' }}
         with:
           files: |
             .logs/coverage/behat/cobertura.xml
