@@ -12,9 +12,10 @@ namespace DrevOps\BehatScreenshotExtension;
  * compression. The resulting frames are then stitched into a GIF89a stream
  * with the looping and per-frame delay control blocks.
  *
- * Every frame keeps the size it was captured at. GIF89a gives each image
- * block its own geometry, so a frame smaller than the logical screen is not
- * padded to the largest frame.
+ * Every frame keeps the size it was captured at, or the size it was cropped
+ * to when a maximum is configured. GIF89a gives each image block its own
+ * geometry, so a frame smaller than the logical screen is not padded to the
+ * largest frame.
  */
 class AnimatedGif implements \Countable {
 
