@@ -48,7 +48,7 @@ class Tokenizer {
    * @param string $text
    *   The text to scan tokens.
    *
-   * @return string[]
+   * @return array<string,string>
    *   The tokens keyed by the token name.
    */
   public static function scanTokens(string $text): array {
@@ -67,12 +67,12 @@ class Tokenizer {
   /**
    * Build replacements tokens.
    *
-   * @param string[] $tokens
+   * @param array<string,string> $tokens
    *   Token.
    * @param array<mixed> $data
    *   Extra data to provide context to replace token.
    *
-   * @return array<string, string>
+   * @return array<string,string>
    *   Replacements has key as token and value as token replacement.
    */
   protected static function extractTokens(array $tokens, array $data): array {

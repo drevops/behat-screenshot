@@ -92,7 +92,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Information to be added to a screenshot.
    *
-   * @var array<string, string>
+   * @var array<string,string>
    */
   protected array $info = [];
 
