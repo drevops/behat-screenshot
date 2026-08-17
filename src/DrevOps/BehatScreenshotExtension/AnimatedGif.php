@@ -92,7 +92,7 @@ class AnimatedGif implements \Countable {
    *   Binary content of the animated GIF.
    */
   public function encode(array $frames, int $frame_delay): string {
-    $frames = array_values(array_filter($frames, 'is_string'));
+    $frames = array_values(array_filter($frames, is_string(...)));
 
     if ($frames === []) {
       throw new \InvalidArgumentException('At least one frame is required to build an animated GIF.');

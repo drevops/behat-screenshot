@@ -208,7 +208,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
       $this->getSession()->resizeWindow(self::DEFAULT_WINDOW_WIDTH, self::DEFAULT_WINDOW_HEIGHT, self::WINDOW_NAME_CURRENT);
     }
-    catch (UnsupportedDriverActionException $exception) {
+    catch (UnsupportedDriverActionException) {
       // Drivers without visual screenshot support do not have them created.
     }
     catch (DriverException $exception) {

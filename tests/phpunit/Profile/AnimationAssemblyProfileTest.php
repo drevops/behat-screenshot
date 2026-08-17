@@ -252,7 +252,7 @@ class AnimationAssemblyProfileTest extends TestCase {
       return self::DEFAULT_STEPS;
     }
 
-    $counts = array_values(array_filter(array_map('intval', explode(',', $configured)), static fn(int $count): bool => $count > 0));
+    $counts = array_values(array_filter(array_map(intval(...), explode(',', $configured)), static fn(int $count): bool => $count > 0));
 
     return $counts === [] ? self::DEFAULT_STEPS : $counts;
   }
