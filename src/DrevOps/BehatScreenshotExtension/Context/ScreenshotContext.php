@@ -187,7 +187,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   After scope event.
    *
    * @throws \Behat\Mink\Exception\DriverException
-   * @throws \Behat\Mink\Exception\UnsupportedDriverActionException
    *
    * @AfterStep
    */
@@ -207,7 +206,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   After step scope event.
    *
    * @throws \Behat\Mink\Exception\DriverException
-   * @throws \Behat\Mink\Exception\UnsupportedDriverActionException
    *
    * @AfterStep
    */
@@ -337,7 +335,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   - fullscreen: (bool) Whether to take a fullscreen screenshot.
    *
    * @throws \Behat\Mink\Exception\DriverException
-   * @throws \Behat\Mink\Exception\UnsupportedDriverActionException
    */
   public function screenshot(array $options = []): void {
     $is_fullscreen = (isset($options['fullscreen']) && $options['fullscreen']) || $this->alwaysFullscreen;
@@ -584,7 +581,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @return string
    *   Unique file name.
    *
-   * @throws \Exception
+   * @throws \InvalidArgumentException
    */
   protected function makeFileName(string $ext, ?string $filename = NULL, bool $is_failed = FALSE): string {
     if ($is_failed) {
@@ -641,7 +638,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @return string
    *   Unique animated GIF file name grouped with the scenario step files.
    *
-   * @throws \Exception
+   * @throws \InvalidArgumentException
    */
   protected function makeAnimationFileName(AfterScenarioScope $scope): string {
     $data = [

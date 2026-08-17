@@ -20,7 +20,7 @@ class Tokenizer {
    * @return string
    *   Text with tokens replaced.
    *
-   * @throws \Exception
+   * @throws \InvalidArgumentException
    */
   public static function replaceTokens(string $text, array $data = []): string {
     // A replacement may itself contain tokens - a step name carrying a {url},
