@@ -196,7 +196,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->method('renderInfo')->willReturn('');
 
     // Expect saveScreenshotContent to be called exactly once (for HTML only)
-    $screenshot_context->expects($this->exactly(1))->method('saveScreenshotContent');
+    $screenshot_context->expects($this->once())->method('saveScreenshotContent');
 
     $screenshot_context->screenshot();
   }
