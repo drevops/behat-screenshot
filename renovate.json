@@ -17,6 +17,12 @@
             "enabled": false
         },
         {
+            "description": "5.4.0 requires php ^8.3 and phpunit/php-code-coverage ^12.3, which conflicts with the supported PHP floor and phpunit/phpunit ^11.5",
+            "matchManagers": ["composer"],
+            "matchPackageNames": ["dvdoug/behat-code-coverage"],
+            "allowedVersions": "<5.4"
+        },
+        {
             "matchPackageNames": ["*"],
             "groupName": "all dependencies",
             "groupSlug": "all"
