@@ -37,7 +37,7 @@
         "ergebnis/composer-normalize": "^2.52.0",
         "lullabot/mink-selenium2-driver": "^1.7.4",
         "lullabot/php-webdriver": "^2.0.7",
-        "phpstan/phpstan": "^2.2.9",
+        "phpstan/phpstan": "^2.2.10",
         "phpunit/phpunit": "^11.5.56",
         "rector/rector": "^2.6.4",
         "symfony/process": "^7.4.17"
