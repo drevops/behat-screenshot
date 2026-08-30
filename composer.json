@@ -39,8 +39,8 @@
         "lullabot/php-webdriver": "^2.0.7",
         "phpstan/phpstan": "^2.2.10",
         "phpunit/phpunit": "^11.5.56",
-        "rector/rector": "^2.6.4",
-        "symfony/process": "^7.4.17"
+        "rector/rector": "^2.6.5",
+        "symfony/process": "^7.4.18"
     },
     "suggest": {
         "ext-gd": "Required to generate animated GIF screenshots (the animation option)."
