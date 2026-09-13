@@ -21,11 +21,11 @@
         "behat/behat": "^3.33.0",
         "behat/mink": "^1.13",
         "friends-of-behat/mink-extension": "^2.7.5",
-        "symfony/config": "^6.4 || ^7.0 || ^8.0",
-        "symfony/dependency-injection": "^6.4 || ^7.0 || ^8.0",
-        "symfony/filesystem": "^6.4 || ^7.0 || ^8.0",
-        "symfony/finder": "^6.4 || ^7.0 || ^8.0",
-        "symfony/http-client": "^6.4 || ^7.0 || ^8.0"
+        "symfony/config": "^7.0 || ^8.0",
+        "symfony/dependency-injection": "^7.0 || ^8.0",
+        "symfony/filesystem": "^7.0 || ^8.0",
+        "symfony/finder": "^7.0 || ^8.0",
+        "symfony/http-client": "^7.0 || ^8.0"
     },
     "require-dev": {
         "behat/mink-browserkit-driver": "^2.3",
