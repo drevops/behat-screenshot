@@ -54,7 +54,7 @@ trait ScreenshotTrait {
    * Checks whether a file wildcard at provided path exists.
    *
    * @param string $wildcard
-   *   File name with a wildcard.
+   *   Filename with a wildcard.
    *
    * @Given /^file wildcard "([^"]*)" should exist$/
    */
@@ -71,7 +71,7 @@ trait ScreenshotTrait {
    * Checks whether a file wildcard at provided path does not exist.
    *
    * @param string $wildcard
-   *   File name with a wildcard.
+   *   Filename with a wildcard.
    *
    * @Given /^file wildcard "([^"]*)" should not exist$/
    */

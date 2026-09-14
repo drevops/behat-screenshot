@@ -184,8 +184,8 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder->method('count')->willReturn(2);
     $encoder->expects($this->once())->method('render')->with(250)->willReturn('gif-content');
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'writeScreenshotContent']);
-    $screenshot_context->method('makeAnimationFileName')->willReturn('animation.gif');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFilename', 'writeScreenshotContent']);
+    $screenshot_context->method('makeAnimationFilename')->willReturn('animation.gif');
     $screenshot_context->expects($this->once())->method('writeScreenshotContent')->with('animation.gif', 'gif-content');
 
     $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 250]);
@@ -202,8 +202,8 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder->method('count')->willReturn(1);
     $encoder->expects($this->once())->method('render')->with(500)->willReturn('gif-content');
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'writeScreenshotContent']);
-    $screenshot_context->method('makeAnimationFileName')->willReturn('animation.gif');
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFilename', 'writeScreenshotContent']);
+    $screenshot_context->method('makeAnimationFilename')->willReturn('animation.gif');
     $screenshot_context->expects($this->once())->method('writeScreenshotContent')->with('animation.gif', 'gif-content');
 
     $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], []);
@@ -257,7 +257,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder->method('count')->willReturn(1);
     $encoder->method('render')->willThrowException(new \RuntimeException('render failed'));
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'writeScreenshotContent']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFilename', 'writeScreenshotContent']);
     $screenshot_context->expects($this->never())->method('writeScreenshotContent');
 
     $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE]);
@@ -278,12 +278,12 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertNull(self::getProtectedValue($screenshot_context, 'animationEncoder'));
   }
 
-  public function testMakeAnimationFileNameCombinesTimestampFeatureAndLine(): void {
+  public function testMakeAnimationFilenameCombinesTimestampFeatureAndLine(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
     $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
 
     $scope = $this->createAfterScenarioScope('path/to/login.feature', 7);
-    $result = self::callProtectedMethod($screenshot_context, 'makeAnimationFileName', [$scope]);
+    $result = self::callProtectedMethod($screenshot_context, 'makeAnimationFilename', [$scope]);
 
     $this->assertSame('1700000000.login.feature_7.gif', $result);
   }

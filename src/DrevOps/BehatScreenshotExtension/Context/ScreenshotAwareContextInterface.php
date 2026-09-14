@@ -19,15 +19,15 @@ interface ScreenshotAwareContextInterface extends Context {
    * @param bool $on_failed
    *   Create screenshots on fail.
    * @param string $failed_prefix
-   *   File name prefix for a failed test.
+   *   Filename prefix for a failed test.
    * @param bool $always_fullscreen
    *   Always capture fullscreen screenshots.
    * @param bool $on_every_step
    *   Capture screenshot after every step.
    * @param string $filename_pattern
-   *   File name pattern.
+   *   Filename pattern.
    * @param string $filename_pattern_failed
-   *   File name pattern for failed tests.
+   *   Filename pattern for failed tests.
    * @param array<int,string> $info_types
    *   Show these info types in the screenshot.
    * @param array<string,mixed> $animation

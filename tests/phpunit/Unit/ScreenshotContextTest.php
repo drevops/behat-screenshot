@@ -98,7 +98,7 @@ class ScreenshotContextTest extends TestCase {
   public function testIsaveScreenshotWithNameDelegatesToCaptureScreenshot(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->once())->method('captureScreenshot');
-    $screenshot_context->iSaveScreenshotWithName('test-file-name');
+    $screenshot_context->iSaveScreenshotWithName('test-filename');
   }
 
   public function testIsaveFullscreenScreenshotWithNamePassesNameAndFullscreen(): void {
@@ -148,9 +148,9 @@ class ScreenshotContextTest extends TestCase {
       $writes[] = [$filename, $content];
     };
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'makeFileName', 'writeScreenshotContent']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'makeFilename', 'writeScreenshotContent']);
     $screenshot_context->method('getSession')->willReturn($session);
-    $screenshot_context->method('makeFileName')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
+    $screenshot_context->method('makeFilename')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
     $screenshot_context->expects($this->exactly(count($expected_writes)))->method('writeScreenshotContent')->willReturnCallback($record_write);
 
     // Seed an earlier capture's content, so a missing reset is detected.
@@ -200,8 +200,8 @@ class ScreenshotContextTest extends TestCase {
     ];
   }
 
-  #[DataProvider('dataProviderMakeFileNameReplacesTokensInPatterns')]
-  public function testMakeFileNameReplacesTokensInPatterns(
+  #[DataProvider('dataProviderMakeFilenameReplacesTokensInPatterns')]
+  public function testMakeFilenameReplacesTokensInPatterns(
     string $ext,
     mixed $filename,
     bool $on_failed,
@@ -252,12 +252,12 @@ class ScreenshotContextTest extends TestCase {
       []
     );
 
-    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFileName', [$ext, $filename, $on_failed]);
+    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFilename', [$ext, $filename, $on_failed]);
 
     $this->assertSame($expected, $filename_processed);
   }
 
-  public static function dataProviderMakeFileNameReplacesTokensInPatterns(): array {
+  public static function dataProviderMakeFilenameReplacesTokensInPatterns(): array {
     return [
       'no filename uses default pattern' => [
         'html',

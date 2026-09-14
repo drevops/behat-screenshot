@@ -101,7 +101,7 @@ Then I save 1440 x 900 screenshot
 Then I save fullscreen 1440 x 900 screenshot
 ```
 
-or a file name:
+or a filename:
 
 ```gherkin
 Then I save screenshot with name "my_screenshot.png"
@@ -244,10 +244,10 @@ Frames larger than the cap are cropped to it before being encoded, keeping the t
 | `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
 | `info_types`              | none                                                                   | List of additional information types to show on screenshots: `url`, `feature`, `step`, `datetime`. Rendered in the order listed. No information is added unless this option is set.                                                                                                            |
 | `failed_prefix`           | `failed_`                                                              | Prefix failed screenshots with `failed_` string. Useful to distinguish failed and intended screenshots.                                                                                                                                                                                         |
-| `filename_pattern`        | `{datetime:U}.{feature_file}.feature_{step_line}.{ext}`                | File name pattern for successful assertions.                                                                                                                                                                                                                                                    |
-| `filename_pattern_failed` | `{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | File name pattern for failed assertions.                                                                                                                                                                                                                                                        |
+| `filename_pattern`        | `{datetime:U}.{feature_file}.feature_{step_line}.{ext}`                | Filename pattern for successful assertions.                                                                                                                                                                                                                                                     |
+| `filename_pattern_failed` | `{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | Filename pattern for failed assertions.                                                                                                                                                                                                                                                         |
 
-### File name tokens
+### Filename tokens
 
 Every character other than a letter, digit, underscore or hyphen is replaced with an underscore, and consecutive replacements collapse into one. The URL examples below are for a page at `http://example.com/mypath/subpath?myquery=1#somefragment`.
 

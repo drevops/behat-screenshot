@@ -30,7 +30,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
    * @param bool $onFailed
    *   Create screenshot on failed test.
    * @param string $failedPrefix
-   *   File name prefix for a failed test.
+   *   Filename prefix for a failed test.
    * @param bool $purge
    *   Purge the dir before the test run starts.
    * @param bool $alwaysFullscreen
@@ -38,9 +38,9 @@ class ScreenshotContextInitializer implements ContextInitializer {
    * @param bool $onEveryStep
    *   Capture screenshot after every step.
    * @param string $filenamePattern
-   *   File name pattern.
+   *   Filename pattern.
    * @param string $filenamePatternFailed
-   *   File name pattern for failed tests.
+   *   Filename pattern for failed tests.
    * @param array<int,string> $infoTypes
    *   Show these info types in the screenshot.
    * @param array<string,mixed> $animation

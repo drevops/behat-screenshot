@@ -368,7 +368,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // so a non-critical artifact does not leak frames into the next scenario.
     try {
       $content = $encoder->render($this->getAnimationConfig('frame_delay', self::DEFAULT_FRAME_DELAY));
-      $this->writeScreenshotContent($this->makeAnimationFileName($scope), $content);
+      $this->writeScreenshotContent($this->makeAnimationFilename($scope), $content);
     }
     finally {
       $this->animationEncoder = NULL;
@@ -455,7 +455,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
 
-    $filename_html = $this->makeFileName('html', $filename, $is_failed);
+    $filename_html = $this->makeFilename('html', $filename, $is_failed);
     $this->writeScreenshotContent($filename_html, $content);
 
     // Drivers that do not support screenshots, including the Goutte driver
@@ -471,7 +471,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // @codeCoverageIgnoreEnd
     // Re-create the filename with a different extension to group the HTML
     // and PNG files together by name.
-    $filename_png = $this->makeFileName('png', $filename, $is_failed);
+    $filename_png = $this->makeFilename('png', $filename, $is_failed);
     $this->writeScreenshotContent($filename_png, $content);
     $this->lastScreenshotContent = $content;
   }
@@ -574,7 +574,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * Write screenshot content into a file.
    *
    * @param string $filename
-   *   File name to write.
+   *   Filename to write.
    * @param string $content
    *   Content to write into a file.
    */
@@ -669,16 +669,16 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @param string $ext
    *   File extension without dot.
    * @param string|null $filename
-   *   Optional file name.
+   *   Optional filename.
    * @param bool $is_failed
    *   Make filename for fail case.
    *
    * @return string
-   *   Unique file name.
+   *   Unique filename.
    *
    * @throws \InvalidArgumentException
    */
-  protected function makeFileName(string $ext, ?string $filename = NULL, bool $is_failed = FALSE): string {
+  protected function makeFilename(string $ext, ?string $filename = NULL, bool $is_failed = FALSE): string {
     if ($is_failed) {
       $filename = $this->filenamePatternFailed;
     }
@@ -731,11 +731,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   After scenario scope.
    *
    * @return string
-   *   Unique animated GIF file name grouped with the scenario step files.
+   *   Unique animated GIF filename grouped with the scenario step files.
    *
    * @throws \InvalidArgumentException
    */
-  protected function makeAnimationFileName(AfterScenarioScope $scope): string {
+  protected function makeAnimationFilename(AfterScenarioScope $scope): string {
     $data = [
       'feature_file' => $scope->getFeature()->getFile(),
       'timestamp' => $this->getCurrentTime(),
