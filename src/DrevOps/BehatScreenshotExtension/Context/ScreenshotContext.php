@@ -124,9 +124,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected ?AnimatedGif $animationEncoder = NULL;
 
   /**
-   * Image data of the last PNG screenshot written by captureScreenshot().
+   * Content of the last PNG screenshot written by captureScreenshot().
    */
-  protected ?string $lastScreenshotData = NULL;
+  protected ?string $lastScreenshotContent = NULL;
 
   /**
    * Prefix for failed screenshot files.
@@ -323,8 +323,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
         'fullscreen' => $this->alwaysFullscreen,
       ]);
 
-      if ($this->scenarioIsAnimated && $this->lastScreenshotData !== NULL) {
-        $this->addAnimationFrame($this->lastScreenshotData);
+      if ($this->scenarioIsAnimated && $this->lastScreenshotContent !== NULL) {
+        $this->addAnimationFrame($this->lastScreenshotContent);
       }
     }
   }
@@ -332,10 +332,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Add a captured screenshot to the current scenario's animation.
    *
-   * @param string $data
-   *   Raw screenshot data.
+   * @param string $content
+   *   Raw screenshot content.
    */
-  protected function addAnimationFrame(string $data): void {
+  protected function addAnimationFrame(string $content): void {
     if (!$this->isAnimatedGifSupported()) {
       return;
     }
@@ -344,7 +344,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $this->animationEncoder = $this->getAnimatedGif();
     }
 
-    $this->animationEncoder->addFrame($data);
+    $this->animationEncoder->addFrame($content);
   }
 
   /**
@@ -441,7 +441,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $filename = isset($config['filename']) && is_scalar($config['filename']) ? (string) $config['filename'] : NULL;
     $is_failed = isset($config['is_failed']) && is_scalar($config['is_failed']) && $config['is_failed'];
 
-    $this->lastScreenshotData = NULL;
+    $this->lastScreenshotContent = NULL;
 
     $driver = $this->getSession()->getDriver();
     $info = $this->renderInfo();
@@ -469,18 +469,18 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
     // @codeCoverageIgnoreEnd
-    // Re-create the filename with a different extension to group content
-    // and screenshot files together by name.
+    // Re-create the filename with a different extension to group the HTML
+    // and PNG files together by name.
     $filename_png = $this->makeFileName('png', $filename, $is_failed);
     $this->writeScreenshotContent($filename_png, $content);
-    $this->lastScreenshotData = $content;
+    $this->lastScreenshotContent = $content;
   }
 
   /**
    * Get screenshot.
    *
    * @return string
-   *   Screenshot data.
+   *   Screenshot content.
    */
   public function getScreenshot(): string {
     return $this->getSession()->getDriver()->getScreenshot();
@@ -497,7 +497,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * Get fullscreen screenshot by temporarily resizing the browser window.
    *
    * @return string
-   *   Screenshot data.
+   *   Screenshot content.
    */
   protected function getScreenshotFullscreenWithResize(): string {
     $session = $this->getSession();

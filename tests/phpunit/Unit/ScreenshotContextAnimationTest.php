@@ -121,7 +121,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(TRUE);
     $screenshot_context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
@@ -136,7 +136,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(TRUE);
     $screenshot_context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
@@ -148,7 +148,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(FALSE);
     $screenshot_context->expects($this->never())->method('getAnimatedGif');
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
@@ -161,7 +161,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->expects($this->never())->method('getAnimatedGif');
     self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', TRUE);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', FALSE);
-    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
