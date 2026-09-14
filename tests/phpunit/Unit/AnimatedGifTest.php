@@ -360,7 +360,7 @@ class AnimatedGifTest extends TestCase {
    *   Red, green and blue colour components.
    *
    * @return string
-   *   Binary PNG data.
+   *   Binary PNG content.
    */
   protected function createPngFrame(int $width, int $height, array $rgb): string {
     $image = imagecreatetruecolor(max(1, $width), max(1, $height));
@@ -373,9 +373,9 @@ class AnimatedGifTest extends TestCase {
 
     ob_start();
     imagepng($image);
-    $data = ob_get_clean();
+    $content = ob_get_clean();
 
-    return (string) $data;
+    return (string) $content;
   }
 
   /**
@@ -387,7 +387,7 @@ class AnimatedGifTest extends TestCase {
    *   Frame height.
    *
    * @return string
-   *   Binary PNG data.
+   *   Binary PNG content.
    */
   protected function createGradientPngFrame(int $width, int $height): string {
     $image = imagecreatetruecolor(max(1, $width), max(1, $height));
@@ -404,9 +404,9 @@ class AnimatedGifTest extends TestCase {
 
     ob_start();
     imagepng($image);
-    $data = ob_get_clean();
+    $content = ob_get_clean();
 
-    return (string) $data;
+    return (string) $content;
   }
 
   /**
@@ -418,7 +418,7 @@ class AnimatedGifTest extends TestCase {
    *   Frame height.
    *
    * @return string
-   *   Binary PNG data with transparency.
+   *   Binary PNG content with transparency.
    */
   protected function createTransparentPngFrame(int $width, int $height): string {
     $image = imagecreate(max(1, $width), max(1, $height));
@@ -433,9 +433,9 @@ class AnimatedGifTest extends TestCase {
 
     ob_start();
     imagepng($image);
-    $data = ob_get_clean();
+    $content = ob_get_clean();
 
-    return (string) $data;
+    return (string) $content;
   }
 
   /**
@@ -471,14 +471,14 @@ class AnimatedGifTest extends TestCase {
    * GD reads the first image block rather than the logical screen, so this
    * reports the size the first frame was written at.
    *
-   * @param string $data
-   *   Binary image data.
+   * @param string $content
+   *   Binary image content.
    *
    * @return array<int,int>
-   *   The width and height, or [0, 0] when the data cannot be decoded.
+   *   The width and height, or [0, 0] when the content cannot be decoded.
    */
-  protected function firstFrameSize(string $data): array {
-    $image = @imagecreatefromstring($data);
+  protected function firstFrameSize(string $content): array {
+    $image = @imagecreatefromstring($content);
     if (!$image instanceof \GdImage) {
       return [0, 0];
     }
@@ -489,8 +489,8 @@ class AnimatedGifTest extends TestCase {
   /**
    * Read the RGB colour of a pixel in the first frame of an image.
    *
-   * @param string $data
-   *   Binary image data.
+   * @param string $content
+   *   Binary image content.
    * @param int $x
    *   Pixel x coordinate.
    * @param int $y
@@ -499,8 +499,8 @@ class AnimatedGifTest extends TestCase {
    * @return array<int,int>
    *   The red, green and blue components, or [-1, -1, -1] when undecodable.
    */
-  protected function pixelColor(string $data, int $x, int $y): array {
-    $image = @imagecreatefromstring($data);
+  protected function pixelColor(string $content, int $x, int $y): array {
+    $image = @imagecreatefromstring($content);
     if (!$image instanceof \GdImage) {
       return [-1, -1, -1];
     }

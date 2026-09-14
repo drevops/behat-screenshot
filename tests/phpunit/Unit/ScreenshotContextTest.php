@@ -153,8 +153,8 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->captureScreenshot();
   }
 
-  #[DataProvider('dataProviderWriteScreenshotContentWritesDataToFile')]
-  public function testWriteScreenshotContentWritesDataToFile(string $filename, string $data): void {
+  #[DataProvider('dataProviderWriteScreenshotContentWritesContentToFile')]
+  public function testWriteScreenshotContentWritesContentToFile(string $filename, string $content): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotConfig(
       sys_get_temp_dir(),
@@ -167,18 +167,18 @@ class ScreenshotContextTest extends TestCase {
       [],
       []
     );
-    self::callProtectedMethod($screenshot_context, 'writeScreenshotContent', [$filename, $data]);
+    self::callProtectedMethod($screenshot_context, 'writeScreenshotContent', [$filename, $content]);
     $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
     $this->assertFileExists($filepath);
-    $this->assertSame($data, file_get_contents($filepath));
+    $this->assertSame($content, file_get_contents($filepath));
 
     unlink($filepath);
   }
 
-  public static function dataProviderWriteScreenshotContentWritesDataToFile(): array {
+  public static function dataProviderWriteScreenshotContentWritesContentToFile(): array {
     return [
-      'first file' => ['test-save-screenshot-1.txt', 'test-data-1'],
-      'second file' => ['test-save-screenshot-2.txt', 'test-data-2'],
+      'first file' => ['test-save-screenshot-1.txt', 'test-content-1'],
+      'second file' => ['test-save-screenshot-2.txt', 'test-content-2'],
     ];
   }
 

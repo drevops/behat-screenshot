@@ -144,7 +144,7 @@ trait GifParserTrait {
   /**
    * Read a little-endian unsigned short.
    *
-   * @param string $data
+   * @param string $content
    *   Binary content.
    * @param int $offset
    *   Offset to read from.
@@ -152,8 +152,8 @@ trait GifParserTrait {
    * @return int
    *   The decoded value.
    */
-  protected function readShort(string $data, int $offset): int {
-    return ord($data[$offset]) + (ord($data[$offset + 1]) << 8);
+  protected function readShort(string $content, int $offset): int {
+    return ord($content[$offset]) + (ord($content[$offset + 1]) << 8);
   }
 
   /**
@@ -172,7 +172,7 @@ trait GifParserTrait {
   /**
    * Advance past a run of GIF data sub-blocks.
    *
-   * @param string $data
+   * @param string $content
    *   GIF binary being scanned.
    * @param int $offset
    *   Offset of the first sub-block length byte.
@@ -180,8 +180,8 @@ trait GifParserTrait {
    * @return int
    *   Offset immediately after the block terminator.
    */
-  protected function skipSubBlocks(string $data, int $offset): int {
-    while (($length = ord($data[$offset])) !== 0) {
+  protected function skipSubBlocks(string $content, int $offset): int {
+    while (($length = ord($content[$offset])) !== 0) {
       $offset += $length + 1;
     }
 

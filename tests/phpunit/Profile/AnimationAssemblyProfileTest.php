@@ -218,7 +218,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    *   Page height.
    *
    * @return string
-   *   Binary PNG data.
+   *   Binary PNG content.
    */
   protected function createPage(int $width, int $height): string {
     $image = imagecreatetruecolor(max(1, $width), max(1, $height));

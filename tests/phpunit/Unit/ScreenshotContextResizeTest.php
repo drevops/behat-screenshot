@@ -69,10 +69,10 @@ class ScreenshotContextResizeTest extends TestCase {
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
 
-    $screenshot_context->method('getScreenshot')->willReturn('test-screenshot-data');
+    $screenshot_context->method('getScreenshot')->willReturn('test-screenshot-content');
 
     $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreenWithResize');
-    $this->assertSame('test-screenshot-data', $result);
+    $this->assertSame('test-screenshot-content', $result);
   }
 
   public function testGetScreenshotFullscreenWithResizeSkipsResizeOnInvalidDimensions(): void {
@@ -105,10 +105,10 @@ class ScreenshotContextResizeTest extends TestCase {
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
 
-    $screenshot_context->method('getScreenshot')->willReturn('test-screenshot-data');
+    $screenshot_context->method('getScreenshot')->willReturn('test-screenshot-content');
 
     $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreenWithResize');
-    $this->assertSame('test-screenshot-data', $result);
+    $this->assertSame('test-screenshot-content', $result);
   }
 
   public function testGetScreenshotFullscreenDelegatesToResizeAlgorithm(): void {
@@ -129,10 +129,10 @@ class ScreenshotContextResizeTest extends TestCase {
     );
 
     $screenshot_context->method('getScreenshotFullscreenWithResize')
-      ->willReturn('test-resize-screenshot-data');
+      ->willReturn('test-resize-screenshot-content');
 
     $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreen');
-    $this->assertSame('test-resize-screenshot-data', $result);
+    $this->assertSame('test-resize-screenshot-content', $result);
   }
 
   public function testCaptureScreenshotWritesHtmlAndImageWhenFullscreenEnabled(): void {
@@ -176,7 +176,7 @@ class ScreenshotContextResizeTest extends TestCase {
     );
 
     $screenshot_context->method('getScreenshotFullscreen')
-      ->willReturn('test-fullscreen-screenshot-data');
+      ->willReturn('test-fullscreen-screenshot-content');
 
     // PHPUnit has no withConsecutive(), so only the call count is
     // asserted.
