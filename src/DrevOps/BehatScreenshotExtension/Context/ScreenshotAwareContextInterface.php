@@ -47,7 +47,7 @@ interface ScreenshotAwareContextInterface extends Context {
    *
    * @throws \Behat\Mink\Exception\DriverException
    */
-  public function captureScreenshot(array $options): void;
+  public function captureScreenshot(array $options = []): void;
 
   /**
    * Adds information to context.
