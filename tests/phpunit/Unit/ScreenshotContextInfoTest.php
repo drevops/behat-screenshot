@@ -139,11 +139,11 @@ class ScreenshotContextInfoTest extends TestCase {
     $this->assertSame('not available', $info['Current URL']);
   }
 
-  public function testScreenshotSavesOnlyHtmlWhenImageUnsupported(): void {
+  public function testCaptureScreenshotWritesOnlyHtmlWhenImageUnsupported(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
-      'saveScreenshotContent',
+      'writeScreenshotContent',
       'renderInfo',
     ]);
 
@@ -161,9 +161,9 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->method('renderInfo')->willReturn('');
 
     // Only the HTML content is saved.
-    $screenshot_context->expects($this->once())->method('saveScreenshotContent');
+    $screenshot_context->expects($this->once())->method('writeScreenshotContent');
 
-    $screenshot_context->screenshot();
+    $screenshot_context->captureScreenshot();
   }
 
   public function testGetCurrentTimeReturnsPositiveInteger(): void {

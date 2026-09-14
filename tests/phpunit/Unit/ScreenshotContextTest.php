@@ -61,7 +61,7 @@ class ScreenshotContextTest extends TestCase {
     $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
-  public function testPrintLastResponseOnErrorTakesScreenshotOnFailedStep(): void {
+  public function testPrintLastResponseOnErrorCapturesScreenshotOnFailedStep(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $step_node = $this->createMock(StepNode::class);
@@ -69,7 +69,7 @@ class ScreenshotContextTest extends TestCase {
     $result->method('isPassed')->willReturn(FALSE);
     $scope = new AfterStepScope($env, $feature_node, $step_node, $result);
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
       TRUE,
@@ -81,47 +81,47 @@ class ScreenshotContextTest extends TestCase {
       [],
       []
     );
-    $screenshot_context->expects($this->once())->method('screenshot');
+    $screenshot_context->expects($this->once())->method('captureScreenshot');
     $screenshot_context->printLastResponseOnError($scope);
   }
 
   public function testIsaveSizedScreenshotIgnoresUnsupportedResize(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'screenshot']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'captureScreenshot']);
     $session = $this->createMock(Session::class);
     $exception = new UnsupportedDriverActionException('Not supported', $this->createMock(Selenium2Driver::class));
     $session->method('resizeWindow')->willThrowException($exception);
     $screenshot_context->method('getSession')->willReturn($session);
-    $screenshot_context->expects($this->once())->method('screenshot');
+    $screenshot_context->expects($this->once())->method('captureScreenshot');
     $screenshot_context->iSaveSizedScreenshot();
   }
 
-  public function testIsaveScreenshotWithNameDelegatesToScreenshot(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
-    $screenshot_context->expects($this->once())->method('screenshot');
+  public function testIsaveScreenshotWithNameDelegatesToCaptureScreenshot(): void {
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
+    $screenshot_context->expects($this->once())->method('captureScreenshot');
     $screenshot_context->iSaveScreenshotWithName('test-file-name');
   }
 
   public function testIsaveFullscreenScreenshotWithNamePassesNameAndFullscreen(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->once())
-      ->method('screenshot')
+      ->method('captureScreenshot')
       ->with(['filename' => 'test-fullscreen-name', 'fullscreen' => TRUE]);
     $screenshot_context->iSaveFullscreenScreenshotWithName('test-fullscreen-name');
   }
 
   public function testIsaveFullscreenScreenshotRequestsFullscreenCapture(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['screenshot']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->once())
-      ->method('screenshot')
+      ->method('captureScreenshot')
       ->with(['fullscreen' => TRUE]);
     $screenshot_context->iSaveFullscreenScreenshot();
   }
 
-  public function testScreenshotSavesHtmlAndPngContent(): void {
+  public function testCaptureScreenshotWritesHtmlAndPngContent(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
-      'saveScreenshotContent',
+      'writeScreenshotContent',
     ]);
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
@@ -131,15 +131,15 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('makeFileName')->willReturn('test-file-name');
 
-    $screenshot_context->expects($this->exactly(2))->method('saveScreenshotContent');
-    $screenshot_context->screenshot();
+    $screenshot_context->expects($this->exactly(2))->method('writeScreenshotContent');
+    $screenshot_context->captureScreenshot();
   }
 
-  public function testScreenshotSavesNothingWhenDriverHasNoContent(): void {
+  public function testCaptureScreenshotWritesNothingWhenDriverHasNoContent(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
       'makeFileName',
-      'saveScreenshotContent',
+      'writeScreenshotContent',
     ]);
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
@@ -149,12 +149,12 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('makeFileName')->willReturn('test-file-name');
 
-    $screenshot_context->expects($this->never())->method('saveScreenshotContent');
-    $screenshot_context->screenshot();
+    $screenshot_context->expects($this->never())->method('writeScreenshotContent');
+    $screenshot_context->captureScreenshot();
   }
 
-  #[DataProvider('dataProviderSaveScreenshotContentWritesDataToFile')]
-  public function testSaveScreenshotContentWritesDataToFile(string $filename, string $data): void {
+  #[DataProvider('dataProviderWriteScreenshotContentWritesDataToFile')]
+  public function testWriteScreenshotContentWritesDataToFile(string $filename, string $data): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotParameters(
       sys_get_temp_dir(),
@@ -167,7 +167,7 @@ class ScreenshotContextTest extends TestCase {
       [],
       []
     );
-    self::callProtectedMethod($screenshot_context, 'saveScreenshotContent', [$filename, $data]);
+    self::callProtectedMethod($screenshot_context, 'writeScreenshotContent', [$filename, $data]);
     $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
     $this->assertFileExists($filepath);
     $this->assertSame($data, file_get_contents($filepath));
@@ -175,7 +175,7 @@ class ScreenshotContextTest extends TestCase {
     unlink($filepath);
   }
 
-  public static function dataProviderSaveScreenshotContentWritesDataToFile(): array {
+  public static function dataProviderWriteScreenshotContentWritesDataToFile(): array {
     return [
       'first file' => ['test-save-screenshot-1.txt', 'test-data-1'],
       'second file' => ['test-save-screenshot-2.txt', 'test-data-2'],

@@ -34,7 +34,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
    * @param bool $purge
    *   Purge the dir before the test run starts.
    * @param bool $alwaysFullscreen
-   *   Always take fullscreen screenshots.
+   *   Always capture fullscreen screenshots.
    * @param bool $onEveryStep
    *   Capture screenshot after every step.
    * @param string $filenamePattern

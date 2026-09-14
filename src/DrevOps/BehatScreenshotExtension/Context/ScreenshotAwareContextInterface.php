@@ -21,7 +21,7 @@ interface ScreenshotAwareContextInterface extends Context {
    * @param string $failed_prefix
    *   File name prefix for a failed test.
    * @param bool $always_fullscreen
-   *   Always take fullscreen screenshots.
+   *   Always capture fullscreen screenshots.
    * @param bool $on_every_step
    *   Capture screenshot after every step.
    * @param string $filename_pattern
@@ -37,12 +37,17 @@ interface ScreenshotAwareContextInterface extends Context {
   public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static;
 
   /**
-   * Save screenshot content into a file.
+   * Capture a screenshot.
    *
    * @param array<string,mixed> $options
-   *   Contextual options.
+   *   Screenshot options with the following keys:
+   *   - filename: (string|null) Custom filename for the screenshot.
+   *   - is_failed: (bool) Whether this is a failed test screenshot.
+   *   - fullscreen: (bool) Whether to capture a fullscreen screenshot.
+   *
+   * @throws \Behat\Mink\Exception\DriverException
    */
-  public function screenshot(array $options): void;
+  public function captureScreenshot(array $options = []): void;
 
   /**
    * Adds information to context.
