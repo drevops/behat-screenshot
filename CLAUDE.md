@@ -22,7 +22,7 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 - Maintain proper docblock annotations
 
 ### PHPUnit Configuration
-- Uses PHPUnit 11.5 with configuration in phpunit.xml
+- Uses PHPUnit 12.5 with configuration in phpunit.xml
 - Coverage reports are generated in .logs/coverage/phpunit
 
 ## Code Structure

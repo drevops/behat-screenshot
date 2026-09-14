@@ -178,7 +178,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $screenshot_context->method('getScreenshotFullscreen')
       ->willReturn('test-fullscreen-screenshot-data');
 
-    // PHPUnit 11 has no withConsecutive(), so only the call count is
+    // PHPUnit has no withConsecutive(), so only the call count is
     // asserted.
     $screenshot_context->expects($this->exactly(2))
       ->method('saveScreenshotContent');
