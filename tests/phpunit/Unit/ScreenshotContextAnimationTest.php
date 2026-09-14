@@ -315,15 +315,15 @@ class ScreenshotContextAnimationTest extends TestCase {
     ];
   }
 
-  #[DataProvider('dataProviderAnimationConfigReturnsIntegerValueOrDefault')]
-  public function testAnimationConfigReturnsIntegerValueOrDefault(array $animation, string $name, int $default, int $expected): void {
+  #[DataProvider('dataProviderGetAnimationConfigReturnsIntegerValueOrDefault')]
+  public function testGetAnimationConfigReturnsIntegerValueOrDefault(array $animation, string $name, int $default, int $expected): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
 
-    $this->assertSame($expected, self::callProtectedMethod($screenshot_context, 'animationConfig', [$name, $default]));
+    $this->assertSame($expected, self::callProtectedMethod($screenshot_context, 'getAnimationConfig', [$name, $default]));
   }
 
-  public static function dataProviderAnimationConfigReturnsIntegerValueOrDefault(): array {
+  public static function dataProviderGetAnimationConfigReturnsIntegerValueOrDefault(): array {
     return [
       'absent config' => [[], 'frame_delay', 500, 500],
       'integer config' => [['frame_delay' => 250], 'frame_delay', 500, 250],

@@ -367,7 +367,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // The encoder is always released, even when rendering or writing fails,
     // so a non-critical artifact does not leak frames into the next scenario.
     try {
-      $content = $encoder->render($this->animationConfig('frame_delay', self::DEFAULT_FRAME_DELAY));
+      $content = $encoder->render($this->getAnimationConfig('frame_delay', self::DEFAULT_FRAME_DELAY));
       $this->writeScreenshotContent($this->makeAnimationFileName($scope), $content);
     }
     finally {
@@ -761,7 +761,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   Animated GIF encoder.
    */
   protected function getAnimatedGif(): AnimatedGif {
-    return new AnimatedGif($this->animationConfig('max_width', 0), $this->animationConfig('max_height', 0));
+    return new AnimatedGif($this->getAnimationConfig('max_width', 0), $this->getAnimationConfig('max_height', 0));
   }
 
   /**
@@ -775,7 +775,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @return int
    *   Configuration value.
    */
-  protected function animationConfig(string $name, int $default): int {
+  protected function getAnimationConfig(string $name, int $default): int {
     return isset($this->animation[$name]) && is_numeric($this->animation[$name]) ? (int) $this->animation[$name] : $default;
   }
 
