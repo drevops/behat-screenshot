@@ -61,28 +61,44 @@ class ScreenshotContextTest extends TestCase {
     $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
-  public function testAfterStepCaptureFailedScreenshotCapturesScreenshotOnFailedStep(): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $step_node = $this->createMock(StepNode::class);
-    $result = $this->createMock(StepResult::class);
-    $result->method('isPassed')->willReturn(FALSE);
-    $scope = new AfterStepScope($env, $feature_node, $step_node, $result);
+  #[DataProvider('dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig')]
+  public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(bool $passed, bool $on_failed, bool $on_every_step, bool $has_screenshots_tag, bool $is_animated, bool $always_fullscreen, array $expected_configs): void {
+    $result = $this->createStub(StepResult::class);
+    $result->method('isPassed')->willReturn($passed);
+    $scope = new AfterStepScope($this->createStub(Environment::class), $this->createStub(FeatureNode::class), $this->createStub(StepNode::class), $result);
+
+    $configs = [];
+    $record_config = static function (array $config) use (&$configs): void {
+      $configs[] = $config;
+    };
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
-    $screenshot_context->setScreenshotConfig(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      FALSE,
-      FALSE,
-      '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
-      [],
-      []
-    );
-    $screenshot_context->expects($this->once())->method('captureScreenshot');
+    $screenshot_context->expects($this->exactly(count($expected_configs)))->method('captureScreenshot')->willReturnCallback($record_config);
+    $screenshot_context->setScreenshotConfig('test-dir', $on_failed, 'failed_', $always_fullscreen, $on_every_step, '{ext}', '{ext}', [], []);
+    self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', $has_screenshots_tag);
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', $is_animated);
+
     $screenshot_context->afterStepCaptureFailedScreenshot($scope);
+    $screenshot_context->afterStepCaptureScreenshot($scope);
+
+    $this->assertSame($expected_configs, $configs);
+  }
+
+  public static function dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig(): array {
+    return [
+      'passed step, nothing enabled' => [TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, []],
+      'passed step, on_failed' => [TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, []],
+      'passed step, on_every_step' => [TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, [['fullscreen' => FALSE]]],
+      'passed step, screenshots tag' => [TRUE, FALSE, FALSE, TRUE, FALSE, FALSE, [['fullscreen' => FALSE]]],
+      'passed step, animated' => [TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, [['fullscreen' => FALSE]]],
+      'passed step, on_every_step and always_fullscreen' => [TRUE, FALSE, TRUE, FALSE, FALSE, TRUE, [['fullscreen' => TRUE]]],
+      'passed step, all triggers' => [TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, [['fullscreen' => FALSE]]],
+      'failed step, nothing enabled' => [FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, []],
+      'failed step, on_failed' => [FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, [['is_failed' => TRUE, 'fullscreen' => FALSE]]],
+      'failed step, on_failed and always_fullscreen' => [FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, [['is_failed' => TRUE, 'fullscreen' => TRUE]]],
+      'failed step, per-step triggers only' => [FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, []],
+      'failed step, all triggers' => [FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, [['is_failed' => TRUE, 'fullscreen' => FALSE]]],
+    ];
   }
 
   public function testIsaveSizedScreenshotIgnoresUnsupportedResize(): void {
