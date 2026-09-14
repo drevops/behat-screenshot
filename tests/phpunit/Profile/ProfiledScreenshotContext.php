@@ -28,14 +28,14 @@ class ProfiledScreenshotContext extends ScreenshotContext {
   /**
    * {@inheritdoc}
    */
-  public function screenshot(array $options = []): void {
+  public function captureScreenshot(array $options = []): void {
     $this->lastScreenshotData = $this->pending;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function saveScreenshotContent(string $filename, string $content): void {
+  public function writeScreenshotContent(string $filename, string $content): void {
     $this->gif = $content;
   }
 

@@ -174,7 +174,7 @@ Scenario: My scenario recorded as an animated GIF
   # An animated GIF is written when the scenario finishes.
 ```
 
-When animation is enabled, a screenshot is taken after every passed step, and the frames are combined into a single GIF - named after the feature file and scenario line - when the scenario finishes. `frame_delay` sets the delay between frames in milliseconds.
+When animation is enabled, a screenshot is captured after every passed step, and the frames are combined into a single GIF - named after the feature file and scenario line - when the scenario finishes. `frame_delay` sets the delay between frames in milliseconds.
 
 The `@screenshots:animated` tag is read at both the scenario and feature level. Animation requires the `gd` PHP extension and a driver that can capture screenshots (such as a real browser via `@javascript`); without GD, the animated GIF is skipped while the per-step screenshots are still written.
 

@@ -135,7 +135,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $this->assertSame('test-resize-screenshot-data', $result);
   }
 
-  public function testScreenshotSavesHtmlAndImageWhenFullscreenEnabled(): void {
+  public function testCaptureScreenshotWritesHtmlAndImageWhenFullscreenEnabled(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $step_node = $this->createMock(StepNode::class);
@@ -149,7 +149,7 @@ class ScreenshotContextResizeTest extends TestCase {
       'getSession',
       'getBeforeStepScope',
       'getScreenshotFullscreen',
-      'saveScreenshotContent',
+      'writeScreenshotContent',
       'getCurrentTime',
     ]);
 
@@ -181,9 +181,9 @@ class ScreenshotContextResizeTest extends TestCase {
     // PHPUnit has no withConsecutive(), so only the call count is
     // asserted.
     $screenshot_context->expects($this->exactly(2))
-      ->method('saveScreenshotContent');
+      ->method('writeScreenshotContent');
 
-    $screenshot_context->screenshot();
+    $screenshot_context->captureScreenshot();
   }
 
 }

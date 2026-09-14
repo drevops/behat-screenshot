@@ -90,7 +90,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected bool $onFailed = FALSE;
 
   /**
-   * Always take fullscreen screenshots.
+   * Always capture fullscreen screenshots.
    */
   protected bool $alwaysFullscreen = FALSE;
 
@@ -122,7 +122,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected ?AnimatedGif $animationEncoder = NULL;
 
   /**
-   * Image data of the most recent PNG screenshot written by screenshot().
+   * Image data of the most recent PNG screenshot written by
+   * captureScreenshot().
    */
   protected ?string $lastScreenshotData = NULL;
 
@@ -297,7 +298,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function printLastResponseOnError(AfterStepScope $scope): void {
     if (!$scope->getTestResult()->isPassed() && $this->onFailed) {
-      $this->screenshot([
+      $this->captureScreenshot([
         'is_failed' => TRUE,
         'fullscreen' => $this->alwaysFullscreen,
       ]);
@@ -317,7 +318,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   public function captureScreenshotAfterStep(AfterStepScope $scope): void {
     // Failed steps are covered separately by on_failed to avoid duplicates.
     if (($this->onEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
-      $this->screenshot([
+      $this->captureScreenshot([
         'fullscreen' => $this->alwaysFullscreen,
       ]);
 
@@ -366,7 +367,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // so a non-critical artifact does not leak frames into the next scenario.
     try {
       $content = $encoder->render($this->animationSetting('frame_delay', self::DEFAULT_FRAME_DELAY));
-      $this->saveScreenshotContent($this->makeAnimationFileName($scope), $content);
+      $this->writeScreenshotContent($this->makeAnimationFileName($scope), $content);
     }
     finally {
       $this->animationEncoder = NULL;
@@ -374,13 +375,13 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * {@inheritdoc}
+   * Save screenshot.
    *
    * @When I save screenshot
    * @Then save screenshot
    */
   public function iSaveScreenshot(): void {
-    $this->screenshot();
+    $this->captureScreenshot();
   }
 
   /**
@@ -390,7 +391,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @Then save fullscreen screenshot
    */
   public function iSaveFullscreenScreenshot(): void {
-    $this->screenshot(['fullscreen' => TRUE]);
+    $this->captureScreenshot(['fullscreen' => TRUE]);
   }
 
   /**
@@ -400,7 +401,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @Then save screenshot with name :filename
    */
   public function iSaveScreenshotWithName(string $filename): void {
-    $this->screenshot(['filename' => $filename]);
+    $this->captureScreenshot(['filename' => $filename]);
   }
 
   /**
@@ -410,7 +411,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @Then save fullscreen screenshot with name :filename
    */
   public function iSaveFullscreenScreenshotWithName(string $filename): void {
-    $this->screenshot(['filename' => $filename, 'fullscreen' => TRUE]);
+    $this->captureScreenshot(['filename' => $filename, 'fullscreen' => TRUE]);
   }
 
   /**
@@ -427,21 +428,13 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       // Drivers without resize support may proceed.
     }
 
-    $this->screenshot();
+    $this->captureScreenshot();
   }
 
   /**
-   * Take a screenshot.
-   *
-   * @param array<string,mixed> $options
-   *   Screenshot options with the following keys:
-   *   - filename: (string|null) Custom filename for the screenshot.
-   *   - is_failed: (bool) Whether this is a failed test screenshot.
-   *   - fullscreen: (bool) Whether to take a fullscreen screenshot.
-   *
-   * @throws \Behat\Mink\Exception\DriverException
+   * {@inheritdoc}
    */
-  public function screenshot(array $options = []): void {
+  public function captureScreenshot(array $options = []): void {
     $is_fullscreen = (isset($options['fullscreen']) && $options['fullscreen']) || $this->alwaysFullscreen;
 
     $filename = isset($options['filename']) && is_scalar($options['filename']) ? (string) $options['filename'] : NULL;
@@ -462,7 +455,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     }
 
     $filename_html = $this->makeFileName('html', $filename, $is_failed);
-    $this->saveScreenshotContent($filename_html, $content);
+    $this->writeScreenshotContent($filename_html, $content);
 
     // Drivers that do not support screenshots, including the Goutte driver
     // shipped with Behat, throw an exception. For such drivers, the screenshot
@@ -478,7 +471,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // Re-create the filename with a different extension to group content
     // and screenshot files together by name.
     $filename_png = $this->makeFileName('png', $filename, $is_failed);
-    $this->saveScreenshotContent($filename_png, $content);
+    $this->writeScreenshotContent($filename_png, $content);
     $this->lastScreenshotData = $content;
   }
 
@@ -577,14 +570,14 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Save screenshot content into a file.
+   * Write screenshot content into a file.
    *
    * @param string $filename
    *   File name to write.
    * @param string $content
    *   Content to write into a file.
    */
-  public function saveScreenshotContent(string $filename, string $content): void {
+  public function writeScreenshotContent(string $filename, string $content): void {
     (new Filesystem())->mkdir($this->dir, 0755);
     $file_path = $this->dir . DIRECTORY_SEPARATOR . $filename;
     $success = file_put_contents($file_path, $content);
