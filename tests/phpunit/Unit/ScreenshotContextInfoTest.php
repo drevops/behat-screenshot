@@ -58,7 +58,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
 
     $screenshot_context->beforeStepInit($scope);
-    $screenshot_context->setScreenshotParameters(
+    $screenshot_context->setScreenshotConfig(
       sys_get_temp_dir(),
       TRUE,
       'failed_',
@@ -118,7 +118,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
 
     $screenshot_context->beforeStepInit($scope);
-    $screenshot_context->setScreenshotParameters(
+    $screenshot_context->setScreenshotConfig(
       sys_get_temp_dir(),
       TRUE,
       'failed_',
@@ -199,7 +199,7 @@ class ScreenshotContextInfoTest extends TestCase {
       $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
       $screenshot_context->method('getCurrentTime')->willReturn(12345678);
 
-      $screenshot_context->setScreenshotParameters(
+      $screenshot_context->setScreenshotConfig(
         'test-dir',
         FALSE,
         'failed_',

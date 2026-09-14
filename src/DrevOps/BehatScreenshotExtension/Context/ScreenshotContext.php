@@ -105,7 +105,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected bool $scenarioHasScreenshotsTag = FALSE;
 
   /**
-   * Animated GIF settings (keys: enabled, frame_delay, max_width, max_height).
+   * Animated GIF configuration.
+   *
+   * Keys: enabled, frame_delay, max_width, max_height.
    *
    * @var array<string,mixed>
    */
@@ -163,7 +165,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static {
+  public function setScreenshotConfig(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static {
     $this->dir = $dir;
     $this->onFailed = $on_failed;
     $this->failedPrefix = $failed_prefix;
@@ -213,8 +215,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * most specific to the least specific, so a scenario tag decides on its own
    * and a feature tag only applies when the scenario carries neither tag.
    * Within a scope the skip tag wins, making a node tagged with both an opt-in
-   * and an opt-out deterministic. The animation.enabled setting applies only
-   * when no scope is tagged.
+   * and an opt-out deterministic. The animation.enabled configuration applies
+   * only when no scope is tagged.
    *
    * @param \Behat\Gherkin\Node\TaggedNodeInterface ...$nodes
    *   Tagged nodes in order of decreasing specificity.
@@ -365,7 +367,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // The encoder is always released, even when rendering or writing fails,
     // so a non-critical artifact does not leak frames into the next scenario.
     try {
-      $content = $encoder->render($this->animationSetting('frame_delay', self::DEFAULT_FRAME_DELAY));
+      $content = $encoder->render($this->getAnimationConfig('frame_delay', self::DEFAULT_FRAME_DELAY));
       $this->writeScreenshotContent($this->makeAnimationFileName($scope), $content);
     }
     finally {
@@ -433,11 +435,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function captureScreenshot(array $options = []): void {
-    $is_fullscreen = (isset($options['fullscreen']) && $options['fullscreen']) || $this->alwaysFullscreen;
+  public function captureScreenshot(array $config = []): void {
+    $is_fullscreen = (isset($config['fullscreen']) && $config['fullscreen']) || $this->alwaysFullscreen;
 
-    $filename = isset($options['filename']) && is_scalar($options['filename']) ? (string) $options['filename'] : NULL;
-    $is_failed = isset($options['is_failed']) && is_scalar($options['is_failed']) && $options['is_failed'];
+    $filename = isset($config['filename']) && is_scalar($config['filename']) ? (string) $config['filename'] : NULL;
+    $is_failed = isset($config['is_failed']) && is_scalar($config['is_failed']) && $config['is_failed'];
 
     $this->lastScreenshotData = NULL;
 
@@ -759,21 +761,21 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   Animated GIF encoder.
    */
   protected function getAnimatedGif(): AnimatedGif {
-    return new AnimatedGif($this->animationSetting('max_width', 0), $this->animationSetting('max_height', 0));
+    return new AnimatedGif($this->getAnimationConfig('max_width', 0), $this->getAnimationConfig('max_height', 0));
   }
 
   /**
-   * Read a numeric animation setting.
+   * Read a numeric animation configuration value.
    *
    * @param string $name
-   *   Setting name.
+   *   Configuration name.
    * @param int $default
-   *   Value used when the setting is absent or not numeric.
+   *   Value used when the configuration is absent or not numeric.
    *
    * @return int
-   *   Setting value.
+   *   Configuration value.
    */
-  protected function animationSetting(string $name, int $default): int {
+  protected function getAnimationConfig(string $name, int $default): int {
     return isset($this->animation[$name]) && is_numeric($this->animation[$name]) ? (int) $this->animation[$name] : $default;
   }
 

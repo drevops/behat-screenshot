@@ -116,7 +116,7 @@ class ScreenshotContextResizeTest extends TestCase {
       'getScreenshotFullscreenWithResize',
     ]);
 
-    $screenshot_context->setScreenshotParameters(
+    $screenshot_context->setScreenshotConfig(
       sys_get_temp_dir(),
       TRUE,
       'failed_',
@@ -162,8 +162,8 @@ class ScreenshotContextResizeTest extends TestCase {
     $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
     $screenshot_context->method('getCurrentTime')->willReturn(1234567890);
 
-    // Set screenshot parameters with always_fullscreen = TRUE.
-    $screenshot_context->setScreenshotParameters(
+    // Set screenshot configuration with always_fullscreen = TRUE.
+    $screenshot_context->setScreenshotConfig(
       sys_get_temp_dir(),
       TRUE,
       'failed_',

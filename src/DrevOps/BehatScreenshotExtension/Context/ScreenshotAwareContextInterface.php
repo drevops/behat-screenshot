@@ -12,7 +12,7 @@ use Behat\Behat\Context\Context;
 interface ScreenshotAwareContextInterface extends Context {
 
   /**
-   * Set context parameters.
+   * Set screenshot configuration.
    *
    * @param string $dir
    *   Directory to store screenshots.
@@ -31,23 +31,23 @@ interface ScreenshotAwareContextInterface extends Context {
    * @param array<int,string> $info_types
    *   Show these info types in the screenshot.
    * @param array<string,mixed> $animation
-   *   Animated GIF settings (keys: enabled, frame_delay, max_width,
+   *   Animated GIF configuration (keys: enabled, frame_delay, max_width,
    *   max_height).
    */
-  public function setScreenshotParameters(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static;
+  public function setScreenshotConfig(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static;
 
   /**
    * Capture a screenshot.
    *
-   * @param array<string,mixed> $options
-   *   Screenshot options with the following keys:
+   * @param array<string,mixed> $config
+   *   Screenshot configuration with the following keys:
    *   - filename: (string|null) Custom filename for the screenshot.
    *   - is_failed: (bool) Whether this is a failed test screenshot.
    *   - fullscreen: (bool) Whether to capture a fullscreen screenshot.
    *
    * @throws \Behat\Mink\Exception\DriverException
    */
-  public function captureScreenshot(array $options = []): void;
+  public function captureScreenshot(array $config = []): void;
 
   /**
    * Adds information to context.

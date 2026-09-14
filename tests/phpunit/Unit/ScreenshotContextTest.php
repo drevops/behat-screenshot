@@ -70,7 +70,7 @@ class ScreenshotContextTest extends TestCase {
     $scope = new AfterStepScope($env, $feature_node, $step_node, $result);
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
-    $screenshot_context->setScreenshotParameters(
+    $screenshot_context->setScreenshotConfig(
       sys_get_temp_dir(),
       TRUE,
       'failed_',
@@ -156,7 +156,7 @@ class ScreenshotContextTest extends TestCase {
   #[DataProvider('dataProviderWriteScreenshotContentWritesDataToFile')]
   public function testWriteScreenshotContentWritesDataToFile(string $filename, string $data): void {
     $screenshot_context = new ScreenshotContext();
-    $screenshot_context->setScreenshotParameters(
+    $screenshot_context->setScreenshotConfig(
       sys_get_temp_dir(),
       TRUE,
       'failed_',
@@ -222,7 +222,7 @@ class ScreenshotContextTest extends TestCase {
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
     $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
 
-    $screenshot_context->setScreenshotParameters(
+    $screenshot_context->setScreenshotConfig(
       'test-dir',
       $on_failed,
       $failed_prefix,

@@ -40,10 +40,10 @@ class ScreenshotContextInitializerTest extends TestCase {
     $this->assertInstanceOf(ScreenshotContextInitializer::class, $initializer);
   }
 
-  public function testInitializeContextPassesParametersToContext(): void {
+  public function testInitializeContextPassesConfigToContext(): void {
     $context = $this->createMock(ScreenshotAwareContextInterface::class);
     $context->expects($this->once())
-      ->method('setScreenshotParameters')
+      ->method('setScreenshotConfig')
       ->with(
         'screenshots',
         TRUE,
@@ -83,7 +83,7 @@ class ScreenshotContextInitializerTest extends TestCase {
 
       $context = $this->createMock(ScreenshotAwareContextInterface::class);
       $context->expects($this->once())
-        ->method('setScreenshotParameters')
+        ->method('setScreenshotConfig')
         ->with(
           // From ENV.
           'custom-screenshots-dir',
@@ -143,7 +143,7 @@ class ScreenshotContextInitializerTest extends TestCase {
       // The second call must not purge again.
       $context2 = $this->createMock(ScreenshotAwareContextInterface::class);
       $context2->expects($this->once())
-        ->method('setScreenshotParameters')
+        ->method('setScreenshotConfig')
         ->with(
           'custom-screenshots-dir',
           TRUE,

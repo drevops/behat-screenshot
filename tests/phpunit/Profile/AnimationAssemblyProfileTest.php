@@ -143,7 +143,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected function profile(int $steps, int $tallest): array {
     $screenshot_context = new ProfiledScreenshotContext();
-    $screenshot_context->setScreenshotParameters('unused', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 500]);
+    $screenshot_context->setScreenshotConfig('unused', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 500]);
 
     $before_scope = $this->createBeforeScenarioScope();
     $after_step_scope = $this->createAfterStepScope();
