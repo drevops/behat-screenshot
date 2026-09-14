@@ -122,8 +122,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected ?AnimatedGif $animationEncoder = NULL;
 
   /**
-   * Image data of the most recent PNG screenshot written by
-   * captureScreenshot().
+   * Image data of the last PNG screenshot written by captureScreenshot().
    */
   protected ?string $lastScreenshotData = NULL;
 
