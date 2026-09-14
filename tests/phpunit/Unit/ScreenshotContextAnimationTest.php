@@ -34,7 +34,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $scenario->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $scenario_tags, TRUE));
 
     $screenshot_context = new ScreenshotContext();
-    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
+    $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
     self::setProtectedValue($screenshot_context, 'animationEncoder', new AnimatedGif());
 
     $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
@@ -83,7 +83,7 @@ class ScreenshotContextAnimationTest extends TestCase {
       $scenario->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $scenario_tags, TRUE));
 
       $screenshot_context = new ScreenshotContext();
-      $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
+      $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
 
       $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
 
@@ -188,7 +188,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->method('makeAnimationFileName')->willReturn('animation.gif');
     $screenshot_context->expects($this->once())->method('writeScreenshotContent')->with('animation.gif', 'gif-data');
 
-    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 250]);
+    $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 250]);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
     self::setProtectedValue($screenshot_context, 'animationEncoder', $encoder);
 
@@ -206,7 +206,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->method('makeAnimationFileName')->willReturn('animation.gif');
     $screenshot_context->expects($this->once())->method('writeScreenshotContent')->with('animation.gif', 'gif-data');
 
-    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], []);
+    $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], []);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
     self::setProtectedValue($screenshot_context, 'animationEncoder', $encoder);
 
@@ -260,7 +260,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'writeScreenshotContent']);
     $screenshot_context->expects($this->never())->method('writeScreenshotContent');
 
-    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE]);
+    $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE]);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
     self::setProtectedValue($screenshot_context, 'animationEncoder', $encoder);
 
@@ -292,10 +292,10 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertTrue(self::callProtectedMethod(new ScreenshotContext(), 'isAnimatedGifSupported'));
   }
 
-  #[DataProvider('dataProviderGetAnimatedGifCreatesEncoderWithSizeCapsFromSettings')]
-  public function testGetAnimatedGifCreatesEncoderWithSizeCapsFromSettings(array $animation, int $expected_max_width, int $expected_max_height): void {
+  #[DataProvider('dataProviderGetAnimatedGifCreatesEncoderWithSizeCapsFromConfig')]
+  public function testGetAnimatedGifCreatesEncoderWithSizeCapsFromConfig(array $animation, int $expected_max_width, int $expected_max_height): void {
     $screenshot_context = new ScreenshotContext();
-    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
+    $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
 
     $encoder = self::callProtectedMethod($screenshot_context, 'getAnimatedGif');
 
@@ -304,9 +304,9 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertSame($expected_max_height, self::getProtectedValue($encoder, 'maxHeight'));
   }
 
-  public static function dataProviderGetAnimatedGifCreatesEncoderWithSizeCapsFromSettings(): array {
+  public static function dataProviderGetAnimatedGifCreatesEncoderWithSizeCapsFromConfig(): array {
     return [
-      'no settings' => [[], 0, 0],
+      'no config' => [[], 0, 0],
       'both caps set' => [['max_width' => 800, 'max_height' => 2000], 800, 2000],
       'width cap only' => [['max_width' => 640], 640, 0],
       'height cap only' => [['max_height' => 480], 0, 480],
@@ -315,22 +315,22 @@ class ScreenshotContextAnimationTest extends TestCase {
     ];
   }
 
-  #[DataProvider('dataProviderAnimationSettingReturnsIntegerValueOrDefault')]
-  public function testAnimationSettingReturnsIntegerValueOrDefault(array $animation, string $name, int $default, int $expected): void {
+  #[DataProvider('dataProviderAnimationConfigReturnsIntegerValueOrDefault')]
+  public function testAnimationConfigReturnsIntegerValueOrDefault(array $animation, string $name, int $default, int $expected): void {
     $screenshot_context = new ScreenshotContext();
-    $screenshot_context->setScreenshotParameters('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
+    $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], $animation);
 
-    $this->assertSame($expected, self::callProtectedMethod($screenshot_context, 'animationSetting', [$name, $default]));
+    $this->assertSame($expected, self::callProtectedMethod($screenshot_context, 'animationConfig', [$name, $default]));
   }
 
-  public static function dataProviderAnimationSettingReturnsIntegerValueOrDefault(): array {
+  public static function dataProviderAnimationConfigReturnsIntegerValueOrDefault(): array {
     return [
-      'absent setting' => [[], 'frame_delay', 500, 500],
-      'integer setting' => [['frame_delay' => 250], 'frame_delay', 500, 250],
-      'numeric string setting' => [['frame_delay' => '120'], 'frame_delay', 500, 120],
-      'float setting' => [['frame_delay' => 120.9], 'frame_delay', 500, 120],
-      'non-numeric setting' => [['frame_delay' => 'fast'], 'frame_delay', 500, 500],
-      'null setting' => [['frame_delay' => NULL], 'frame_delay', 500, 500],
+      'absent config' => [[], 'frame_delay', 500, 500],
+      'integer config' => [['frame_delay' => 250], 'frame_delay', 500, 250],
+      'numeric string config' => [['frame_delay' => '120'], 'frame_delay', 500, 120],
+      'float config' => [['frame_delay' => 120.9], 'frame_delay', 500, 120],
+      'non-numeric config' => [['frame_delay' => 'fast'], 'frame_delay', 500, 500],
+      'null config' => [['frame_delay' => NULL], 'frame_delay', 500, 500],
     ];
   }
 

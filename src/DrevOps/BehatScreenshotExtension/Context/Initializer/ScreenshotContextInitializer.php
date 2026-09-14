@@ -44,7 +44,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
    * @param array<int,string> $infoTypes
    *   Show these info types in the screenshot.
    * @param array<string,mixed> $animation
-   *   Animated GIF settings (keys: enabled, frame_delay, max_width,
+   *   Animated GIF configuration (keys: enabled, frame_delay, max_width,
    *   max_height).
    *
    * @codeCoverageIgnore
@@ -78,7 +78,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
         $this->needsPurging = FALSE;
       }
 
-      $context->setScreenshotParameters(
+      $context->setScreenshotConfig(
         $dir,
         $this->onFailed,
         $this->failedPrefix,

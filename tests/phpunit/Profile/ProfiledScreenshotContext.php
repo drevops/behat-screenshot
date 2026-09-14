@@ -28,7 +28,7 @@ class ProfiledScreenshotContext extends ScreenshotContext {
   /**
    * {@inheritdoc}
    */
-  public function captureScreenshot(array $options = []): void {
+  public function captureScreenshot(array $config = []): void {
     $this->lastScreenshotData = $this->pending;
   }
 
