@@ -84,7 +84,7 @@ class AnimatedGif implements \Countable {
    * Encode a sequence of image frames into an animated GIF.
    *
    * @param array<int,string> $frames
-   *   Raw image data for each frame, in any format readable by GD (e.g. PNG).
+   *   Raw image content per frame, in any format readable by GD (e.g. PNG).
    * @param int $frame_delay
    *   Delay between frames, in milliseconds.
    *
@@ -110,11 +110,11 @@ class AnimatedGif implements \Countable {
   /**
    * Add a frame to the animation.
    *
-   * The frame is quantised and compressed immediately, so the raw image data
-   * does not have to be held until the animation is rendered.
+   * The frame is quantised and compressed immediately, so the raw image
+   * content does not have to be held until the animation is rendered.
    *
    * @param string $frame
-   *   Raw image data, in any format readable by GD (e.g. PNG).
+   *   Raw image content, in any format readable by GD (e.g. PNG).
    *
    * @return bool
    *   TRUE when the frame was decoded and added, FALSE when it was skipped.
@@ -321,7 +321,7 @@ class AnimatedGif implements \Countable {
   /**
    * Advance past a run of GIF data sub-blocks.
    *
-   * @param string $data
+   * @param string $content
    *   GIF binary being scanned.
    * @param int $offset
    *   Offset of the first sub-block length byte.
@@ -329,8 +329,8 @@ class AnimatedGif implements \Countable {
    * @return int
    *   Offset immediately after the block terminator.
    */
-  protected function skipSubBlocks(string $data, int $offset): int {
-    while (($length = ord($data[$offset])) !== 0) {
+  protected function skipSubBlocks(string $content, int $offset): int {
+    while (($length = ord($content[$offset])) !== 0) {
       $offset += $length + 1;
     }
 

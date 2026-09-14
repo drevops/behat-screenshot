@@ -146,7 +146,7 @@ class AnimationArtifactsTest extends TestCase {
    * Build the scenario's frames.
    *
    * @return array<int,string>
-   *   Binary PNG data for each frame.
+   *   Binary PNG content for each frame.
    */
   protected function scenarioFrames(): array {
     $frames = [];
@@ -168,7 +168,7 @@ class AnimationArtifactsTest extends TestCase {
    *   Step number shown in the page header.
    *
    * @return string
-   *   Binary PNG data.
+   *   Binary PNG content.
    */
   protected function createPage(int $width, int $height, int $step): string {
     $image = imagecreatetruecolor(max(1, $width), max(1, $height));
@@ -204,7 +204,7 @@ class AnimationArtifactsTest extends TestCase {
    * @param string $prefix
    *   File name prefix.
    * @param array<int,string> $frames
-   *   Binary PNG data for each frame.
+   *   Binary PNG content for each frame.
    * @param int $max_width
    *   Maximum frame width.
    * @param int $max_height

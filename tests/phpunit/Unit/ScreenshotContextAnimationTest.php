@@ -121,7 +121,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(TRUE);
     $screenshot_context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
@@ -136,7 +136,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(TRUE);
     $screenshot_context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
@@ -148,7 +148,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(FALSE);
     $screenshot_context->expects($this->never())->method('getAnimatedGif');
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
-    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
@@ -161,7 +161,7 @@ class ScreenshotContextAnimationTest extends TestCase {
     $screenshot_context->expects($this->never())->method('getAnimatedGif');
     self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', TRUE);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', FALSE);
-    self::setProtectedValue($screenshot_context, 'lastScreenshotData', 'png-bytes');
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
 
     $screenshot_context->captureScreenshotAfterStep($this->createAfterStepScope(TRUE));
 
@@ -182,11 +182,11 @@ class ScreenshotContextAnimationTest extends TestCase {
   public function testAfterScenarioAnimateRendersAndSaves(): void {
     $encoder = $this->createMock(AnimatedGif::class);
     $encoder->method('count')->willReturn(2);
-    $encoder->expects($this->once())->method('render')->with(250)->willReturn('gif-data');
+    $encoder->expects($this->once())->method('render')->with(250)->willReturn('gif-content');
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'writeScreenshotContent']);
     $screenshot_context->method('makeAnimationFileName')->willReturn('animation.gif');
-    $screenshot_context->expects($this->once())->method('writeScreenshotContent')->with('animation.gif', 'gif-data');
+    $screenshot_context->expects($this->once())->method('writeScreenshotContent')->with('animation.gif', 'gif-content');
 
     $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 250]);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
@@ -200,11 +200,11 @@ class ScreenshotContextAnimationTest extends TestCase {
   public function testAfterScenarioAnimateUsesDefaultDelay(): void {
     $encoder = $this->createMock(AnimatedGif::class);
     $encoder->method('count')->willReturn(1);
-    $encoder->expects($this->once())->method('render')->with(500)->willReturn('gif-data');
+    $encoder->expects($this->once())->method('render')->with(500)->willReturn('gif-content');
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['makeAnimationFileName', 'writeScreenshotContent']);
     $screenshot_context->method('makeAnimationFileName')->willReturn('animation.gif');
-    $screenshot_context->expects($this->once())->method('writeScreenshotContent')->with('animation.gif', 'gif-data');
+    $screenshot_context->expects($this->once())->method('writeScreenshotContent')->with('animation.gif', 'gif-content');
 
     $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], []);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);

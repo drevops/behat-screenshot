@@ -16,7 +16,7 @@ use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 class ProfiledScreenshotContext extends ScreenshotContext {
 
   /**
-   * Image data the next step captures.
+   * Image content the next step captures.
    */
   public string $pending = '';
 
@@ -29,7 +29,7 @@ class ProfiledScreenshotContext extends ScreenshotContext {
    * {@inheritdoc}
    */
   public function captureScreenshot(array $config = []): void {
-    $this->lastScreenshotData = $this->pending;
+    $this->lastScreenshotContent = $this->pending;
   }
 
   /**
