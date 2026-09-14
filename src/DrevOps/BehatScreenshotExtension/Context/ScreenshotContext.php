@@ -288,7 +288,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Save screenshot after a failed step when enabled.
+   * Capture screenshot after a failed step when enabled.
    *
    * @param \Behat\Behat\Hook\Scope\AfterStepScope $scope
    *   After scope event.
@@ -297,7 +297,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @AfterStep
    */
-  public function printLastResponseOnError(AfterStepScope $scope): void {
+  public function afterStepCaptureFailedScreenshot(AfterStepScope $scope): void {
     if (!$scope->getTestResult()->isPassed() && $this->onFailed) {
       $this->captureScreenshot([
         'is_failed' => TRUE,
@@ -316,7 +316,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @AfterStep
    */
-  public function captureScreenshotAfterStep(AfterStepScope $scope): void {
+  public function afterStepCaptureScreenshot(AfterStepScope $scope): void {
     // Failed steps are covered separately by on_failed to avoid duplicates.
     if (($this->onEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
       $this->captureScreenshot([

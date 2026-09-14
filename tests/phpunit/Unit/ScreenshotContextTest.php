@@ -61,7 +61,7 @@ class ScreenshotContextTest extends TestCase {
     $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
-  public function testPrintLastResponseOnErrorCapturesScreenshotOnFailedStep(): void {
+  public function testAfterStepCaptureFailedScreenshotCapturesScreenshotOnFailedStep(): void {
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
     $step_node = $this->createMock(StepNode::class);
@@ -82,7 +82,7 @@ class ScreenshotContextTest extends TestCase {
       []
     );
     $screenshot_context->expects($this->once())->method('captureScreenshot');
-    $screenshot_context->printLastResponseOnError($scope);
+    $screenshot_context->afterStepCaptureFailedScreenshot($scope);
   }
 
   public function testIsaveSizedScreenshotIgnoresUnsupportedResize(): void {

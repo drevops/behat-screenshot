@@ -162,7 +162,7 @@ class AnimationAssemblyProfileTest extends TestCase {
     $started = hrtime(TRUE);
     for ($step = 0; $step < $steps; $step++) {
       $screenshot_context->pending = $step === $long_at ? $long : $viewport;
-      $screenshot_context->captureScreenshotAfterStep($after_step_scope);
+      $screenshot_context->afterStepCaptureScreenshot($after_step_scope);
     }
     $steps_elapsed = (hrtime(TRUE) - $started) / 1e9;
     $screenshot_context->pending = '';
