@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
+use Behat\Behat\Context\Annotation\DocBlockHelper;
+use Behat\Behat\Context\Environment\UninitializedContextEnvironment;
+use Behat\Behat\Context\Reader\AnnotatedContextReader;
+use Behat\Behat\Hook\Context\Annotation\HookAnnotationReader;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
@@ -16,6 +20,8 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
+use Behat\Testwork\Hook\Call\RuntimeHook;
+use Behat\Testwork\Suite\GenericSuite;
 use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -29,6 +35,34 @@ use PHPUnit\Framework\TestCase;
 class ScreenshotContextTest extends TestCase {
 
   use ReflectionTrait;
+
+  public function testBehatRegistersHooksOnPhasePrefixedMethods(): void {
+    $reader = new AnnotatedContextReader(new DocBlockHelper());
+    $reader->registerAnnotationReader(new HookAnnotationReader());
+    $environment = new UninitializedContextEnvironment(new GenericSuite('default', []));
+
+    $hooks = [];
+    foreach ($reader->readContextCallees($environment, ScreenshotContext::class) as $callee) {
+      if (!$callee instanceof RuntimeHook) {
+        continue;
+      }
+
+      $method = $callee->getReflection()->getName();
+      $this->assertStringStartsWith(lcfirst($callee->getName()), $method);
+      $hooks[] = $method . ' ' . (string) $callee;
+    }
+
+    sort($hooks);
+
+    $this->assertSame([
+      'afterScenarioAnimate AfterScenario',
+      'afterStepCaptureFailedScreenshot AfterStep',
+      'afterStepCaptureScreenshot AfterStep',
+      'beforeScenarioCheckScreenshotsTag BeforeScenario',
+      'beforeScenarioInit BeforeScenario @javascript',
+      'beforeStepInit BeforeStep',
+    ], $hooks);
+  }
 
   public function testBeforeScenarioInitPropagatesDriverStartException(): void {
     $env = $this->createMock(Environment::class);
