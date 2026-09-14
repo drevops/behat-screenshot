@@ -105,8 +105,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected bool $scenarioHasScreenshotsTag = FALSE;
 
   /**
-   * Animated GIF configuration (keys: enabled, frame_delay, max_width,
-   * max_height).
+   * Animated GIF configuration.
+   *
+   * Keys: enabled, frame_delay, max_width, max_height.
    *
    * @var array<string,mixed>
    */
