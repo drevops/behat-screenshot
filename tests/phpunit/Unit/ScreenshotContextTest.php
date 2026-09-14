@@ -117,40 +117,58 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->iSaveFullscreenScreenshot();
   }
 
-  public function testCaptureScreenshotWritesHtmlAndPngContent(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getSession',
-      'makeFileName',
-      'writeScreenshotContent',
-    ]);
-    $session = $this->createMock(Session::class);
-    $driver = $this->createMock(Selenium2Driver::class);
-    $driver->method('getContent')->willReturn('test-content');
-    $driver->method('getScreenshot')->willReturn('test-content');
-    $session->method('getDriver')->willReturn($driver);
-    $screenshot_context->method('getSession')->willReturn($session);
-    $screenshot_context->method('makeFileName')->willReturn('test-file-name');
+  #[DataProvider('dataProviderCaptureScreenshotWritesContentAndSetsLastScreenshotContent')]
+  public function testCaptureScreenshotWritesContentAndSetsLastScreenshotContent(
+    bool $page_loaded,
+    bool $image_supported,
+    array $expected_writes,
+    ?string $expected_content,
+  ): void {
+    $driver = $this->createStub(Selenium2Driver::class);
 
-    $screenshot_context->expects($this->exactly(2))->method('writeScreenshotContent');
+    if ($page_loaded) {
+      $driver->method('getContent')->willReturn('test-html-content');
+    }
+    else {
+      $driver->method('getContent')->willThrowException(new DriverException('Test Exception.'));
+    }
+
+    if ($image_supported) {
+      $driver->method('getScreenshot')->willReturn('test-png-content');
+    }
+    else {
+      $driver->method('getScreenshot')->willThrowException(new UnsupportedDriverActionException('Not supported', $driver));
+    }
+
+    $session = $this->createStub(Session::class);
+    $session->method('getDriver')->willReturn($driver);
+
+    $writes = [];
+    $record_write = static function (string $filename, string $content) use (&$writes): void {
+      $writes[] = [$filename, $content];
+    };
+
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'makeFileName', 'writeScreenshotContent']);
+    $screenshot_context->method('getSession')->willReturn($session);
+    $screenshot_context->method('makeFileName')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
+    $screenshot_context->expects($this->exactly(count($expected_writes)))->method('writeScreenshotContent')->willReturnCallback($record_write);
+
+    // Seed an earlier capture's content, so a missing reset is detected.
+    self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'test-previous-png-content');
+
     $screenshot_context->captureScreenshot();
+
+    $this->assertSame($expected_writes, $writes);
+    $this->assertSame($expected_content, self::getProtectedValue($screenshot_context, 'lastScreenshotContent'));
   }
 
-  public function testCaptureScreenshotWritesNothingWhenDriverHasNoContent(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getSession',
-      'makeFileName',
-      'writeScreenshotContent',
-    ]);
-    $session = $this->createMock(Session::class);
-    $driver = $this->createMock(Selenium2Driver::class);
-    $exception = new DriverException('Test Exception.');
-    $driver->method('getContent')->willThrowException($exception);
-    $session->method('getDriver')->willReturn($driver);
-    $screenshot_context->method('getSession')->willReturn($session);
-    $screenshot_context->method('makeFileName')->willReturn('test-file-name');
-
-    $screenshot_context->expects($this->never())->method('writeScreenshotContent');
-    $screenshot_context->captureScreenshot();
+  public static function dataProviderCaptureScreenshotWritesContentAndSetsLastScreenshotContent(): array {
+    return [
+      'page loaded, image supported' => [TRUE, TRUE, [['test.html', 'test-html-content'], ['test.png', 'test-png-content']], 'test-png-content'],
+      'page loaded, image unsupported' => [TRUE, FALSE, [['test.html', 'test-html-content']], NULL],
+      'page not loaded, image supported' => [FALSE, TRUE, [], NULL],
+      'page not loaded, image unsupported' => [FALSE, FALSE, [], NULL],
+    ];
   }
 
   #[DataProvider('dataProviderWriteScreenshotContentWritesContentToFile')]
