@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['8.2', '8.3', '8.4', '8.5']
+        php-versions: ['8.3', '8.4', '8.5']
         deps: ['normal', 'lowest']
 
     services:
@@ -58,9 +58,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          if [ "${{ matrix.php-versions }}" == "8.2" ]; then
-            composer remove --dev drevops/phpcs-standard --no-update
-          fi
           if [ "${{ matrix.deps }}" == "lowest" ]; then
             composer update --prefer-lowest --prefer-stable
           else

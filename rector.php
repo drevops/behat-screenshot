@@ -27,7 +27,7 @@ return RectorConfig::configure()
   ->withPaths([
     __DIR__ . '/**',
   ])
-  ->withPhpSets(php82: TRUE)
+  ->withPhpSets(php83: TRUE)
   ->withPreparedSets(
     deadCode: TRUE,
     codeQuality: TRUE,
