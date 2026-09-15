@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
+use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -21,9 +22,30 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 #[CoversClass(BehatScreenshotExtension::class)]
 class BehatScreenshotExtensionTest extends TestCase {
 
-  public function testGetConfigKeyReturnsExtensionKey(): void {
-    $extension = new BehatScreenshotExtension();
-    $this->assertSame('drevops_behat_screenshot', $extension->getConfigKey());
+  #[DataProvider('dataProviderGetConfigKeyAndLoadUseModId')]
+  public function testGetConfigKeyAndLoadUseModId(BehatScreenshotExtension $extension, string $expected_config_key): void {
+    $tree_builder = new TreeBuilder('root');
+    $extension->configure($tree_builder->getRootNode());
+    $config = (new Processor())->process($tree_builder->buildTree(), [[]]);
+
+    $container = new ContainerBuilder();
+    $extension->load($container, $config);
+
+    $this->assertSame($expected_config_key, $extension->getConfigKey());
+    $this->assertSame([$expected_config_key . '.screenshot_context_initializer'], array_keys($container->findTaggedServiceIds(ContextExtension::INITIALIZER_TAG)));
+  }
+
+  public static function dataProviderGetConfigKeyAndLoadUseModId(): array {
+    $subclass = new class() extends BehatScreenshotExtension {
+
+      public const MOD_ID = 'custom_screenshot';
+
+    };
+
+    return [
+      'extension' => [new BehatScreenshotExtension(), 'drevops_behat_screenshot'],
+      'subclass overriding MOD_ID' => [$subclass, 'custom_screenshot'],
+    ];
   }
 
   public function testLoadRegistersInitializerWithConfigArguments(): void {
