@@ -20,6 +20,9 @@ class BehatScreenshotExtension implements ExtensionInterface {
 
   /**
    * Extension configuration ID.
+   *
+   * A subclass can override it to register under its own configuration key
+   * and initializer service ID.
    */
   public const MOD_ID = 'drevops_behat_screenshot';
 
@@ -35,7 +38,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
    * {@inheritdoc}
    */
   public function getConfigKey(): string {
-    return self::MOD_ID;
+    return static::MOD_ID;
   }
 
   /**
