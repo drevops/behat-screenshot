@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for considering a contribution to this project. This guide covers setting up a local environment and running the linting and tests.
+Thank you for considering a contribution to this project. This guide covers setting up a local environment, running the linting and tests, and adding a configuration option.
 
 ## Setup
 
@@ -57,3 +57,12 @@ BEHAT_SCREENSHOT_PROFILE_STEPS=10,20 composer profile  # Profile other lengths.
 ```
 
 The report is printed and written to `.logs/profile/animation-assembly.txt`, which CI collects as a build artifact.
+
+## Adding a configuration option
+
+1. Add the node to `BehatScreenshotExtension::configure()`. The node holds the option's default and the values it accepts.
+2. Add a promoted property to `ScreenshotConfig` and map the key to it in `ScreenshotConfig::fromArray()`.
+3. Read the property through `getScreenshotConfig()` where `ScreenshotContext` uses it.
+4. Document the option in the options table in `README.md`.
+
+`ScreenshotConfigTest` fails until the new key and property have a dataset in `dataProviderFromArrayMapsKeyToProperty()`, and that dataset fails unless `fromArray()` maps the key to the property.

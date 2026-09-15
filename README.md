@@ -341,7 +341,7 @@ public function beforeScenarioAddInfo(BeforeScenarioScope $scope): void {
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, linting, unit and BDD tests, and the animated GIF assembly profiler.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, linting, unit and BDD tests, the animated GIF assembly profiler, and adding a configuration option.
 
 ---
 _This repository was created using the [Scaffold](https://getscaffold.dev/) project template_
