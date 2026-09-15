@@ -20,13 +20,21 @@ trait GifParserTrait {
   protected const GIF_MISSING_CONTROL = -1;
 
   /**
+   * Transparent colour index reported for a frame with no transparent colour.
+   *
+   * GD's imagecolortransparent() returns the same value for such an image.
+   */
+  protected const GIF_NO_TRANSPARENT_INDEX = -1;
+
+  /**
    * Walk a GIF stream and describe each of its frames.
    *
    * @param string $gif
    *   Binary GIF content.
    *
    * @return array<int,array<string,int>>
-   *   Left, top, width, height, disposal method and delay for each frame.
+   *   Left, top, width, height, disposal method, delay and transparent colour
+   *   index for each frame.
    */
   protected function parseFrames(string $gif): array {
     $packed = ord($gif[10]);
@@ -35,6 +43,7 @@ trait GifParserTrait {
     $frames = [];
     $disposal = self::GIF_MISSING_CONTROL;
     $delay = self::GIF_MISSING_CONTROL;
+    $transparent_index = self::GIF_NO_TRANSPARENT_INDEX;
 
     while ($offset < strlen($gif) && ord($gif[$offset]) !== 0x3B) {
       $marker = ord($gif[$offset]);
@@ -43,6 +52,7 @@ trait GifParserTrait {
         if (ord($gif[$offset + 1]) === 0xF9) {
           $disposal = (ord($gif[$offset + 3]) & 0x1C) >> 2;
           $delay = $this->readShort($gif, $offset + 4);
+          $transparent_index = (ord($gif[$offset + 3]) & 0x01) !== 0 ? ord($gif[$offset + 6]) : self::GIF_NO_TRANSPARENT_INDEX;
         }
 
         $offset = $this->skipSubBlocks($gif, $offset + 2);
@@ -62,12 +72,14 @@ trait GifParserTrait {
         'height' => $this->readShort($gif, $offset + 7),
         'disposal' => $disposal,
         'delay' => $delay,
+        'transparent_index' => $transparent_index,
       ];
 
       // Each frame carries its own control block, so nothing is inherited from
       // the frame before it.
       $disposal = self::GIF_MISSING_CONTROL;
       $delay = self::GIF_MISSING_CONTROL;
+      $transparent_index = self::GIF_NO_TRANSPARENT_INDEX;
 
       $offset += 10 + (($image_packed & 0x80) !== 0 ? $this->colorTableBytes($image_packed) : 0);
       // Skip the LZW minimum code size byte and the image data sub-blocks.

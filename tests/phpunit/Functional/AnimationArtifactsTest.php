@@ -8,6 +8,7 @@ use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RequiresFunction;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -18,6 +19,8 @@ use PHPUnit\Framework\TestCase;
  * can be checked by eye.
  */
 #[CoversClass(AnimatedGifEncoder::class)]
+#[RequiresFunction('imagecreatetruecolor')]
+#[RequiresFunction('imagegif')]
 class AnimationArtifactsTest extends TestCase {
 
   use GifParserTrait;
@@ -52,10 +55,6 @@ class AnimationArtifactsTest extends TestCase {
 
   protected function setUp(): void {
     parent::setUp();
-
-    if (!function_exists('imagecreatetruecolor') || !function_exists('imagegif')) {
-      $this->markTestSkipped('Producing animated GIF artifacts requires the gd extension.');
-    }
 
     $this->dir = dirname(__DIR__, 3) . '/.logs/animation';
 
