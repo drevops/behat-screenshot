@@ -53,10 +53,10 @@ return RectorConfig::configure()
     // when no buffer is active. The cast is what maps that FALSE onto the
     // empty string these callers check for, so it is not redundant.
     RecastingRemovalRector::class => [
-      __DIR__ . '/src/DrevOps/BehatScreenshotExtension/AnimatedGif.php',
+      __DIR__ . '/src/DrevOps/BehatScreenshotExtension/AnimatedGifEncoder.php',
       __DIR__ . '/tests/phpunit/Functional/AnimationArtifactsTest.php',
       __DIR__ . '/tests/phpunit/Profile/AnimationAssemblyProfileTest.php',
-      __DIR__ . '/tests/phpunit/Unit/AnimatedGifTest.php',
+      __DIR__ . '/tests/phpunit/Unit/AnimatedGifEncoderTest.php',
     ],
     // Dependencies.
     '*/vendor/*',

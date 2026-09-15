@@ -17,7 +17,7 @@ namespace DrevOps\BehatScreenshotExtension;
  * geometry, so a frame smaller than the logical screen is not padded to the
  * largest frame.
  */
-class AnimatedGif implements \Countable {
+class AnimatedGifEncoder implements \Countable {
 
   /**
    * Image Separator byte that introduces an image block.
@@ -67,7 +67,7 @@ class AnimatedGif implements \Countable {
   protected array $frames = [];
 
   /**
-   * AnimatedGif constructor.
+   * AnimatedGifEncoder constructor.
    *
    * @param int $maxWidth
    *   Width in pixels beyond which a frame is cropped; 0 leaves it unbounded.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
-use DrevOps\BehatScreenshotExtension\AnimatedGif;
+use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use DrevOps\BehatScreenshotExtension\ScreenshotConfig;
@@ -63,10 +63,10 @@ class CollaboratorCreationTest extends TestCase {
 
   public static function dataProviderCollaboratorsAreCreatedInFactoryMethods(): array {
     return [
-      'AnimatedGif' => [AnimatedGif::class, []],
+      'AnimatedGifEncoder' => [AnimatedGifEncoder::class, []],
       'BehatScreenshotExtension' => [BehatScreenshotExtension::class, []],
       'ScreenshotConfig' => [ScreenshotConfig::class, []],
-      'ScreenshotContext' => [ScreenshotContext::class, ['createAnimatedGif' => AnimatedGif::class, 'createFilesystem' => Filesystem::class]],
+      'ScreenshotContext' => [ScreenshotContext::class, ['createAnimatedGifEncoder' => AnimatedGifEncoder::class, 'createFilesystem' => Filesystem::class]],
       'ScreenshotContextInitializer' => [ScreenshotContextInitializer::class, ['createFilesystem' => Filesystem::class, 'createFinder' => Finder::class]],
       'Tokenizer' => [Tokenizer::class, []],
     ];

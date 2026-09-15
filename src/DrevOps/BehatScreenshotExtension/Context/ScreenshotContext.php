@@ -12,7 +12,7 @@ use Behat\Gherkin\Node\TaggedNodeInterface;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
-use DrevOps\BehatScreenshotExtension\AnimatedGif;
+use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\ScreenshotConfig;
 use DrevOps\BehatScreenshotExtension\Tokenizer;
 use Symfony\Component\Filesystem\Filesystem;
@@ -98,7 +98,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Encoder holding the current scenario's animation frames.
    */
-  protected ?AnimatedGif $animationEncoder = NULL;
+  protected ?AnimatedGifEncoder $animationEncoder = NULL;
 
   /**
    * Content of the last PNG screenshot written by captureScreenshot().
@@ -288,8 +288,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
 
-    if (!$this->animationEncoder instanceof AnimatedGif) {
-      $this->animationEncoder = $this->createAnimatedGif();
+    if (!$this->animationEncoder instanceof AnimatedGifEncoder) {
+      $this->animationEncoder = $this->createAnimatedGifEncoder();
     }
 
     $this->animationEncoder->addFrame($content);
@@ -306,7 +306,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   public function afterScenarioAnimate(AfterScenarioScope $scope): void {
     $encoder = $this->animationEncoder;
 
-    if (!$this->scenarioIsAnimated || !$encoder instanceof AnimatedGif || $encoder->count() === 0) {
+    if (!$this->scenarioIsAnimated || !$encoder instanceof AnimatedGifEncoder || $encoder->count() === 0) {
       $this->animationEncoder = NULL;
 
       return;
@@ -699,11 +699,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Create an animated GIF encoder instance.
    *
-   * @return \DrevOps\BehatScreenshotExtension\AnimatedGif
+   * @return \DrevOps\BehatScreenshotExtension\AnimatedGifEncoder
    *   New animated GIF encoder with the configured frame size caps.
    */
-  protected function createAnimatedGif(): AnimatedGif {
-    return new AnimatedGif($this->getScreenshotConfig()->animationMaxWidth, $this->getScreenshotConfig()->animationMaxHeight);
+  protected function createAnimatedGifEncoder(): AnimatedGifEncoder {
+    return new AnimatedGifEncoder($this->getScreenshotConfig()->animationMaxWidth, $this->getScreenshotConfig()->animationMaxHeight);
   }
 
   /**

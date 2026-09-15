@@ -6,7 +6,7 @@ namespace DrevOps\BehatScreenshot\Tests\Functional;
 
 use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
 use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
-use DrevOps\BehatScreenshotExtension\AnimatedGif;
+use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  * CI uploads .logs as a build artifact, and .logs is ignored by git, so the
  * images never enter the repository.
  */
-#[CoversClass(AnimatedGif::class)]
+#[CoversClass(AnimatedGifEncoder::class)]
 class AnimationArtifactsTest extends TestCase {
 
   use GifParserTrait;
@@ -71,7 +71,7 @@ class AnimationArtifactsTest extends TestCase {
   public function testUncappedAnimationKeepsEveryFrameWhole(): void {
     $frames = $this->scenarioFrames();
 
-    $gif = (new AnimatedGif())->encode($frames, 500);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 500);
     $this->write('uncapped.gif', $gif);
 
     $this->assertSame([800, 6000], $this->canvasSize($gif));
@@ -81,7 +81,7 @@ class AnimationArtifactsTest extends TestCase {
   public function testHeightCappedAnimationCropsOnlyTheLongPages(): void {
     $frames = $this->scenarioFrames();
 
-    $gif = (new AnimatedGif(0, self::MAX_HEIGHT))->encode($frames, 500);
+    $gif = (new AnimatedGifEncoder(0, self::MAX_HEIGHT))->encode($frames, 500);
     $this->write('cropped-height.gif', $gif);
     $this->writeConstrainedFrames('cropped-height', $frames, 0, self::MAX_HEIGHT);
 
@@ -92,7 +92,7 @@ class AnimationArtifactsTest extends TestCase {
   public function testBothCapsCropEachAxisIndependently(): void {
     $frames = $this->scenarioFrames();
 
-    $gif = (new AnimatedGif(self::MAX_WIDTH, self::MAX_HEIGHT))->encode($frames, 500);
+    $gif = (new AnimatedGifEncoder(self::MAX_WIDTH, self::MAX_HEIGHT))->encode($frames, 500);
     $this->write('cropped-both.gif', $gif);
     $this->writeConstrainedFrames('cropped-both', $frames, self::MAX_WIDTH, self::MAX_HEIGHT);
 
@@ -211,7 +211,7 @@ class AnimationArtifactsTest extends TestCase {
    *   Maximum frame height.
    */
   protected function writeConstrainedFrames(string $prefix, array $frames, int $max_width, int $max_height): void {
-    $encoder = new AnimatedGif($max_width, $max_height);
+    $encoder = new AnimatedGifEncoder($max_width, $max_height);
 
     foreach ($frames as $index => $frame) {
       $image = imagecreatefromstring($frame);
