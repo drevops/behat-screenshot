@@ -7,6 +7,7 @@ namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 use Behat\Behat\Context\Context;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\EnvironmentVariableTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -21,6 +22,7 @@ use Symfony\Component\Finder\Finder;
 #[CoversClass(ScreenshotContextInitializer::class)]
 class ScreenshotContextInitializerTest extends TestCase {
 
+  use EnvironmentVariableTrait;
   use ReflectionTrait;
   use ScreenshotConfigTrait;
 
@@ -36,47 +38,38 @@ class ScreenshotContextInitializerTest extends TestCase {
 
   #[DataProvider('dataProviderInitializeContextAppliesEnvironmentAndPurgesOnce')]
   public function testInitializeContextAppliesEnvironmentAndPurgesOnce(bool $should_purge, ?string $env_purge, ?string $env_dir, bool $dir_exists, string $expected_dir, bool $expected_purge, int $expected_exists_calls, int $expected_remove_calls): void {
-    $original_env_purge = getenv('BEHAT_SCREENSHOT_PURGE');
-    $original_env_dir = getenv('BEHAT_SCREENSHOT_DIR');
+    $this->setEnvironmentVariable(ScreenshotContextInitializer::ENV_PURGE, $env_purge);
+    $this->setEnvironmentVariable(ScreenshotContextInitializer::ENV_DIR, $env_dir);
 
-    try {
-      putenv($env_purge === NULL ? 'BEHAT_SCREENSHOT_PURGE' : 'BEHAT_SCREENSHOT_PURGE=' . $env_purge);
-      putenv($env_dir === NULL ? 'BEHAT_SCREENSHOT_DIR' : 'BEHAT_SCREENSHOT_DIR=' . $env_dir);
+    // Keys the environment does not override have non-default values, so
+    // the assertion shows they are passed to the context unchanged.
+    $config = ['dir' => 'screenshots', 'purge' => $should_purge, 'on_failed' => FALSE, 'info_types' => ['url'], 'animation' => ['enabled' => TRUE]];
+    $expected_config = self::createScreenshotConfig(['dir' => $expected_dir, 'purge' => $expected_purge] + $config);
 
-      // Keys the environment does not override have non-default values, so
-      // the assertion shows they are passed to the context unchanged.
-      $config = ['dir' => 'screenshots', 'purge' => $should_purge, 'on_failed' => FALSE, 'info_types' => ['url'], 'animation' => ['enabled' => TRUE]];
-      $expected_config = self::createScreenshotConfig(['dir' => $expected_dir, 'purge' => $expected_purge] + $config);
+    $finder = $this->createMock(Finder::class);
+    $finder->expects($this->exactly($expected_remove_calls))->method('files')->willReturnSelf();
+    $finder->expects($this->exactly($expected_remove_calls))->method('in')->with($expected_dir)->willReturnSelf();
 
-      $finder = $this->createMock(Finder::class);
-      $finder->expects($this->exactly($expected_remove_calls))->method('files')->willReturnSelf();
-      $finder->expects($this->exactly($expected_remove_calls))->method('in')->with($expected_dir)->willReturnSelf();
+    $filesystem = $this->createMock(Filesystem::class);
+    $filesystem->expects($this->exactly($expected_exists_calls))->method('exists')->with($expected_dir)->willReturn($dir_exists);
+    $filesystem->expects($this->exactly($expected_remove_calls))->method('remove')->with($finder);
 
-      $filesystem = $this->createMock(Filesystem::class);
-      $filesystem->expects($this->exactly($expected_exists_calls))->method('exists')->with($expected_dir)->willReturn($dir_exists);
-      $filesystem->expects($this->exactly($expected_remove_calls))->method('remove')->with($finder);
+    $initializer = $this->getStubBuilder(ScreenshotContextInitializer::class)
+      ->setConstructorArgs([self::processScreenshotConfig($config)])
+      ->onlyMethods(['createFilesystem', 'createFinder'])
+      ->getStub();
+    $initializer->method('createFilesystem')->willReturn($filesystem);
+    $initializer->method('createFinder')->willReturn($finder);
 
-      $initializer = $this->getStubBuilder(ScreenshotContextInitializer::class)
-        ->setConstructorArgs([self::processScreenshotConfig($config)])
-        ->onlyMethods(['createFilesystem', 'createFinder'])
-        ->getStub();
-      $initializer->method('createFilesystem')->willReturn($filesystem);
-      $initializer->method('createFinder')->willReturn($finder);
-
-      // Behat initializes contexts for every scenario, so the second pass
-      // checks that a run purges at most once.
-      for ($scenario = 1; $scenario <= 2; $scenario++) {
-        $context = $this->createMock(ScreenshotAwareContextInterface::class);
-        $context->expects($this->once())->method('setScreenshotConfig')->with($expected_config);
-        $initializer->initializeContext($context);
-      }
-
-      $this->assertSame($expected_purge, self::getProtectedValue($initializer, 'hasPurged'));
+    // Behat initializes contexts for every scenario, so the second pass
+    // checks that a run purges at most once.
+    for ($scenario = 1; $scenario <= 2; $scenario++) {
+      $context = $this->createMock(ScreenshotAwareContextInterface::class);
+      $context->expects($this->once())->method('setScreenshotConfig')->with($expected_config);
+      $initializer->initializeContext($context);
     }
-    finally {
-      putenv($original_env_purge === FALSE ? 'BEHAT_SCREENSHOT_PURGE' : 'BEHAT_SCREENSHOT_PURGE=' . $original_env_purge);
-      putenv($original_env_dir === FALSE ? 'BEHAT_SCREENSHOT_DIR' : 'BEHAT_SCREENSHOT_DIR=' . $original_env_dir);
-    }
+
+    $this->assertSame($expected_purge, self::getProtectedValue($initializer, 'hasPurged'));
   }
 
   public static function dataProviderInitializeContextAppliesEnvironmentAndPurgesOnce(): array {

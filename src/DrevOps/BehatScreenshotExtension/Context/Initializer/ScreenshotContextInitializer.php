@@ -19,6 +19,16 @@ use Symfony\Component\Finder\Finder;
 class ScreenshotContextInitializer implements ContextInitializer {
 
   /**
+   * Environment variable replacing the configured screenshot directory.
+   */
+  public const ENV_DIR = 'BEHAT_SCREENSHOT_DIR';
+
+  /**
+   * Environment variable enabling the screenshot directory purge.
+   */
+  public const ENV_PURGE = 'BEHAT_SCREENSHOT_PURGE';
+
+  /**
    * Whether the screenshot directory has been purged in this run.
    */
   protected bool $hasPurged = FALSE;
@@ -73,13 +83,13 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *   Processed configuration with the environment variables applied.
    */
   protected function applyEnvironmentOverrides(array $config): array {
-    $dir = getenv('BEHAT_SCREENSHOT_DIR');
+    $dir = getenv(self::ENV_DIR);
 
     if ($dir) {
       $config['dir'] = $dir;
     }
 
-    if (getenv('BEHAT_SCREENSHOT_PURGE')) {
+    if (getenv(self::ENV_PURGE)) {
       $config['purge'] = TRUE;
     }
 

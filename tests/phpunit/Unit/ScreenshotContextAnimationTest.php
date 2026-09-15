@@ -11,6 +11,7 @@ use Behat\Testwork\Environment\Environment;
 use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\EnvironmentVariableTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -25,6 +26,7 @@ use PHPUnit\Framework\TestCase;
 class ScreenshotContextAnimationTest extends TestCase {
 
   use BehatScopeTrait;
+  use EnvironmentVariableTrait;
   use ReflectionTrait;
   use ScreenshotConfigTrait;
 
@@ -69,37 +71,20 @@ class ScreenshotContextAnimationTest extends TestCase {
 
   #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable')]
   public function testBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable(?string $env_value, array $scenario_tags, array $feature_tags, array $animation, bool $expected_animated): void {
-    $original_value = getenv(ScreenshotContext::ENV_ANIMATION_SKIP);
+    $this->setEnvironmentVariable(ScreenshotContext::ENV_ANIMATION_SKIP, $env_value);
 
-    try {
-      if ($env_value === NULL) {
-        putenv(ScreenshotContext::ENV_ANIMATION_SKIP);
-      }
-      else {
-        putenv(ScreenshotContext::ENV_ANIMATION_SKIP . '=' . $env_value);
-      }
+    $env = $this->createMock(Environment::class);
+    $feature_node = $this->createMock(FeatureNode::class);
+    $feature_node->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $feature_tags, TRUE));
+    $scenario = $this->createMock(ScenarioInterface::class);
+    $scenario->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $scenario_tags, TRUE));
 
-      $env = $this->createMock(Environment::class);
-      $feature_node = $this->createMock(FeatureNode::class);
-      $feature_node->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $feature_tags, TRUE));
-      $scenario = $this->createMock(ScenarioInterface::class);
-      $scenario->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $scenario_tags, TRUE));
+    $screenshot_context = new ScreenshotContext();
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['animation' => $animation]));
 
-      $screenshot_context = new ScreenshotContext();
-      $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['animation' => $animation]));
+    $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
 
-      $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
-
-      $this->assertSame($expected_animated, self::getProtectedValue($screenshot_context, 'scenarioIsAnimated'));
-    }
-    finally {
-      if ($original_value !== FALSE) {
-        putenv(ScreenshotContext::ENV_ANIMATION_SKIP . '=' . $original_value);
-      }
-      else {
-        putenv(ScreenshotContext::ENV_ANIMATION_SKIP);
-      }
-    }
+    $this->assertSame($expected_animated, self::getProtectedValue($screenshot_context, 'scenarioIsAnimated'));
   }
 
   public static function dataProviderBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable(): array {
