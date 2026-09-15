@@ -26,11 +26,6 @@ use Symfony\Component\Filesystem\Filesystem;
 class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContextInterface {
 
   /**
-   * Default delay between animated GIF frames, in milliseconds.
-   */
-  public const DEFAULT_FRAME_DELAY = 500;
-
-  /**
    * Default browser window width, in pixels.
    */
   public const DEFAULT_WINDOW_WIDTH = 1440;
