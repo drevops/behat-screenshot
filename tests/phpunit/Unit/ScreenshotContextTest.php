@@ -342,6 +342,13 @@ class ScreenshotContextTest extends TestCase {
     $this->assertNotSame($first, $second);
   }
 
+  public function testGetCurrentTimeReturnsPositiveInteger(): void {
+    $screenshot_context = new ScreenshotContext();
+    $time = self::callProtectedMethod($screenshot_context, 'getCurrentTime');
+    $this->assertIsInt($time);
+    $this->assertGreaterThan(0, $time);
+  }
+
   #[DataProvider('dataProviderMakeFilenameReplacesTokensInPatterns')]
   public function testMakeFilenameReplacesTokensInPatterns(
     string $ext,
@@ -460,6 +467,50 @@ class ScreenshotContextTest extends TestCase {
         '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
       ],
     ];
+  }
+
+  public function testMakeFilenameReplacesUrlHostFromEnvironment(): void {
+    $original_value = getenv('BEHAT_SCREENSHOT_TOKEN_HOST');
+
+    try {
+      putenv('BEHAT_SCREENSHOT_TOKEN_HOST=example.org');
+
+      $env = $this->createMock(Environment::class);
+      $feature_node = $this->createMock(FeatureNode::class);
+      $feature_node->method('getFile')->willReturn('test-feature-file');
+      $step_node = $this->createMock(StepNode::class);
+      $step_node->method('getText')->willReturn('test-step');
+      $step_node->method('getLine')->willReturn(123);
+      $scope = new BeforeStepScope($env, $feature_node, $step_node);
+
+      $session = $this->createMock(Session::class);
+      $session->method('getCurrentUrl')->willReturn('http://localhost:8080/test-page');
+
+      $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
+        'getSession',
+        'getBeforeStepScope',
+      ]);
+      $screenshot_context->method('getSession')->willReturn($session);
+      $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
+
+      $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['filename_pattern' => '{url}.{ext}', 'filename_pattern_failed' => '{failed_prefix}{url}.{ext}']));
+
+      $result = self::callProtectedMethod($screenshot_context, 'makeFilename', ['png', 12345678, NULL, FALSE]);
+      $this->assertIsString($result);
+
+      // The Tokenizer collapses each run of characters other than word
+      // characters and hyphens into a single underscore.
+      $this->assertStringContainsString('example_org', $result);
+      $this->assertStringNotContainsString('localhost', $result);
+    }
+    finally {
+      if ($original_value !== FALSE) {
+        putenv('BEHAT_SCREENSHOT_TOKEN_HOST=' . $original_value);
+      }
+      else {
+        putenv('BEHAT_SCREENSHOT_TOKEN_HOST');
+      }
+    }
   }
 
   /**
