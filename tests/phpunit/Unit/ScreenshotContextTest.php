@@ -101,12 +101,12 @@ class ScreenshotContextTest extends TestCase {
 
       #[\Override]
       public function afterStepCaptureScreenshot(AfterStepScope $scope): void {
-        parent::afterStepCaptureScreenshot($scope);
+        $this->captureScreenshot();
       }
 
       #[\Override]
       public function iSaveScreenshot(): void {
-        parent::iSaveScreenshot();
+        $this->captureScreenshot(['fullscreen' => TRUE]);
       }
 
     };
