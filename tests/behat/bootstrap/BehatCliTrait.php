@@ -285,9 +285,12 @@ default:
             host: 0.0.0.0
   extensions:
     Behat\MinkExtension\ServiceContainer\MinkExtension:
-      browserkit_http: ~
-      selenium2: ~
       base_url: http://0.0.0.0:8888
+      sessions:
+        browserkit_http:
+          browserkit_http: ~
+        selenium2:
+          selenium2: ~
 EOL;
 
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
@@ -316,25 +319,28 @@ default:
         - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
   extensions:
     Behat\MinkExtension\ServiceContainer\MinkExtension:
-      browserkit_http: ~
       base_url: http://0.0.0.0:8888
       browser_name: chrome
       javascript_session: selenium2
-      selenium2:
-        wd_host: "http://localhost:4444/wd/hub"
-        capabilities:
-          browser: chrome
-          extra_capabilities:
-            "goog:chromeOptions":
-              args:
-                - '--disable-gpu'            # Disables hardware acceleration required in containers and cloud-based instances (like CI runners) where GPU is not available.
-                # Options to increase stability and speed.
-                - '--disable-extensions'     # Disables all installed Chrome extensions. Useful in testing environments to avoid interference from extensions.
-                - '--disable-infobars'       # Hides the infobar that Chrome displays for various notifications, like warnings when opening multiple tabs.
-                - '--disable-popup-blocking' # Disables the popup blocker, allowing all popups to appear. Useful in testing scenarios where popups are expected.
-                - '--disable-translate'      # Disables the built-in translation feature, preventing Chrome from offering to translate pages.
-                - '--no-first-run'           # Skips the initial setup screen that Chrome typically shows when running for the first time.
-                - '--test-type'              # Disables certain security features and UI components that are unnecessary for automated testing, making Chrome more suitable for test environments.
+      sessions:
+        browserkit_http:
+          browserkit_http: ~
+        selenium2:
+          selenium2:
+            wd_host: "http://localhost:4444/wd/hub"
+            capabilities:
+              browser: chrome
+              extra_capabilities:
+                "goog:chromeOptions":
+                  args:
+                    - '--disable-gpu'            # Disables hardware acceleration required in containers and cloud-based instances (like CI runners) where GPU is not available.
+                    # Options to increase stability and speed.
+                    - '--disable-extensions'     # Disables all installed Chrome extensions. Useful in testing environments to avoid interference from extensions.
+                    - '--disable-infobars'       # Hides the infobar that Chrome displays for various notifications, like warnings when opening multiple tabs.
+                    - '--disable-popup-blocking' # Disables the popup blocker, allowing all popups to appear. Useful in testing scenarios where popups are expected.
+                    - '--disable-translate'      # Disables the built-in translation feature, preventing Chrome from offering to translate pages.
+                    - '--no-first-run'           # Skips the initial setup screen that Chrome typically shows when running for the first time.
+                    - '--test-type'              # Disables certain security features and UI components that are unnecessary for automated testing, making Chrome more suitable for test environments.
 
 EOL;
 

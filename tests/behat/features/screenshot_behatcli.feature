@@ -341,6 +341,39 @@ Feature: Screenshot context
       Current URL: http://0.0.0.0:8888/screenshot.html
       """
 
+  Scenario: Test Screenshot context with the '@screenshots' tag captures a screenshot after every step
+    Given screenshot fixture
+    And screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
+            purge: true
+      """
+    And scenario steps tagged with "@phpserver @screenshots":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 200
+      """
+    When I run "behat --no-colors --strict"
+    Then it should pass
+    And behat cli file wildcard "screenshots/*.stub.feature_5.html" should exist
+    And behat cli file wildcard "screenshots/*.stub.feature_6.html" should exist
+
+  Scenario: Test Screenshot context without the '@screenshots' tag captures no screenshot after a passed step
+    Given screenshot fixture
+    And screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
+            purge: true
+      """
+    And scenario steps tagged with "@phpserver":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 200
+      """
+    When I run "behat --no-colors --strict"
+    Then it should pass
+    And behat cli file wildcard "screenshots" should not exist
+
   @selenium
   Scenario: Test Screenshot context with JS and all parameters defined in behat.yml
     Given screenshot fixture

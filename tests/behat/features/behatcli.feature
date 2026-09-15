@@ -47,9 +47,12 @@ Feature: Behat CLI context
                   host: 0.0.0.0
         extensions:
           Behat\MinkExtension\ServiceContainer\MinkExtension:
-            browserkit_http: ~
-            selenium2: ~
             base_url: http://0.0.0.0:8888
+            sessions:
+              browserkit_http:
+                browserkit_http: ~
+              selenium2:
+                selenium2: ~
       """
     And a file named "tests/behat/fixtures/screenshot.html" with:
       """
