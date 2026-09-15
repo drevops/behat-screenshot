@@ -158,6 +158,21 @@ class FeatureContextTest extends MinkContext implements Context {
     throw new \RuntimeException($message);
   }
 
+  /**
+   * @Then the environment variable :name should have the value :value
+   */
+  public function assertEnvironmentVariableValue($name, $value) {
+    $actual = getenv($name);
+
+    if ($actual === FALSE) {
+      throw new \Exception(sprintf('The environment variable "%s" is not set.', $name));
+    }
+
+    if ($actual !== $value) {
+      throw new \Exception(sprintf('The environment variable "%s" has the value "%s", but "%s" was expected.', $name, $actual, $value));
+    }
+  }
+
 }
 EOL;
 
@@ -369,11 +384,11 @@ EOL;
   }
 
   /**
-   * Sets specified ENV variable.
+   * Adds an environment variable to the inner Behat run.
    *
-   * @When :name environment variable is set to :value
+   * @When I add the environment variable :name with the value :value
    */
-  public function behatCliSetEnvironmentVariable(string $name, string $value): void {
+  public function behatCliAddEnvironmentVariable(string $name, string $value): void {
     $this->env[$name] = $value;
   }
 
