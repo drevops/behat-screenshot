@@ -5,6 +5,7 @@
 These are the standard operations that should be performed when working with this codebase:
 
 ### Code Quality Checks
+
 ```
 composer lint           # Run all linting tools
 composer lint-fix       # Automatically fix linting issues
@@ -15,6 +16,7 @@ composer test-coverage  # Run PHPUnit tests with coverage
 See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 
 ### Coding Standards
+
 - Follow Drupal coding standards
 - Use snake_case for variable names (e.g., `$file_path` not `$filePath`)
 - Use TRUE/FALSE constants (uppercase) rather than true/false
@@ -29,14 +31,17 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 - Maintain proper docblock annotations
 
 ### PHPUnit Configuration
+
 - Uses PHPUnit 12.5 with configuration in phpunit.xml
 - Coverage reports are generated in .logs/coverage/phpunit
 
 ### Continuous Integration
+
 - `.github/workflows/test.yml` runs PHP 8.3, 8.4 and 8.5 against Behat 3 and Behat 4 with `normal` and `lowest` dependencies; Behat 4 jobs remove `dmore/behat-chrome-extension` and skip the `@headless` scenarios
 - Jobs are named `PHP <version>, Behat <major>, Deps <dependencies>`, and the `main` branch ruleset requires every job by that name, so a change to the matrix or the job name needs the same change to the ruleset
 
 ## Code Structure
+
 The Behat Screenshot extension provides functionality to capture screenshots during Behat test runs. Its main components are:
 
 1. **BehatScreenshotExtension**: Defines the configuration schema and registers the initializer with the service container
@@ -47,6 +52,7 @@ The Behat Screenshot extension provides functionality to capture screenshots dur
 6. **Tokenizer**: Expands the tokens used in filename patterns
 
 ## Best Practices for Contributing
+
 1. Always run tests before and after changes
 2. Maintain existing code style and standards
 3. Fix PHPUnit deprecations as they arise
