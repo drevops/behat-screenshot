@@ -97,7 +97,7 @@ class ScreenshotContextTest extends TestCase {
   }
 
   #[DataProvider('dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig')]
-  public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(bool $passed, bool $on_failed, bool $on_every_step, bool $has_screenshots_tag, bool $is_animated, bool $always_fullscreen, array $expected_configs): void {
+  public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(bool $passed, bool $should_capture_on_failed, bool $should_capture_on_every_step, bool $has_screenshots_tag, bool $is_animated, bool $should_always_capture_fullscreen, array $expected_configs): void {
     $result = $this->createStub(StepResult::class);
     $result->method('isPassed')->willReturn($passed);
     $scope = new AfterStepScope($this->createStub(Environment::class), $this->createStub(FeatureNode::class), $this->createStub(StepNode::class), $result);
@@ -109,7 +109,7 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->exactly(count($expected_configs)))->method('captureScreenshot')->willReturnCallback($record_config);
-    $screenshot_context->setScreenshotConfig('test-dir', $on_failed, 'failed_', $always_fullscreen, $on_every_step, '{ext}', '{ext}', [], []);
+    $screenshot_context->setScreenshotConfig('test-dir', $should_capture_on_failed, 'failed_', $should_always_capture_fullscreen, $should_capture_on_every_step, '{ext}', '{ext}', [], []);
     self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', $has_screenshots_tag);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', $is_animated);
 
@@ -255,7 +255,7 @@ class ScreenshotContextTest extends TestCase {
   public function testMakeFilenameReplacesTokensInPatterns(
     string $ext,
     mixed $filename,
-    bool $on_failed,
+    bool $is_failed,
     mixed $url,
     int $current_time,
     string $step_text,
@@ -293,7 +293,7 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context->setScreenshotConfig(
       'test-dir',
-      $on_failed,
+      TRUE,
       $failed_prefix,
       FALSE,
       FALSE,
@@ -303,7 +303,7 @@ class ScreenshotContextTest extends TestCase {
       []
     );
 
-    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFilename', [$ext, $filename, $on_failed]);
+    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFilename', [$ext, $filename, $is_failed]);
 
     $this->assertSame($expected, $filename_processed);
   }

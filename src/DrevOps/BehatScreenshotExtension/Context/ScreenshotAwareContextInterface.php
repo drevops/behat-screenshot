@@ -16,14 +16,14 @@ interface ScreenshotAwareContextInterface extends Context {
    *
    * @param string $dir
    *   Directory to store screenshots.
-   * @param bool $on_failed
-   *   Create screenshots on fail.
+   * @param bool $should_capture_on_failed
+   *   Whether to capture a screenshot after a failed step.
    * @param string $failed_prefix
    *   Filename prefix for a failed test.
-   * @param bool $always_fullscreen
-   *   Always capture fullscreen screenshots.
-   * @param bool $on_every_step
-   *   Capture screenshot after every step.
+   * @param bool $should_always_capture_fullscreen
+   *   Whether to capture every screenshot fullscreen.
+   * @param bool $should_capture_on_every_step
+   *   Whether to capture a screenshot after every step.
    * @param string $filename_pattern
    *   Filename pattern.
    * @param string $filename_pattern_failed
@@ -34,7 +34,7 @@ interface ScreenshotAwareContextInterface extends Context {
    *   Animated GIF configuration (keys: enabled, frame_delay, max_width,
    *   max_height).
    */
-  public function setScreenshotConfig(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static;
+  public function setScreenshotConfig(string $dir, bool $should_capture_on_failed, string $failed_prefix, bool $should_always_capture_fullscreen, bool $should_capture_on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static;
 
   /**
    * Capture a screenshot.

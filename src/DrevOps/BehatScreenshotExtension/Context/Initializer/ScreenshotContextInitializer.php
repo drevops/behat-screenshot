@@ -18,25 +18,25 @@ use Symfony\Component\Finder\Finder;
 class ScreenshotContextInitializer implements ContextInitializer {
 
   /**
-   * Flag to purge files in the directory.
+   * Whether the screenshot directory has been purged in this run.
    */
-  protected bool $needsPurging = TRUE;
+  protected bool $hasPurged = FALSE;
 
   /**
    * ScreenshotContextInitializer constructor.
    *
    * @param string $dir
    *   Screenshot dir.
-   * @param bool $onFailed
-   *   Create screenshot on failed test.
+   * @param bool $shouldCaptureOnFailed
+   *   Whether to capture a screenshot after a failed step.
    * @param string $failedPrefix
    *   Filename prefix for a failed test.
-   * @param bool $purge
-   *   Purge the dir before the test run starts.
-   * @param bool $alwaysFullscreen
-   *   Always capture fullscreen screenshots.
-   * @param bool $onEveryStep
-   *   Capture screenshot after every step.
+   * @param bool $shouldPurge
+   *   Whether to purge the dir before the test run starts.
+   * @param bool $shouldAlwaysCaptureFullscreen
+   *   Whether to capture every screenshot fullscreen.
+   * @param bool $shouldCaptureOnEveryStep
+   *   Whether to capture a screenshot after every step.
    * @param string $filenamePattern
    *   Filename pattern.
    * @param string $filenamePatternFailed
@@ -51,11 +51,11 @@ class ScreenshotContextInitializer implements ContextInitializer {
    */
   public function __construct(
     protected string $dir,
-    protected bool $onFailed,
+    protected bool $shouldCaptureOnFailed,
     protected string $failedPrefix,
-    protected bool $purge,
-    protected bool $alwaysFullscreen,
-    protected bool $onEveryStep,
+    protected bool $shouldPurge,
+    protected bool $shouldAlwaysCaptureFullscreen,
+    protected bool $shouldCaptureOnEveryStep,
     protected string $filenamePattern,
     protected string $filenamePatternFailed,
     protected array $infoTypes = [],
@@ -70,20 +70,20 @@ class ScreenshotContextInitializer implements ContextInitializer {
     if ($context instanceof ScreenshotAwareContextInterface) {
       $dir = getenv('BEHAT_SCREENSHOT_DIR') ?: $this->dir;
 
-      if ((getenv('BEHAT_SCREENSHOT_PURGE') || $this->purge) && $this->needsPurging) {
+      if ((getenv('BEHAT_SCREENSHOT_PURGE') || $this->shouldPurge) && !$this->hasPurged) {
         $fs = $this->getFilesystem();
         if ($fs->exists($dir)) {
           $fs->remove($this->getFinder()->files()->in($dir));
         }
-        $this->needsPurging = FALSE;
+        $this->hasPurged = TRUE;
       }
 
       $context->setScreenshotConfig(
         $dir,
-        $this->onFailed,
+        $this->shouldCaptureOnFailed,
         $this->failedPrefix,
-        $this->alwaysFullscreen,
-        $this->onEveryStep,
+        $this->shouldAlwaysCaptureFullscreen,
+        $this->shouldCaptureOnEveryStep,
         $this->filenamePattern,
         $this->filenamePatternFailed,
         $this->infoTypes,
