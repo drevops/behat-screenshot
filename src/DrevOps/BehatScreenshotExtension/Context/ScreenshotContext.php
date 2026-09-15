@@ -9,9 +9,15 @@ use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Gherkin\Node\TaggedNodeInterface;
+use Behat\Hook\AfterScenario;
+use Behat\Hook\AfterStep;
+use Behat\Hook\BeforeScenario;
+use Behat\Hook\BeforeStep;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
+use Behat\Step\Then;
+use Behat\Step\When;
 use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\ScreenshotConfig;
 use DrevOps\BehatScreenshotExtension\Tokenizer;
@@ -131,7 +137,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function getScreenshotConfig(): ScreenshotConfig {
     if (!isset($this->screenshotConfig)) {
-      throw new \RuntimeException(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension extension in behat.yml.', static::class));
+      throw new \RuntimeException(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension extension in the Behat configuration.', static::class));
     }
 
     return $this->screenshotConfig;
@@ -142,14 +148,13 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @param \Behat\Behat\Hook\Scope\BeforeScenarioScope $scope
    *   Scenario scope.
-   *
-   * @BeforeScenario
    */
+  #[BeforeScenario]
   public function beforeScenarioCheckScreenshotsTag(BeforeScenarioScope $scope): void {
     $scenario = $scope->getScenario();
     $feature = $scope->getFeature();
 
-    $this->scenarioHasScreenshotsTag = $scenario->hasTag(self::TAG_SCREENSHOTS) || $feature->hasTag(self::TAG_SCREENSHOTS);
+    $this->scenarioHasScreenshotsTag = $this->isTagged($scenario, self::TAG_SCREENSHOTS) || $this->isTagged($feature, self::TAG_SCREENSHOTS);
     $this->scenarioIsAnimated = $this->resolveIsAnimated($scenario, $feature);
     $this->animationEncoder = NULL;
   }
@@ -181,11 +186,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     }
 
     foreach ($nodes as $node) {
-      if ($node->hasTag(self::TAG_SCREENSHOTS_ANIMATED_SKIP)) {
+      if ($this->isTagged($node, self::TAG_SCREENSHOTS_ANIMATED_SKIP)) {
         return FALSE;
       }
 
-      if ($node->hasTag(self::TAG_SCREENSHOTS_ANIMATED)) {
+      if ($this->isTagged($node, self::TAG_SCREENSHOTS_ANIMATED)) {
         return TRUE;
       }
     }
@@ -204,13 +209,32 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
+   * Check whether a node carries a tag.
+   *
+   * The Gherkin "legacy" parsing mode strips the leading "@" from tag names
+   * and the "gherkin-32" mode keeps it, so both forms match.
+   *
+   * @param \Behat\Gherkin\Node\TaggedNodeInterface $node
+   *   Feature, scenario or example node.
+   * @param string $tag
+   *   Tag name without the leading "@".
+   *
+   * @return bool
+   *   TRUE when the node carries the tag.
+   */
+  protected function isTagged(TaggedNodeInterface $node, string $tag): bool {
+    $tags = array_map(static fn(string $node_tag): string => ltrim($node_tag, '@'), $node->getTags());
+
+    return in_array($tag, $tags, TRUE);
+  }
+
+  /**
    * Init values required for screenshots.
    *
    * @param \Behat\Behat\Hook\Scope\BeforeScenarioScope $scope
    *   Scenario scope.
-   *
-   * @BeforeScenario @javascript
    */
+  #[BeforeScenario('@javascript')]
   public function beforeScenarioInit(BeforeScenarioScope $scope): void {
     $driver = $this->getSession()->getDriver();
 
@@ -231,9 +255,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
   /**
    * Init values required for a screenshot.
-   *
-   * @BeforeStep
    */
+  #[BeforeStep]
   public function beforeStepInit(BeforeStepScope $scope): void {
     $this->beforeStepScope = $scope;
   }
@@ -245,9 +268,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   After scope event.
    *
    * @throws \Behat\Mink\Exception\DriverException
-   *
-   * @AfterStep
    */
+  #[AfterStep]
   public function afterStepCaptureFailedScreenshot(AfterStepScope $scope): void {
     if (!$scope->getTestResult()->isPassed() && $this->getScreenshotConfig()->shouldCaptureOnFailed) {
       $this->captureScreenshot([
@@ -264,9 +286,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   After step scope event.
    *
    * @throws \Behat\Mink\Exception\DriverException
-   *
-   * @AfterStep
    */
+  #[AfterStep]
   public function afterStepCaptureScreenshot(AfterStepScope $scope): void {
     // Failed steps are covered separately by on_failed to avoid duplicates.
     if (($this->getScreenshotConfig()->shouldCaptureOnEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
@@ -303,9 +324,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @param \Behat\Behat\Hook\Scope\AfterScenarioScope $scope
    *   After scenario scope.
-   *
-   * @AfterScenario
    */
+  #[AfterScenario]
   public function afterScenarioAnimate(AfterScenarioScope $scope): void {
     $encoder = $this->animationEncoder;
 
@@ -328,50 +348,45 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
   /**
    * Save screenshot.
-   *
-   * @When I save screenshot
-   * @Then save screenshot
    */
+  #[When('I save screenshot')]
+  #[Then('save screenshot')]
   public function iSaveScreenshot(): void {
     $this->captureScreenshot();
   }
 
   /**
    * Save fullscreen screenshot.
-   *
-   * @When I save fullscreen screenshot
-   * @Then save fullscreen screenshot
    */
+  #[When('I save fullscreen screenshot')]
+  #[Then('save fullscreen screenshot')]
   public function iSaveFullscreenScreenshot(): void {
     $this->captureScreenshot(['fullscreen' => TRUE]);
   }
 
   /**
    * Save screenshot with name.
-   *
-   * @When I save screenshot with name :filename
-   * @Then save screenshot with name :filename
    */
+  #[When('I save screenshot with name :filename')]
+  #[Then('save screenshot with name :filename')]
   public function iSaveScreenshotWithName(string $filename): void {
     $this->captureScreenshot(['filename' => $filename]);
   }
 
   /**
    * Save fullscreen screenshot with name.
-   *
-   * @When I save fullscreen screenshot with name :filename
-   * @Then save fullscreen screenshot with name :filename
    */
+  #[When('I save fullscreen screenshot with name :filename')]
+  #[Then('save fullscreen screenshot with name :filename')]
   public function iSaveFullscreenScreenshotWithName(string $filename): void {
     $this->captureScreenshot(['filename' => $filename, 'fullscreen' => TRUE]);
   }
 
   /**
    * Save screenshot with specific dimensions.
-   *
-   * @When I save :width x :height screenshot
-   * @Then save :width x :height screenshot
    */
+  #[When('I save :width x :height screenshot')]
+  #[Then('save :width x :height screenshot')]
   public function iSaveSizedScreenshot(string|int $width = self::DEFAULT_WINDOW_WIDTH, string|int $height = self::DEFAULT_WINDOW_HEIGHT): void {
     try {
       $this->getSession()->resizeWindow((int) $width, (int) $height, self::WINDOW_NAME_CURRENT);

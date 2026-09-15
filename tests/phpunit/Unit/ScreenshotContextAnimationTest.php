@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Behat\Gherkin\Node\FeatureNode;
-use Behat\Gherkin\Node\ScenarioInterface;
-use Behat\Testwork\Environment\Environment;
 use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
@@ -32,17 +28,11 @@ class ScreenshotContextAnimationTest extends TestCase {
 
   #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTagSetsFlagsFromTagsAndConfig')]
   public function testBeforeScenarioCheckScreenshotsTagSetsFlagsFromTagsAndConfig(array $scenario_tags, array $feature_tags, array $animation, bool $expected_screenshots, bool $expected_animated): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $feature_node->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $feature_tags, TRUE));
-    $scenario = $this->createMock(ScenarioInterface::class);
-    $scenario->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $scenario_tags, TRUE));
-
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['animation' => $animation]));
     self::setProtectedValue($screenshot_context, 'animationEncoder', new AnimatedGifEncoder());
 
-    $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
+    $screenshot_context->beforeScenarioCheckScreenshotsTag($this->createBeforeScenarioScope($scenario_tags, $feature_tags));
 
     $this->assertSame($expected_screenshots, self::getProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag'));
     $this->assertSame($expected_animated, self::getProtectedValue($screenshot_context, 'scenarioIsAnimated'));
@@ -66,6 +56,15 @@ class ScreenshotContextAnimationTest extends TestCase {
       'feature skip tag over feature animated tag' => [[], ['screenshots:animated', 'screenshots:animated:skip'], [], FALSE, FALSE],
       'scenario animated tag over feature skip tag' => [['screenshots:animated'], ['screenshots:animated:skip'], ['enabled' => FALSE], FALSE, TRUE],
       'scenario skip tag over feature animated tag' => [['screenshots:animated:skip'], ['screenshots:animated'], ['enabled' => TRUE], FALSE, FALSE],
+      'scenario screenshots tag with prefix' => [['@screenshots'], [], [], TRUE, FALSE],
+      'feature screenshots tag with prefix' => [[], ['@screenshots'], [], TRUE, FALSE],
+      'scenario animated tag with prefix' => [['@screenshots:animated'], [], [], FALSE, TRUE],
+      'feature animated tag with prefix' => [[], ['@screenshots:animated'], [], FALSE, TRUE],
+      'scenario skip tag with prefix over enabled config' => [['@screenshots:animated:skip'], [], ['enabled' => TRUE], FALSE, FALSE],
+      'feature skip tag with prefix over feature animated tag with prefix' => [[], ['@screenshots:animated', '@screenshots:animated:skip'], [], FALSE, FALSE],
+      'scenario animated tag with prefix over feature skip tag with prefix' => [['@screenshots:animated'], ['@screenshots:animated:skip'], ['enabled' => FALSE], FALSE, TRUE],
+      'screenshots tag with prefix among other tags' => [['@smoke', '@screenshots'], ['@api'], [], TRUE, FALSE],
+      'tags that only contain a screenshot tag name' => [['@screenshots-extra', 'my-screenshots:animated'], ['@no-screenshots:animated:skip'], [], FALSE, FALSE],
     ];
   }
 
@@ -73,16 +72,10 @@ class ScreenshotContextAnimationTest extends TestCase {
   public function testBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable(?string $env_value, array $scenario_tags, array $feature_tags, array $animation, bool $expected_animated): void {
     $this->setEnvironmentVariable(ScreenshotContext::ENV_ANIMATION_SKIP, $env_value);
 
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $feature_node->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $feature_tags, TRUE));
-    $scenario = $this->createMock(ScenarioInterface::class);
-    $scenario->method('hasTag')->willReturnCallback(static fn(string $tag): bool => in_array($tag, $scenario_tags, TRUE));
-
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['animation' => $animation]));
 
-    $screenshot_context->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($env, $feature_node, $scenario));
+    $screenshot_context->beforeScenarioCheckScreenshotsTag($this->createBeforeScenarioScope($scenario_tags, $feature_tags));
 
     $this->assertSame($expected_animated, self::getProtectedValue($screenshot_context, 'scenarioIsAnimated'));
   }
@@ -94,6 +87,7 @@ class ScreenshotContextAnimationTest extends TestCase {
       'variable set with config disabled' => ['1', [], [], ['enabled' => FALSE], FALSE],
       'variable set over scenario animated tag' => ['1', ['screenshots:animated'], [], [], FALSE],
       'variable set over feature animated tag' => ['1', [], ['screenshots:animated'], [], FALSE],
+      'variable set over scenario animated tag with prefix' => ['1', ['@screenshots:animated'], [], [], FALSE],
       'variable empty with config enabled' => ['', [], [], ['enabled' => TRUE], TRUE],
       'variable zero with config enabled' => ['0', [], [], ['enabled' => TRUE], TRUE],
       'variable zero with scenario animated tag' => ['0', ['screenshots:animated'], [], [], TRUE],
