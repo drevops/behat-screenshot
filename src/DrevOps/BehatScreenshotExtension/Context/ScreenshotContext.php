@@ -531,12 +531,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Get before step scope.
-   *
-   * @return \Behat\Behat\Hook\Scope\BeforeStepScope
-   *   The before step scope.
+   * {@inheritdoc}
    */
-  protected function getBeforeStepScope(): BeforeStepScope {
+  public function getBeforeStepScope(): BeforeStepScope {
     return $this->beforeStepScope;
   }
 

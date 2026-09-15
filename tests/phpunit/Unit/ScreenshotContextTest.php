@@ -73,6 +73,7 @@ class ScreenshotContextTest extends TestCase {
     $this->assertSame([
       'appendInfo',
       'captureScreenshot',
+      'getBeforeStepScope',
       'getScreenshot',
       'getScreenshotConfig',
       'getScreenshotFullscreen',
@@ -142,7 +143,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = new ScreenshotContext();
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
     $screenshot_context->beforeStepInit($scope);
-    $this->assertSame($scope, self::callProtectedMethod($screenshot_context, 'getBeforeStepScope'));
+    $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
   #[DataProvider('dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig')]

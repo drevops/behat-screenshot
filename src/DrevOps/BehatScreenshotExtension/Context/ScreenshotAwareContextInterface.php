@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\BehatScreenshotExtension\Context;
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeStepScope;
 use DrevOps\BehatScreenshotExtension\ScreenshotConfig;
 
 /**
@@ -78,6 +79,14 @@ interface ScreenshotAwareContextInterface extends Context {
    *   When the file cannot be written.
    */
   public function writeScreenshotContent(string $filename, string $content): void;
+
+  /**
+   * Get before step scope.
+   *
+   * @return \Behat\Behat\Hook\Scope\BeforeStepScope
+   *   The before step scope.
+   */
+  public function getBeforeStepScope(): BeforeStepScope;
 
   /**
    * Adds information to context.
