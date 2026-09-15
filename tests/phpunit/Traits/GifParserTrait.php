@@ -22,7 +22,7 @@ trait GifParserTrait {
   /**
    * Transparent colour index reported for a frame with no transparent colour.
    *
-   * imagecolortransparent() returns the same value for such an image.
+   * GD's imagecolortransparent() returns the same value for such an image.
    */
   protected const GIF_NO_TRANSPARENT_INDEX = -1;
 

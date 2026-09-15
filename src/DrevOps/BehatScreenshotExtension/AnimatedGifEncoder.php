@@ -158,7 +158,8 @@ class AnimatedGifEncoder implements \Countable {
     }
 
     // @codeCoverageIgnoreEnd
-    $this->frames[] = ['gif' => $gif, 'width' => $width, 'height' => $height, 'transparent_index' => $this->readExtensionBlocks($gif)['transparent_index']];
+    $transparent_index = $this->readExtensionBlocks($gif)['transparent_index'];
+    $this->frames[] = ['gif' => $gif, 'width' => $width, 'height' => $height, 'transparent_index' => $transparent_index];
 
     return TRUE;
   }
