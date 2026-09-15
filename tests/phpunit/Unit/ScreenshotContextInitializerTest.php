@@ -103,8 +103,8 @@ class ScreenshotContextInitializerTest extends TestCase {
     $first = self::callProtectedMethod($initializer, $method);
     $second = self::callProtectedMethod($initializer, $method);
 
-    $this->assertInstanceOf($expected_class, $first);
-    $this->assertInstanceOf($expected_class, $second);
+    $this->assertSame($expected_class, get_debug_type($first));
+    $this->assertSame($expected_class, get_debug_type($second));
     $this->assertNotSame($first, $second);
   }
 
