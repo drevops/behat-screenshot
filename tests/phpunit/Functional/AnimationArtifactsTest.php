@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Functional;
+namespace DrevOps\BehatScreenshotExtension\Tests\Functional;
 
-use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

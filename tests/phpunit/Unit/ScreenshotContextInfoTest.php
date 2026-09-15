@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit;
+namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Gherkin\Node\FeatureNode;
@@ -11,9 +11,9 @@ use Behat\Mink\Driver\DriverInterface;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
-use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

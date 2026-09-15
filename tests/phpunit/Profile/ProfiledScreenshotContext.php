@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Profile;
+namespace DrevOps\BehatScreenshotExtension\Tests\Profile;
 
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 

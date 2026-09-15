@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Profile;
+namespace DrevOps\BehatScreenshotExtension\Tests\Profile;
 
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Node\ScenarioInterface;
 use Behat\Testwork\Environment\Environment;
-use DrevOps\BehatScreenshot\Tests\Traits\BehatScopeTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;

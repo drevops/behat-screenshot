@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Traits;
+namespace DrevOps\BehatScreenshotExtension\Tests\Traits;
 
 /**
  * Provides methods to work with class reflection.

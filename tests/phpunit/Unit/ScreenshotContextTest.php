@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit;
+namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use Behat\Behat\Context\Annotation\DocBlockHelper;
 use Behat\Behat\Context\Environment\UninitializedContextEnvironment;
@@ -24,10 +24,10 @@ use Behat\Testwork\Call\Callee;
 use Behat\Testwork\Environment\Environment;
 use Behat\Testwork\Hook\Call\RuntimeHook;
 use Behat\Testwork\Suite\GenericSuite;
-use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
