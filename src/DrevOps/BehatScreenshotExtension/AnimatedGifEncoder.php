@@ -16,6 +16,9 @@ namespace DrevOps\BehatScreenshotExtension;
  * to when a maximum is configured. GIF89a gives each image block its own
  * geometry, so a frame smaller than the logical screen is not padded to the
  * largest frame.
+ *
+ * A frame with a transparent colour keeps that colour transparent in the
+ * animation.
  */
 class AnimatedGifEncoder implements \Countable {
 
@@ -28,6 +31,11 @@ class AnimatedGifEncoder implements \Countable {
    * Extension Introducer byte that introduces an extension block.
    */
   public const EXTENSION_INTRODUCER = 0x21;
+
+  /**
+   * Label byte that identifies a Graphic Control Extension.
+   */
+  public const GRAPHIC_CONTROL_LABEL = 0xF9;
 
   /**
    * Trailer byte that terminates the GIF stream.
@@ -43,6 +51,11 @@ class AnimatedGifEncoder implements \Countable {
    * Disposal method clearing a frame to the background colour after it shows.
    */
   public const DISPOSAL_BACKGROUND = 2;
+
+  /**
+   * Graphic Control Extension flag marking its colour index as transparent.
+   */
+  public const TRANSPARENT_COLOR_FLAG = 0x01;
 
   /**
    * Largest width or height GIF can record, in pixels.
@@ -62,7 +75,10 @@ class AnimatedGifEncoder implements \Countable {
   /**
    * Added frames as single-frame GIF binaries with their pixel dimensions.
    *
-   * @var array<int,array{gif:string,width:int,height:int}>
+   * Each frame also records the colour index its GIF marks transparent, or
+   * NULL when it marks none.
+   *
+   * @var array<int,array{gif:string,width:int,height:int,transparent_index:int|null}>
    */
   protected array $frames = [];
 
@@ -142,7 +158,7 @@ class AnimatedGifEncoder implements \Countable {
     }
 
     // @codeCoverageIgnoreEnd
-    $this->frames[] = ['gif' => $gif, 'width' => $width, 'height' => $height];
+    $this->frames[] = ['gif' => $gif, 'width' => $width, 'height' => $height, 'transparent_index' => $this->readExtensionBlocks($gif)['transparent_index']];
 
     return TRUE;
   }
@@ -190,7 +206,9 @@ class AnimatedGifEncoder implements \Countable {
     foreach ($this->frames as $index => $frame) {
       // Playback loops, so the frame after the last one is the first.
       $next = $this->frames[($index + 1) % $total];
-      $is_covered = $next['width'] >= $frame['width'] && $next['height'] >= $frame['height'];
+      // A kept frame is visible through the next frame's transparent pixels,
+      // so only an opaque next frame covers it.
+      $is_covered = $next['transparent_index'] === NULL && $next['width'] >= $frame['width'] && $next['height'] >= $frame['height'];
       $disposal = $is_covered ? self::DISPOSAL_KEEP : self::DISPOSAL_BACKGROUND;
 
       $output .= $this->frameBlock($frame['gif'], $delay, $disposal);
@@ -226,7 +244,10 @@ class AnimatedGifEncoder implements \Countable {
       return $image;
     }
 
-    $cropped = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => $bounded_width, 'height' => $bounded_height]);
+    // imagecrop() replaces transparent pixels with an opaque colour, so the
+    // retained area is copied onto a new image instead.
+    $is_truecolor = imageistruecolor($image);
+    $cropped = $is_truecolor ? imagecreatetruecolor($bounded_width, $bounded_height) : imagecreate($bounded_width, $bounded_height);
 
     // @codeCoverageIgnoreStart
     if (!$cropped instanceof \GdImage) {
@@ -234,6 +255,21 @@ class AnimatedGifEncoder implements \Countable {
     }
 
     // @codeCoverageIgnoreEnd
+    if (!$is_truecolor) {
+      imagepalettecopy($cropped, $image);
+    }
+
+    imagealphablending($cropped, FALSE);
+    $transparent = imagecolortransparent($image);
+
+    // imagecopy() skips transparent pixels, so they keep the fill colour.
+    if ($transparent !== -1) {
+      imagefilledrectangle($cropped, 0, 0, $bounded_width - 1, $bounded_height - 1, $transparent);
+      imagecolortransparent($cropped, $transparent);
+    }
+
+    imagecopy($cropped, $image, 0, 0, 0, 0, $bounded_width, $bounded_height);
+
     return $cropped;
   }
 
@@ -280,14 +316,8 @@ class AnimatedGifEncoder implements \Countable {
     $packed = ord($frame[10]);
     $size_bits = $packed & 0x07;
     $color_table = substr($frame, 13, $this->colorTableBytes($packed));
-    $offset = 13 + strlen($color_table);
 
-    // Skip any extension blocks - such as a transparency Graphic Control
-    // Extension - until the image separator is reached.
-    while (ord($frame[$offset]) === self::EXTENSION_INTRODUCER) {
-      $offset += 2;
-      $offset = $this->skipSubBlocks($frame, $offset);
-    }
+    ['descriptor_offset' => $offset, 'transparent_index' => $transparent_index] = $this->readExtensionBlocks($frame);
 
     // The Image Descriptor is 10 bytes; bytes 1-8 hold the frame geometry.
     $geometry = substr($frame, $offset + 1, 8);
@@ -296,13 +326,44 @@ class AnimatedGifEncoder implements \Countable {
     // Everything up to the trailing Trailer byte is the LZW image data.
     $image_data = substr($frame, $offset, -1);
 
-    // Graphic Control Extension carrying the delay and the disposal method.
-    $graphic_control = "\x21\xF9\x04" . chr($disposal << 2) . pack('v', $delay) . "\x00\x00";
+    // Graphic Control Extension carrying the disposal method, the delay and
+    // the transparent colour index GD recorded for the frame.
+    $flags = ($disposal << 2) | ($transparent_index === NULL ? 0 : self::TRANSPARENT_COLOR_FLAG);
+    $graphic_control = chr(self::EXTENSION_INTRODUCER) . chr(self::GRAPHIC_CONTROL_LABEL) . "\x04" . chr($flags) . pack('v', $delay) . chr($transparent_index ?? 0) . "\x00";
 
     // Image Descriptor flagged to use the frame's own local colour table.
     $descriptor = chr(self::IMAGE_SEPARATOR) . $geometry . chr(0x80 | $size_bits);
 
     return $graphic_control . $descriptor . $color_table . $image_data;
+  }
+
+  /**
+   * Read the extension blocks between a GIF's colour table and image block.
+   *
+   * @param string $frame
+   *   Single-frame GIF binary.
+   *
+   * @return array{descriptor_offset:int,transparent_index:int|null}
+   *   Offset of the Image Descriptor, and the colour index a Graphic Control
+   *   Extension marks transparent, or NULL when none is marked.
+   */
+  protected function readExtensionBlocks(string $frame): array {
+    $offset = 13 + $this->colorTableBytes(ord($frame[10]));
+    $transparent_index = NULL;
+
+    while (ord($frame[$offset]) === self::EXTENSION_INTRODUCER) {
+      // A Graphic Control Extension holds its flags in byte 3 and the
+      // transparent colour index in byte 6.
+      $is_transparent = ord($frame[$offset + 1]) === self::GRAPHIC_CONTROL_LABEL && (ord($frame[$offset + 3]) & self::TRANSPARENT_COLOR_FLAG) !== 0;
+
+      if ($is_transparent) {
+        $transparent_index = ord($frame[$offset + 6]);
+      }
+
+      $offset = $this->skipSubBlocks($frame, $offset + 2);
+    }
+
+    return ['descriptor_offset' => $offset, 'transparent_index' => $transparent_index];
   }
 
   /**
