@@ -7,9 +7,9 @@ namespace DrevOps\BehatScreenshot\Tests\Traits;
 /**
  * Decodes the structure of a GIF stream for assertions.
  *
- * The block layout is decoded here rather than through AnimatedGif's own
- * helpers. Reading blocks back with the code that wrote them would hide a
- * fault in how the encoder lays them out.
+ * The block layout is decoded here rather than through
+ * AnimatedGifEncoder's own helpers. Reading blocks back with the code that
+ * wrote them would hide a fault in how the encoder lays them out.
  *
  * @phpstan-ignore trait.unused
  */

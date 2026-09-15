@@ -48,10 +48,10 @@ class ScreenshotContextInitializer implements ContextInitializer {
     $config = ScreenshotConfig::fromArray($this->applyEnvironmentOverrides($this->config));
 
     if ($config->shouldPurge && !$this->hasPurged) {
-      $fs = $this->getFilesystem();
+      $filesystem = $this->createFilesystem();
 
-      if ($fs->exists($config->dir)) {
-        $fs->remove($this->getFinder()->files()->in($config->dir));
+      if ($filesystem->exists($config->dir)) {
+        $filesystem->remove($this->createFinder()->files()->in($config->dir));
       }
 
       $this->hasPurged = TRUE;
@@ -87,27 +87,23 @@ class ScreenshotContextInitializer implements ContextInitializer {
   }
 
   /**
-   * Get filesystem instance.
+   * Create a filesystem instance.
    *
    * @return \Symfony\Component\Filesystem\Filesystem
-   *   Filesystem instance.
+   *   New filesystem instance.
    */
-  protected function getFilesystem(): Filesystem {
-    // @codeCoverageIgnoreStart
+  protected function createFilesystem(): Filesystem {
     return new Filesystem();
-    // @codeCoverageIgnoreEnd
   }
 
   /**
-   * Get finder instance.
+   * Create a finder instance.
    *
    * @return \Symfony\Component\Finder\Finder
-   *   Finder instance.
+   *   New finder instance.
    */
-  protected function getFinder(): Finder {
-    // @codeCoverageIgnoreStart
+  protected function createFinder(): Finder {
     return new Finder();
-    // @codeCoverageIgnoreEnd
   }
 
 }

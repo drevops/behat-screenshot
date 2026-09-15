@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
 use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
-use DrevOps\BehatScreenshotExtension\AnimatedGif;
+use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test AnimatedGif.
+ * Test AnimatedGifEncoder.
  */
-#[CoversClass(AnimatedGif::class)]
-class AnimatedGifTest extends TestCase {
+#[CoversClass(AnimatedGifEncoder::class)]
+class AnimatedGifEncoderTest extends TestCase {
 
   use GifParserTrait;
 
@@ -25,7 +25,7 @@ class AnimatedGifTest extends TestCase {
       $this->createPngFrame(120, 90, [0, 0, 255]),
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, 500);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 500);
 
     $this->assertStringStartsWith('GIF89a', $gif);
     // Looping is requested via the Netscape Application Extension.
@@ -42,7 +42,7 @@ class AnimatedGifTest extends TestCase {
       $this->createPngFrame(150, 120, [0, 0, 0]),
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, 200);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 200);
 
     $this->assertSame([150, 120], $this->canvasSize($gif));
   }
@@ -54,7 +54,7 @@ class AnimatedGifTest extends TestCase {
       $this->createPngFrame(150, 120, [0, 0, 0]),
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, 200);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 200);
 
     $this->assertSame([
       ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 100],
@@ -69,7 +69,7 @@ class AnimatedGifTest extends TestCase {
       $this->createPngFrame(80, 60, [0, 0, 255]),
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, 100);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
     $this->assertSame([80, 60], $this->canvasSize($gif));
     $this->assertSame([40, 30], $this->firstFrameSize($gif));
@@ -82,7 +82,7 @@ class AnimatedGifTest extends TestCase {
       $this->createPngFrame(80, 60, [0, 0, 255]),
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, 100);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
     // The global colour table holds white at index 0 and the Logical Screen
     // Descriptor points the background colour at it.
@@ -99,7 +99,7 @@ class AnimatedGifTest extends TestCase {
       $this->createPngFrame(80, 60, [0, 0, 255]),
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, 100);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
     // Same-sized frames always cover the previous one, so none needs clearing.
     $this->assertSame([1, 1, 1], array_column($this->parseFrames($gif), 'disposal'));
@@ -112,7 +112,7 @@ class AnimatedGifTest extends TestCase {
       $frames[] = $this->createPngFrame($size[0], $size[1], [10, 20, 30]);
     }
 
-    $gif = (new AnimatedGif())->encode($frames, 100);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
     $this->assertSame($expected_disposals, array_column($this->parseFrames($gif), 'disposal'));
   }
@@ -137,7 +137,7 @@ class AnimatedGifTest extends TestCase {
         : $this->createPngFrame(160, 120, [200, 0, 0]);
     }
 
-    $gif = (new AnimatedGif())->encode($frames, 500);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 500);
 
     // The logical screen still covers the tall frame. The other 119 frames
     // are encoded at their own size, not padded to it: 2,668,800 pixels
@@ -150,8 +150,8 @@ class AnimatedGifTest extends TestCase {
     $tall = $this->createGradientPngFrame(400, 400);
     $short = $this->createGradientPngFrame(20, 20);
 
-    $mixed = (new AnimatedGif())->encode([$tall, $short, $short, $short, $short], 100);
-    $uniform = (new AnimatedGif())->encode([$tall, $tall, $tall, $tall, $tall], 100);
+    $mixed = (new AnimatedGifEncoder())->encode([$tall, $short, $short, $short, $short], 100);
+    $uniform = (new AnimatedGifEncoder())->encode([$tall, $tall, $tall, $tall, $tall], 100);
 
     // The four small frames are encoded at 20x20 rather than padded to
     // 400x400, so the mixed animation costs about one large frame.
@@ -166,7 +166,7 @@ class AnimatedGifTest extends TestCase {
       $this->createTransparentPngFrame(40, 30),
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, 100);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
     $this->assertStringStartsWith('GIF89a', $gif);
     $this->assertCount(2, $this->parseFrames($gif));
@@ -182,7 +182,7 @@ class AnimatedGifTest extends TestCase {
       (string) file_get_contents($dir . '/frame_003.png'),
     ];
 
-    $produced = (new AnimatedGif())->encode($frames, 300);
+    $produced = (new AnimatedGifEncoder())->encode($frames, 300);
     $expected = (string) file_get_contents($dir . '/expected.gif');
 
     // The per-frame colour tables and LZW byte stream are produced by GD and
@@ -199,7 +199,7 @@ class AnimatedGifTest extends TestCase {
       'not-an-image',
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, 100);
+    $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
     $this->assertStringStartsWith('GIF89a', $gif);
     $this->assertCount(1, $this->parseFrames($gif));
@@ -210,18 +210,18 @@ class AnimatedGifTest extends TestCase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('At least one frame is required');
 
-    (new AnimatedGif())->encode([], 500);
+    (new AnimatedGifEncoder())->encode([], 500);
   }
 
   public function testEncodeThrowsWhenNoFramesDecodable(): void {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('None of the provided frames could be decoded');
 
-    (new AnimatedGif())->encode(['not-an-image'], 500);
+    (new AnimatedGifEncoder())->encode(['not-an-image'], 500);
   }
 
   public function testEncodeDiscardsFramesFromPreviousCall(): void {
-    $encoder = new AnimatedGif();
+    $encoder = new AnimatedGifEncoder();
 
     $encoder->encode([$this->createPngFrame(40, 30, [255, 0, 0])], 100);
     $gif = $encoder->encode([$this->createPngFrame(80, 60, [0, 0, 255])], 100);
@@ -237,7 +237,7 @@ class AnimatedGifTest extends TestCase {
       $this->createPngFrame(20, 20, [4, 5, 6]),
     ];
 
-    $gif = (new AnimatedGif())->encode($frames, $milliseconds);
+    $gif = (new AnimatedGifEncoder())->encode($frames, $milliseconds);
 
     $this->assertSame([$expected_centiseconds, $expected_centiseconds], array_column($this->parseFrames($gif), 'delay'));
   }
@@ -255,7 +255,7 @@ class AnimatedGifTest extends TestCase {
   }
 
   public function testAddFrameReportsWhetherTheFrameWasAdded(): void {
-    $encoder = new AnimatedGif();
+    $encoder = new AnimatedGifEncoder();
 
     $this->assertTrue($encoder->addFrame($this->createPngFrame(20, 20, [1, 2, 3])));
     $this->assertFalse($encoder->addFrame('not-an-image'));
@@ -263,7 +263,7 @@ class AnimatedGifTest extends TestCase {
   }
 
   public function testResetDiscardsAddedFrames(): void {
-    $encoder = new AnimatedGif();
+    $encoder = new AnimatedGifEncoder();
     $encoder->addFrame($this->createPngFrame(20, 20, [1, 2, 3]));
     $encoder->reset();
 
@@ -274,11 +274,11 @@ class AnimatedGifTest extends TestCase {
     $this->expectException(\InvalidArgumentException::class);
     $this->expectExceptionMessage('None of the provided frames could be decoded');
 
-    (new AnimatedGif())->render(500);
+    (new AnimatedGifEncoder())->render(500);
   }
 
   public function testRenderAssemblesIncrementallyAddedFrames(): void {
-    $encoder = new AnimatedGif();
+    $encoder = new AnimatedGifEncoder();
     $encoder->addFrame($this->createPngFrame(40, 30, [255, 0, 0]));
     $encoder->addFrame($this->createPngFrame(80, 60, [0, 0, 255]));
 
@@ -293,7 +293,7 @@ class AnimatedGifTest extends TestCase {
 
   #[DataProvider('dataProviderConstrainCapsFramesToTheConfiguredMaximums')]
   public function testConstrainCapsFramesToTheConfiguredMaximums(int $max_width, int $max_height, int $width, int $height, array $expected_size): void {
-    $gif = (new AnimatedGif($max_width, $max_height))->encode([$this->createPngFrame($width, $height, [10, 20, 30])], 100);
+    $gif = (new AnimatedGifEncoder($max_width, $max_height))->encode([$this->createPngFrame($width, $height, [10, 20, 30])], 100);
 
     $this->assertSame($expected_size, $this->canvasSize($gif));
   }
@@ -314,7 +314,7 @@ class AnimatedGifTest extends TestCase {
   public function testConstrainClampsFramesToTheGifDimensionLimit(): void {
     // GIF records frame dimensions as unsigned 16-bit values, so a taller
     // frame has to be cropped to stay representable.
-    $gif = (new AnimatedGif())->encode([$this->createPngFrame(4, 70000, [10, 20, 30])], 100);
+    $gif = (new AnimatedGifEncoder())->encode([$this->createPngFrame(4, 70000, [10, 20, 30])], 100);
 
     $this->assertSame([4, 65535], $this->canvasSize($gif));
     $this->assertSame([['left' => 0, 'top' => 0, 'width' => 4, 'height' => 65535]], $this->frameGeometry($gif));
@@ -328,7 +328,7 @@ class AnimatedGifTest extends TestCase {
     imagepng($image);
     $frame = (string) ob_get_clean();
 
-    $gif = (new AnimatedGif(0, 100))->encode([$frame], 100);
+    $gif = (new AnimatedGifEncoder(0, 100))->encode([$frame], 100);
 
     // The kept half is the top one, at its original resolution.
     $this->assertSame([80, 100], $this->canvasSize($gif));
@@ -341,7 +341,7 @@ class AnimatedGifTest extends TestCase {
       $this->createPngFrame(50, 40, [200, 100, 50]),
     ];
 
-    $gif = (new AnimatedGif(100, 0))->encode($frames, 100);
+    $gif = (new AnimatedGifEncoder(100, 0))->encode($frames, 100);
 
     $this->assertSame([
       ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 200],

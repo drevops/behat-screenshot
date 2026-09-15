@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
-use DrevOps\BehatScreenshotExtension\AnimatedGif;
+use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use DrevOps\BehatScreenshotExtension\ScreenshotConfig;
@@ -49,7 +49,7 @@ class BooleanPropertyNamingTest extends TestCase {
 
   public static function dataProviderBooleanPropertiesAreNamedAsPredicates(): array {
     return [
-      'AnimatedGif' => [AnimatedGif::class, []],
+      'AnimatedGifEncoder' => [AnimatedGifEncoder::class, []],
       'BehatScreenshotExtension' => [BehatScreenshotExtension::class, []],
       'ScreenshotConfig' => [ScreenshotConfig::class, ['shouldAlwaysCaptureFullscreen', 'shouldAnimate', 'shouldCaptureOnEveryStep', 'shouldCaptureOnFailed', 'shouldPurge']],
       'ScreenshotContext' => [ScreenshotContext::class, ['scenarioHasScreenshotsTag', 'scenarioIsAnimated']],
