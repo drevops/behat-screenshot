@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
-use Behat\Behat\Hook\Scope\BeforeStepScope;
-use Behat\Gherkin\Node\FeatureNode;
-use Behat\Gherkin\Node\StepNode;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Session;
-use Behat\Testwork\Environment\Environment;
 use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -135,55 +132,41 @@ class ScreenshotContextResizeTest extends TestCase {
     $this->assertSame('test-resize-screenshot-content', $result);
   }
 
-  public function testCaptureScreenshotWritesHtmlAndImageWhenFullscreenEnabled(): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $step_node = $this->createMock(StepNode::class);
-    $feature_node->method('getFile')->willReturn('test-feature.php');
-    $step_node->method('getLine')->willReturn(42);
-    $step_node->method('getText')->willReturn('Test step');
+  #[DataProvider('dataProviderCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured')]
+  public function testCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured(bool $should_always_capture_fullscreen, array $config, string $expected_png_content): void {
+    $driver = $this->createStub(Selenium2Driver::class);
+    $driver->method('getContent')->willReturn('test-html-content');
 
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
-
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getSession',
-      'getBeforeStepScope',
-      'getScreenshotFullscreen',
-      'writeScreenshotContent',
-      'getCurrentTime',
-    ]);
-
-    $session = $this->createMock(Session::class);
-    $driver = $this->createMock(Selenium2Driver::class);
-
-    $driver->method('getContent')->willReturn('<html>Test content</html>');
+    $session = $this->createStub(Session::class);
     $session->method('getDriver')->willReturn($driver);
+
+    $writes = [];
+    $record_write = static function (string $filename, string $content) use (&$writes): void {
+      $writes[] = [$filename, $content];
+    };
+
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'makeFilename', 'getScreenshot', 'getScreenshotFullscreen', 'writeScreenshotContent']);
     $screenshot_context->method('getSession')->willReturn($session);
-    $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
-    $screenshot_context->method('getCurrentTime')->willReturn(1234567890);
+    $screenshot_context->method('makeFilename')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
+    $screenshot_context->method('getScreenshot')->willReturn('test-png-content');
+    $screenshot_context->method('getScreenshotFullscreen')->willReturn('test-fullscreen-png-content');
+    $screenshot_context->expects($this->exactly(2))->method('writeScreenshotContent')->willReturnCallback($record_write);
+    $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', $should_always_capture_fullscreen, FALSE, '{ext}', '{ext}', [], []);
 
-    // Set screenshot configuration with always_fullscreen = TRUE.
-    $screenshot_context->setScreenshotConfig(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      TRUE,
-      FALSE,
-      '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
-      [],
-      []
-    );
+    $screenshot_context->captureScreenshot($config);
 
-    $screenshot_context->method('getScreenshotFullscreen')
-      ->willReturn('test-fullscreen-screenshot-content');
+    $this->assertSame([['test.html', 'test-html-content'], ['test.png', $expected_png_content]], $writes);
+  }
 
-    // PHPUnit has no withConsecutive(), so only the call count is
-    // asserted.
-    $screenshot_context->expects($this->exactly(2))
-      ->method('writeScreenshotContent');
-
-    $screenshot_context->captureScreenshot();
+  public static function dataProviderCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured(): array {
+    return [
+      'not requested, not configured' => [FALSE, [], 'test-png-content'],
+      'requested, not configured' => [FALSE, ['fullscreen' => TRUE], 'test-fullscreen-png-content'],
+      'declined, not configured' => [FALSE, ['fullscreen' => FALSE], 'test-png-content'],
+      'not requested, configured' => [TRUE, [], 'test-fullscreen-png-content'],
+      'requested, configured' => [TRUE, ['fullscreen' => TRUE], 'test-fullscreen-png-content'],
+      'declined, configured' => [TRUE, ['fullscreen' => FALSE], 'test-fullscreen-png-content'],
+    ];
   }
 
 }
