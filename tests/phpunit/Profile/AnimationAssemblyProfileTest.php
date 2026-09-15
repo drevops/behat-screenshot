@@ -10,6 +10,7 @@ use Behat\Gherkin\Node\ScenarioInterface;
 use Behat\Testwork\Environment\Environment;
 use DrevOps\BehatScreenshot\Tests\Traits\BehatScopeTrait;
 use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -35,6 +36,7 @@ class AnimationAssemblyProfileTest extends TestCase {
 
   use BehatScopeTrait;
   use GifParserTrait;
+  use ScreenshotConfigTrait;
 
   /**
    * Width every captured frame shares, in pixels.
@@ -143,7 +145,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected function profile(int $steps, int $tallest): array {
     $screenshot_context = new ProfiledScreenshotContext();
-    $screenshot_context->setScreenshotConfig('unused', TRUE, 'failed_', FALSE, FALSE, '{ext}', '{ext}', [], ['enabled' => TRUE, 'frame_delay' => 500]);
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['animation' => ['enabled' => TRUE, 'frame_delay' => 500]]));
 
     $before_scope = $this->createBeforeScenarioScope();
     $after_step_scope = $this->createAfterStepScope();

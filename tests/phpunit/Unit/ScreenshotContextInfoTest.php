@@ -12,6 +12,7 @@ use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
 use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
+use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -24,9 +25,11 @@ use PHPUnit\Framework\TestCase;
 class ScreenshotContextInfoTest extends TestCase {
 
   use ReflectionTrait;
+  use ScreenshotConfigTrait;
 
   public function testRenderInfoJoinsLabelValuePairsWithNewlines(): void {
     $screenshot_context = new ScreenshotContext();
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
     $screenshot_context->appendInfo('Test Label', 'Test Value');
     $screenshot_context->appendInfo('Another Label', 'Another Value');
 
@@ -36,6 +39,7 @@ class ScreenshotContextInfoTest extends TestCase {
 
   public function testRenderInfoReturnsEmptyStringWhenNothingAppended(): void {
     $screenshot_context = new ScreenshotContext();
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
 
     $this->assertSame('', $screenshot_context->renderInfo());
   }
@@ -58,17 +62,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
 
     $screenshot_context->beforeStepInit($scope);
-    $screenshot_context->setScreenshotConfig(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      FALSE,
-      FALSE,
-      '{datetime:U}.test.{ext}',
-      '{datetime:U}.{failed_prefix}test.{ext}',
-      $info_types,
-      []
-    );
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['info_types' => $info_types]));
 
     $screenshot_context->renderInfo();
 
@@ -118,17 +112,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
 
     $screenshot_context->beforeStepInit($scope);
-    $screenshot_context->setScreenshotConfig(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      FALSE,
-      FALSE,
-      '{datetime:U}.test.{ext}',
-      '{datetime:U}.{failed_prefix}test.{ext}',
-      ['url'],
-      []
-    );
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['info_types' => ['url']]));
 
     $screenshot_context->renderInfo();
 
@@ -159,6 +143,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('makeFilename')->willReturn('test-filename');
     $screenshot_context->method('renderInfo')->willReturn('');
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
 
     // Only the HTML content is saved.
     $screenshot_context->expects($this->once())->method('writeScreenshotContent');
@@ -199,17 +184,7 @@ class ScreenshotContextInfoTest extends TestCase {
       $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
       $screenshot_context->method('getCurrentTime')->willReturn(12345678);
 
-      $screenshot_context->setScreenshotConfig(
-        'test-dir',
-        FALSE,
-        'failed_',
-        FALSE,
-        FALSE,
-        '{url}.{ext}',
-        '{failed_prefix}{url}.{ext}',
-        [],
-        []
-      );
+      $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['filename_pattern' => '{url}.{ext}', 'filename_pattern_failed' => '{failed_prefix}{url}.{ext}']));
 
       $result = self::callProtectedMethod($screenshot_context, 'makeFilename', ['png', NULL, FALSE]);
       $this->assertIsString($result);

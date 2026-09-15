@@ -7,6 +7,7 @@ namespace DrevOps\BehatScreenshot\Tests\Unit;
 use DrevOps\BehatScreenshotExtension\AnimatedGif;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
+use DrevOps\BehatScreenshotExtension\ScreenshotConfig;
 use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 use DrevOps\BehatScreenshotExtension\Tokenizer;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -50,8 +51,9 @@ class BooleanPropertyNamingTest extends TestCase {
     return [
       'AnimatedGif' => [AnimatedGif::class, []],
       'BehatScreenshotExtension' => [BehatScreenshotExtension::class, []],
-      'ScreenshotContext' => [ScreenshotContext::class, ['scenarioHasScreenshotsTag', 'scenarioIsAnimated', 'shouldAlwaysCaptureFullscreen', 'shouldCaptureOnEveryStep', 'shouldCaptureOnFailed']],
-      'ScreenshotContextInitializer' => [ScreenshotContextInitializer::class, ['hasPurged', 'shouldAlwaysCaptureFullscreen', 'shouldCaptureOnEveryStep', 'shouldCaptureOnFailed', 'shouldPurge']],
+      'ScreenshotConfig' => [ScreenshotConfig::class, ['shouldAlwaysCaptureFullscreen', 'shouldAnimate', 'shouldCaptureOnEveryStep', 'shouldCaptureOnFailed', 'shouldPurge']],
+      'ScreenshotContext' => [ScreenshotContext::class, ['scenarioHasScreenshotsTag', 'scenarioIsAnimated']],
+      'ScreenshotContextInitializer' => [ScreenshotContextInitializer::class, ['hasPurged']],
       'Tokenizer' => [Tokenizer::class, []],
     ];
   }

@@ -20,6 +20,7 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 - Use TRUE/FALSE constants (uppercase) rather than true/false
 - Use NULL constant (uppercase) rather than null
 - Name boolean properties as predicates that describe state: `should` for behaviour the configuration turns on (e.g., `$shouldPurge`), `is` or `has` for state set during a run (e.g., `$hasPurged`, `$scenarioIsAnimated`)
+- Declare every public `ScreenshotContext` method on `ScreenshotAwareContextInterface`, except the hooks and step definitions Behat calls
 - Maintain proper docblock annotations
 
 ### PHPUnit Configuration
@@ -30,10 +31,11 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 The Behat Screenshot extension provides functionality to capture screenshots during Behat test runs. Its main components are:
 
 1. **BehatScreenshotExtension**: Defines the configuration schema and registers the initializer with the service container
-2. **ScreenshotContextInitializer**: Passes the resolved configuration to every screenshot-aware context and purges the screenshot directory when enabled
-3. **ScreenshotContext**: Provides the Behat steps and hooks; fullscreen capture temporarily resizes the browser window to the full page height
-4. **AnimatedGif**: Assembles a scenario's captured frames into a single animated GIF
-5. **Tokenizer**: Expands the tokens used in filename patterns
+2. **ScreenshotConfig**: Holds the typed configuration, mapped from the processed configuration tree by `fromArray()`
+3. **ScreenshotContextInitializer**: Applies the `BEHAT_SCREENSHOT_DIR` and `BEHAT_SCREENSHOT_PURGE` overrides, passes a `ScreenshotConfig` to every screenshot-aware context and purges the screenshot directory when enabled
+4. **ScreenshotContext**: Provides the Behat steps and hooks; fullscreen capture temporarily resizes the browser window to the full page height
+5. **AnimatedGif**: Assembles a scenario's captured frames into a single animated GIF
+6. **Tokenizer**: Expands the tokens used in filename patterns
 
 ## Best Practices for Contributing
 1. Always run tests before and after changes

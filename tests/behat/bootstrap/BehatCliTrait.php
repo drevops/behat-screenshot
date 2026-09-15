@@ -37,7 +37,7 @@ trait BehatCliTrait {
     if ($context instanceof ScreenshotContext) {
       $src = $this->workingDir . DIRECTORY_SEPARATOR . 'screenshots';
       if (is_dir($src)) {
-        $dst = $context->getDir() . '/behatcli_screenshots';
+        $dst = $context->getScreenshotConfig()->dir . '/behatcli_screenshots';
         if (!is_readable($dst)) {
           mkdir($dst, 0777, TRUE);
         }
