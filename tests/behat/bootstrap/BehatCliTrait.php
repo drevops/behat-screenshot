@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use Behat\Hook\AfterScenario;
+use Behat\Hook\BeforeScenario;
+use Behat\Step\Given;
+use Behat\Step\Then;
+use Behat\Step\When;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Filesystem\Filesystem;
@@ -16,20 +20,21 @@ use Symfony\Component\Finder\Finder;
 trait BehatCliTrait {
 
   /**
-   * @BeforeScenario
+   * Write the feature context and the configuration loader for the inner run.
    */
-  public function behatCliBeforeScenario(BeforeScenarioScope $scope): void {
-    if ($scope->getFeature()->hasTag('behatcli')) {
-      $traits = [
-        'tests/behat/bootstrap/ScreenshotTrait.php' => 'ScreenshotTrait',
-      ];
-      $this->behatCliWriteFeatureContextFile($traits);
-    }
+  #[BeforeScenario('@behatcli')]
+  public function behatCliBeforeScenario(): void {
+    $traits = [
+      'tests/behat/bootstrap/ScreenshotTrait.php' => 'ScreenshotTrait',
+    ];
+    $this->behatCliWriteFeatureContextFile($traits);
+    $this->behatCliWriteConfigLoader();
   }
 
   /**
-   * @AfterScenario @behatcli
+   * Copy the inner run's screenshots and print its output in debug mode.
    */
+  #[AfterScenario('@behatcli')]
   public function behatCliAfterScenarioPrintOutput(AfterScenarioScope $scope): void {
     $this->behatCliCopyScreenshots($scope);
 
@@ -65,6 +70,16 @@ trait BehatCliTrait {
     foreach ($finder->in($src)->files() as $file) {
       $filesystem->copy($file->getRealPath(), $dst . DIRECTORY_SEPARATOR . $file->getFilename());
     }
+  }
+
+  /**
+   * Copy the project's behat.php into the working directory.
+   *
+   * Behat 4 reads PHP configuration only, and behat.php loads the behat.yml
+   * written next to it. Behat 3 reads that behat.yml directly.
+   */
+  protected function behatCliWriteConfigLoader(): void {
+    $this->createFile($this->workingDir . DIRECTORY_SEPARATOR . 'behat.php', file_get_contents(__DIR__ . '/../../../behat.php'));
   }
 
   /**
@@ -105,8 +120,12 @@ trait BehatCliTrait {
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Hook\BeforeScenario;
 use Behat\MinkExtension\Context\MinkContext;
 use Behat\MinkExtension\Context\RawMinkContext;
+use Behat\Step\Given;
+use Behat\Step\Then;
+use Behat\Step\When;
 
 {{USE_DECLARATION}}
 
@@ -134,17 +153,14 @@ class FeatureContextTest extends MinkContext implements Context {
 
   /**
    * Update base URL for JavaScript scenarios.
-   *
-   * @BeforeScenario
    */
+  #[BeforeScenario('@javascript&&~@skip-base-url-rewrite')]
   public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
-    if ($scope->getScenario()->hasTag('javascript') && !$scope->getScenario()->hasTag('skip-base-url-rewrite')) {
-      $environment = $scope->getEnvironment();
-      if ($environment instanceof InitializedContextEnvironment) {
-        foreach ($environment->getContexts() as $context) {
-          if ($context instanceof RawMinkContext) {
-            $context->setMinkParameter('base_url', $this->javascriptBaseUrl);
-          }
+    $environment = $scope->getEnvironment();
+    if ($environment instanceof InitializedContextEnvironment) {
+      foreach ($environment->getContexts() as $context) {
+        if ($context instanceof RawMinkContext) {
+          $context->setMinkParameter('base_url', $this->javascriptBaseUrl);
         }
       }
     }
@@ -152,25 +168,26 @@ class FeatureContextTest extends MinkContext implements Context {
 
   /**
    * Go to the phpserver test page.
-   *
-   * @Given /^(?:|I )am on (?:|the )phpserver test page$/
-   * @When /^(?:|I )go to (?:|the )phpserver test page$/
    */
+  #[Given('/^(?:|I )am on (?:|the )phpserver test page$/')]
+  #[When('/^(?:|I )go to (?:|the )phpserver test page$/')]
   public function goToPhpServerTestPage()
   {
     $this->visitPath('/screenshot.html');
   }
 
   /**
-   * @Given I throw test exception with message :message
+   * Throw an exception with the given message.
    */
+  #[Given('I throw test exception with message :message')]
   public function throwTestException($message) {
     throw new \RuntimeException($message);
   }
 
   /**
-   * @Then the environment variable :name should have the value :value
+   * Assert that an environment variable holds the given value.
    */
+  #[Then('the environment variable :name should have the value :value')]
   public function assertEnvironmentVariableValue($name, $value) {
     $actual = getenv($name);
 
@@ -200,8 +217,9 @@ EOL;
   }
 
   /**
-   * @Given /^scenario steps(?: tagged with "([^"]*)")?:$/
+   * Write a stub feature with the given scenario steps.
    */
+  #[Given('/^scenario steps(?: tagged with "([^"]*)")?:$/')]
   public function behatCliWriteScenarioSteps(PyStringNode $content, string $tags = ''): void {
     $content = strtr((string) $content, ["'''" => '"""']);
 
@@ -238,8 +256,9 @@ EOL;
   }
 
   /**
-   * @Given full behat configuration:
+   * Write the given content as the Behat configuration.
    */
+  #[Given('full behat configuration:')]
   public function behatCliWriteFullBehatYml(PyStringNode $content): void {
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
     $this->createFile($filename, (string) $content);
@@ -250,8 +269,9 @@ EOL;
   }
 
   /**
-   * @Given some behat configuration
+   * Write a Behat configuration with the test and PHP server contexts.
    */
+  #[Given('some behat configuration')]
   public function behatCliWriteBehatYml(): void {
     $content = <<<'EOL'
 default:
@@ -264,7 +284,7 @@ default:
             webroot: '%paths.base%/tests/behat/fixtures'
             host: 0.0.0.0
   extensions:
-    Behat\MinkExtension:
+    Behat\MinkExtension\ServiceContainer\MinkExtension:
       browserkit_http: ~
       selenium2: ~
       base_url: http://0.0.0.0:8888
@@ -279,8 +299,9 @@ EOL;
   }
 
   /**
-   * @Given screenshot context behat configuration with value:
+   * Write a Behat configuration with the screenshot context and extension.
    */
+  #[Given('screenshot context behat configuration with value:')]
   public function behatCliWriteScreenshotContextBehatYml(PyStringNode $value): void {
     $content = <<<'EOL'
 default:
@@ -294,7 +315,7 @@ default:
             host: 0.0.0.0
         - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
   extensions:
-    Behat\MinkExtension:
+    Behat\MinkExtension\ServiceContainer\MinkExtension:
       browserkit_http: ~
       base_url: http://0.0.0.0:8888
       browser_name: chrome
@@ -327,8 +348,9 @@ EOL;
   }
 
   /**
-   * @Given screenshot fixture
+   * Copy the screenshot fixture page into the working directory.
    */
+  #[Given('screenshot fixture')]
   public function behatCliWriteScreenshotFixture(): void {
     $filename = 'tests/behat/fixtures/screenshot.html';
     $src = __DIR__ . '/../fixtures/screenshot.html';
@@ -337,8 +359,9 @@ EOL;
   }
 
   /**
-   * @Given short screenshot fixture
+   * Copy the short screenshot fixture page into the working directory.
    */
+  #[Given('short screenshot fixture')]
   public function behatCliWriteScreenshotShortFixture(): void {
     $filename = 'tests/behat/fixtures/screenshot.html';
     $src = __DIR__ . '/../fixtures/screenshot_short.html';
@@ -347,8 +370,9 @@ EOL;
   }
 
   /**
-   * @Given screenshot test context:
+   * Write a test context and register it after the screenshot context.
    */
+  #[Given('screenshot test context:')]
   public function behatCliWriteScreenshotTestContext(PyStringNode $content): void {
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/bootstrap/FullscreenTestContext.php';
     $this->createFile($filename, $content);
@@ -374,8 +398,9 @@ EOL;
   }
 
   /**
-   * @Then it should fail with an error:
+   * Assert that the run failed with an assertion error message.
    */
+  #[Then('it should fail with an error:')]
   public function behatCliAssertFailWithError(PyStringNode $message): void {
     $this->itShouldFail('fail');
     Assert::assertStringContainsString(trim((string) $message), $this->getOutput());
@@ -386,8 +411,9 @@ EOL;
   }
 
   /**
-   * @Then it should fail with an exception:
+   * Assert that the run failed with a runtime exception message.
    */
+  #[Then('it should fail with an exception:')]
   public function behatCliAssertFailWithException(PyStringNode $message): void {
     $this->itShouldFail('fail');
     Assert::assertStringContainsString(trim((string) $message), $this->getOutput());
@@ -398,9 +424,8 @@ EOL;
 
   /**
    * Adds an environment variable to the inner Behat run.
-   *
-   * @When I add the environment variable :name with the value :value
    */
+  #[When('I add the environment variable :name with the value :value')]
   public function behatCliAddEnvironmentVariable(string $name, string $value): void {
     $this->env[$name] = $value;
   }
@@ -438,9 +463,8 @@ EOL;
    *
    * @param string $wildcard
    *   Filename with a wildcard.
-   *
-   * @Given /^behat cli file wildcard "([^"]*)" should exist$/
    */
+  #[Given('/^behat cli file wildcard "([^"]*)" should exist$/')]
   public function behatCliAssertFileShouldExist(string $wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -459,9 +483,8 @@ EOL;
    *   Filename with a wildcard.
    * @param \Behat\Gherkin\Node\PyStringNode $text
    *   Text in the file.
-   *
-   * @Given /^behat screenshot file matching "([^"]*)" should contain:$/
    */
+  #[Given('/^behat screenshot file matching "([^"]*)" should contain:$/')]
   public function behatCliAssertFileShouldContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -487,9 +510,8 @@ EOL;
    *   Filename with a wildcard.
    * @param \Behat\Gherkin\Node\PyStringNode $text
    *   Text in the file.
-   *
-   * @Given /^behat screenshot file matching "([^"]*)" should not contain:$/
    */
+  #[Given('/^behat screenshot file matching "([^"]*)" should not contain:$/')]
   public function behatCliAssertFileShouldNotContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -513,9 +535,8 @@ EOL;
    *
    * @param string $wildcard
    *   Filename with a wildcard.
-   *
-   * @Given /^behat cli file wildcard "([^"]*)" should not exist$/
    */
+  #[Given('/^behat cli file wildcard "([^"]*)" should not exist$/')]
   public function behatCliAssertFileShouldNotExist(string $wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
