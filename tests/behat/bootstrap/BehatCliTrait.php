@@ -409,7 +409,7 @@ EOL;
    * Checks whether a file wildcard at provided path exists.
    *
    * @param string $wildcard
-   *   File name with a wildcard.
+   *   Filename with a wildcard.
    *
    * @Given /^behat cli file wildcard "([^"]*)" should exist$/
    */
@@ -428,7 +428,7 @@ EOL;
    * Checks whether a screenshot file matching pattern exists and contains text.
    *
    * @param string $wildcard
-   *   File name with a wildcard.
+   *   Filename with a wildcard.
    * @param \Behat\Gherkin\Node\PyStringNode $text
    *   Text in the file.
    *
@@ -456,7 +456,7 @@ EOL;
    * Checks whether a screenshot file exists and does not contain given text.
    *
    * @param string $wildcard
-   *   File name with a wildcard.
+   *   Filename with a wildcard.
    * @param \Behat\Gherkin\Node\PyStringNode $text
    *   Text in the file.
    *
@@ -484,7 +484,7 @@ EOL;
    * Checks whether a file wildcard at provided path does not exist.
    *
    * @param string $wildcard
-   *   File name with a wildcard.
+   *   Filename with a wildcard.
    *
    * @Given /^behat cli file wildcard "([^"]*)" should not exist$/
    */

@@ -142,7 +142,7 @@ class ScreenshotContextInfoTest extends TestCase {
   public function testCaptureScreenshotWritesOnlyHtmlWhenImageUnsupported(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getSession',
-      'makeFileName',
+      'makeFilename',
       'writeScreenshotContent',
       'renderInfo',
     ]);
@@ -157,7 +157,7 @@ class ScreenshotContextInfoTest extends TestCase {
 
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
-    $screenshot_context->method('makeFileName')->willReturn('test-file-name');
+    $screenshot_context->method('makeFilename')->willReturn('test-filename');
     $screenshot_context->method('renderInfo')->willReturn('');
 
     // Only the HTML content is saved.
@@ -173,7 +173,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $this->assertGreaterThan(0, $time);
   }
 
-  public function testMakeFileNameReplacesUrlHostFromEnvironment(): void {
+  public function testMakeFilenameReplacesUrlHostFromEnvironment(): void {
     $original_value = getenv('BEHAT_SCREENSHOT_TOKEN_HOST');
 
     try {
@@ -211,7 +211,7 @@ class ScreenshotContextInfoTest extends TestCase {
         []
       );
 
-      $result = self::callProtectedMethod($screenshot_context, 'makeFileName', ['png', NULL, FALSE]);
+      $result = self::callProtectedMethod($screenshot_context, 'makeFilename', ['png', NULL, FALSE]);
       $this->assertIsString($result);
 
       // The Tokenizer collapses each run of characters other than word

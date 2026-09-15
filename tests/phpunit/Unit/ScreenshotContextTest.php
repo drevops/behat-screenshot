@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
+use Behat\Behat\Context\Annotation\DocBlockHelper;
+use Behat\Behat\Context\Environment\UninitializedContextEnvironment;
+use Behat\Behat\Context\Reader\AnnotatedContextReader;
+use Behat\Behat\Hook\Context\Annotation\HookAnnotationReader;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
@@ -16,6 +20,8 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Environment\Environment;
+use Behat\Testwork\Hook\Call\RuntimeHook;
+use Behat\Testwork\Suite\GenericSuite;
 use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -29,6 +35,35 @@ use PHPUnit\Framework\TestCase;
 class ScreenshotContextTest extends TestCase {
 
   use ReflectionTrait;
+
+  public function testBehatRegistersHooksOnPhasePrefixedMethods(): void {
+    $reader = new AnnotatedContextReader(new DocBlockHelper());
+    $reader->registerAnnotationReader(new HookAnnotationReader());
+    $environment = new UninitializedContextEnvironment(new GenericSuite('default', []));
+
+    $hooks = [];
+    foreach ($reader->readContextCallees($environment, ScreenshotContext::class) as $callee) {
+      if (!$callee instanceof RuntimeHook) {
+        continue;
+      }
+
+      $method = $callee->getReflection()->getName();
+      $phase = lcfirst($callee->getName());
+      $this->assertTrue(str_starts_with($method, $phase), sprintf('Hook method %s() does not start with its phase %s.', $method, $phase));
+      $hooks[] = $method . ' ' . $callee;
+    }
+
+    sort($hooks);
+
+    $this->assertSame([
+      'afterScenarioAnimate AfterScenario',
+      'afterStepCaptureFailedScreenshot AfterStep',
+      'afterStepCaptureScreenshot AfterStep',
+      'beforeScenarioCheckScreenshotsTag BeforeScenario',
+      'beforeScenarioInit BeforeScenario @javascript',
+      'beforeStepInit BeforeStep',
+    ], $hooks);
+  }
 
   public function testBeforeScenarioInitPropagatesDriverStartException(): void {
     $env = $this->createMock(Environment::class);
@@ -61,28 +96,44 @@ class ScreenshotContextTest extends TestCase {
     $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
-  public function testPrintLastResponseOnErrorCapturesScreenshotOnFailedStep(): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $step_node = $this->createMock(StepNode::class);
-    $result = $this->createMock(StepResult::class);
-    $result->method('isPassed')->willReturn(FALSE);
-    $scope = new AfterStepScope($env, $feature_node, $step_node, $result);
+  #[DataProvider('dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig')]
+  public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(bool $passed, bool $on_failed, bool $on_every_step, bool $has_screenshots_tag, bool $is_animated, bool $always_fullscreen, array $expected_configs): void {
+    $result = $this->createStub(StepResult::class);
+    $result->method('isPassed')->willReturn($passed);
+    $scope = new AfterStepScope($this->createStub(Environment::class), $this->createStub(FeatureNode::class), $this->createStub(StepNode::class), $result);
+
+    $configs = [];
+    $record_config = static function (array $config) use (&$configs): void {
+      $configs[] = $config;
+    };
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
-    $screenshot_context->setScreenshotConfig(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      FALSE,
-      FALSE,
-      '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
-      [],
-      []
-    );
-    $screenshot_context->expects($this->once())->method('captureScreenshot');
-    $screenshot_context->printLastResponseOnError($scope);
+    $screenshot_context->expects($this->exactly(count($expected_configs)))->method('captureScreenshot')->willReturnCallback($record_config);
+    $screenshot_context->setScreenshotConfig('test-dir', $on_failed, 'failed_', $always_fullscreen, $on_every_step, '{ext}', '{ext}', [], []);
+    self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', $has_screenshots_tag);
+    self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', $is_animated);
+
+    $screenshot_context->afterStepCaptureFailedScreenshot($scope);
+    $screenshot_context->afterStepCaptureScreenshot($scope);
+
+    $this->assertSame($expected_configs, $configs);
+  }
+
+  public static function dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig(): array {
+    return [
+      'passed step, nothing enabled' => [TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, []],
+      'passed step, on_failed' => [TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, []],
+      'passed step, on_every_step' => [TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, [['fullscreen' => FALSE]]],
+      'passed step, screenshots tag' => [TRUE, FALSE, FALSE, TRUE, FALSE, FALSE, [['fullscreen' => FALSE]]],
+      'passed step, animated' => [TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, [['fullscreen' => FALSE]]],
+      'passed step, on_every_step and always_fullscreen' => [TRUE, FALSE, TRUE, FALSE, FALSE, TRUE, [['fullscreen' => TRUE]]],
+      'passed step, all triggers' => [TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, [['fullscreen' => FALSE]]],
+      'failed step, nothing enabled' => [FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, []],
+      'failed step, on_failed' => [FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, [['is_failed' => TRUE, 'fullscreen' => FALSE]]],
+      'failed step, on_failed and always_fullscreen' => [FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, [['is_failed' => TRUE, 'fullscreen' => TRUE]]],
+      'failed step, per-step triggers only' => [FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, []],
+      'failed step, all triggers' => [FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, [['is_failed' => TRUE, 'fullscreen' => FALSE]]],
+    ];
   }
 
   public function testIsaveSizedScreenshotIgnoresUnsupportedResize(): void {
@@ -98,7 +149,7 @@ class ScreenshotContextTest extends TestCase {
   public function testIsaveScreenshotWithNameDelegatesToCaptureScreenshot(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->once())->method('captureScreenshot');
-    $screenshot_context->iSaveScreenshotWithName('test-file-name');
+    $screenshot_context->iSaveScreenshotWithName('test-filename');
   }
 
   public function testIsaveFullscreenScreenshotWithNamePassesNameAndFullscreen(): void {
@@ -148,9 +199,9 @@ class ScreenshotContextTest extends TestCase {
       $writes[] = [$filename, $content];
     };
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'makeFileName', 'writeScreenshotContent']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'makeFilename', 'writeScreenshotContent']);
     $screenshot_context->method('getSession')->willReturn($session);
-    $screenshot_context->method('makeFileName')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
+    $screenshot_context->method('makeFilename')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
     $screenshot_context->expects($this->exactly(count($expected_writes)))->method('writeScreenshotContent')->willReturnCallback($record_write);
 
     // Seed an earlier capture's content, so a missing reset is detected.
@@ -200,8 +251,8 @@ class ScreenshotContextTest extends TestCase {
     ];
   }
 
-  #[DataProvider('dataProviderMakeFileNameReplacesTokensInPatterns')]
-  public function testMakeFileNameReplacesTokensInPatterns(
+  #[DataProvider('dataProviderMakeFilenameReplacesTokensInPatterns')]
+  public function testMakeFilenameReplacesTokensInPatterns(
     string $ext,
     mixed $filename,
     bool $on_failed,
@@ -252,12 +303,12 @@ class ScreenshotContextTest extends TestCase {
       []
     );
 
-    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFileName', [$ext, $filename, $on_failed]);
+    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFilename', [$ext, $filename, $on_failed]);
 
     $this->assertSame($expected, $filename_processed);
   }
 
-  public static function dataProviderMakeFileNameReplacesTokensInPatterns(): array {
+  public static function dataProviderMakeFilenameReplacesTokensInPatterns(): array {
     return [
       'no filename uses default pattern' => [
         'html',

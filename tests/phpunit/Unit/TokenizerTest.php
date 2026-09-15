@@ -124,8 +124,8 @@ class TokenizerTest extends TestCase {
       'no feature file leaves token' => ['{feature}', 'feature', 'file', NULL, [], '{feature}'],
       'null feature file leaves token' => ['{feature}', 'feature', 'file', NULL, ['feature_file' => NULL], '{feature}'],
       'empty feature file leaves token' => ['{feature}', 'feature', 'file', NULL, ['feature_file' => ''], '{feature}'],
-      'bare file name' => ['{feature}', 'feature', 'file', NULL, ['feature_file' => 'stub-file.feature'], 'stub-file'],
-      'file name with path' => ['{feature}', 'feature', 'file', NULL, ['feature_file' => 'path/example/stub-file.feature'], 'stub-file'],
+      'bare filename' => ['{feature}', 'feature', 'file', NULL, ['feature_file' => 'stub-file.feature'], 'stub-file'],
+      'filename with path' => ['{feature}', 'feature', 'file', NULL, ['feature_file' => 'path/example/stub-file.feature'], 'stub-file'],
     ];
   }
 

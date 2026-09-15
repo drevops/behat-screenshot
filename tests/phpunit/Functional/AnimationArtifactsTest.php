@@ -202,7 +202,7 @@ class AnimationArtifactsTest extends TestCase {
    * Write each frame as the encoder constrains it, before encoding.
    *
    * @param string $prefix
-   *   File name prefix.
+   *   Filename prefix.
    * @param array<int,string> $frames
    *   Binary PNG content for each frame.
    * @param int $max_width
@@ -234,7 +234,7 @@ class AnimationArtifactsTest extends TestCase {
    * Write an artifact file.
    *
    * @param string $name
-   *   File name.
+   *   Filename.
    * @param string $content
    *   File content.
    */
