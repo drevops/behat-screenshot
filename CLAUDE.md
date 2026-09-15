@@ -22,6 +22,7 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 - Name boolean properties as predicates that describe state: `should` for behaviour the configuration turns on (e.g., `$shouldPurge`), `is` or `has` for state set during a run (e.g., `$hasPurged`, `$scenarioIsAnimated`)
 - Declare every public `ScreenshotContext` method on `ScreenshotAwareContextInterface`, except the hooks and step definitions Behat calls
 - Create collaborators with side effects, such as `Filesystem`, `Finder` and `AnimatedGifEncoder`, in a protected `create*()` method that returns the new instance, and read the clock through `getCurrentTime()`; create value objects (`ScreenshotConfig`, a container `Definition`) and exceptions inline
+- Declare each configuration default as a literal in its `BehatScreenshotExtension::configure()` node, and name each environment variable a class reads with a public `ENV_*` constant on that class, formed from the variable name without its `BEHAT_SCREENSHOT_` prefix and read with `getenv(self::ENV_*)`
 - Maintain proper docblock annotations
 
 ### PHPUnit Configuration
