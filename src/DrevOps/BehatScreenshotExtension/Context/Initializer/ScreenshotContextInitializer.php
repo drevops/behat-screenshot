@@ -48,10 +48,10 @@ class ScreenshotContextInitializer implements ContextInitializer {
     $config = ScreenshotConfig::fromArray($this->applyEnvironmentOverrides($this->config));
 
     if ($config->shouldPurge && !$this->hasPurged) {
-      $fs = $this->createFilesystem();
+      $filesystem = $this->createFilesystem();
 
-      if ($fs->exists($config->dir)) {
-        $fs->remove($this->createFinder()->files()->in($config->dir));
+      if ($filesystem->exists($config->dir)) {
+        $filesystem->remove($this->createFinder()->files()->in($config->dir));
       }
 
       $this->hasPurged = TRUE;
