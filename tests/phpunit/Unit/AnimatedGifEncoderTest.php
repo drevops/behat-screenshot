@@ -8,12 +8,15 @@ use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresFunction;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Test AnimatedGifEncoder.
  */
 #[CoversClass(AnimatedGifEncoder::class)]
+#[RequiresFunction('imagecreatetruecolor')]
+#[RequiresFunction('imagegif')]
 class AnimatedGifEncoderTest extends TestCase {
 
   use GifParserTrait;

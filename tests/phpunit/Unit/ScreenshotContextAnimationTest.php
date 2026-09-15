@@ -15,6 +15,7 @@ use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresFunction;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -295,6 +296,8 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertSame('1700000000.login.feature_7.gif', $result);
   }
 
+  #[RequiresFunction('imagecreatefromstring')]
+  #[RequiresFunction('imagegif')]
   public function testIsAnimatedGifSupportedReturnsTrueWhenGdIsAvailable(): void {
     $this->assertTrue(self::callProtectedMethod(new ScreenshotContext(), 'isAnimatedGifSupported'));
   }

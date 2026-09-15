@@ -13,6 +13,7 @@ use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RequiresFunction;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -31,6 +32,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversNothing]
 #[Group('profile')]
+#[RequiresFunction('imagecreatetruecolor')]
+#[RequiresFunction('imagegif')]
 class AnimationAssemblyProfileTest extends TestCase {
 
   use BehatScopeTrait;
@@ -56,14 +59,6 @@ class AnimationAssemblyProfileTest extends TestCase {
    * Step counts profiled when none are given in the environment.
    */
   protected const DEFAULT_STEPS = [25, 50, 100];
-
-  protected function setUp(): void {
-    parent::setUp();
-
-    if (!function_exists('imagecreatetruecolor') || !function_exists('imagegif')) {
-      $this->markTestSkipped('Profiling animated GIF assembly requires the gd extension.');
-    }
-  }
 
   public function testAnimationAssemblyProducesGifForEveryProfiledScenario(): void {
     $steps = $this->stepCounts();
