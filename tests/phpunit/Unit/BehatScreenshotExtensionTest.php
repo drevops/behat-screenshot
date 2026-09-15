@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace DrevOps\BehatScreenshot\Tests\Unit;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
+use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
 use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -21,6 +23,8 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 #[CoversClass(BehatScreenshotExtension::class)]
 class BehatScreenshotExtensionTest extends TestCase {
+
+  use ScreenshotConfigTrait;
 
   #[DataProvider('dataProviderGetConfigKeyAndLoadUseModId')]
   public function testGetConfigKeyAndLoadUseModId(BehatScreenshotExtension $extension, string $expected_config_key): void {
@@ -70,21 +74,39 @@ class BehatScreenshotExtensionTest extends TestCase {
 
     $definition = $container->getDefinition('drevops_behat_screenshot.screenshot_context_initializer');
     $this->assertSame(ScreenshotContextInitializer::class, $definition->getClass());
-    $this->assertSame(
-      [
-        $config['dir'],
-        $config['on_failed'],
-        $config['failed_prefix'],
-        $config['purge'],
-        $config['always_fullscreen'],
-        $config['on_every_step'],
-        $config['filename_pattern'],
-        $config['filename_pattern_failed'],
-        $config['info_types'],
-        $config['animation'],
-      ],
-      $definition->getArguments()
-    );
+    $this->assertSame([$config], $definition->getArguments());
+  }
+
+  public function testLoadedInitializerPassesConfigWithResolvedParametersToContext(): void {
+    $original_env_purge = getenv('BEHAT_SCREENSHOT_PURGE');
+    $original_env_dir = getenv('BEHAT_SCREENSHOT_DIR');
+
+    try {
+      putenv('BEHAT_SCREENSHOT_PURGE');
+      putenv('BEHAT_SCREENSHOT_DIR');
+
+      $container = new ContainerBuilder();
+      $container->setParameter('paths.base', '/test/base');
+
+      $extension = new BehatScreenshotExtension();
+      $extension->load($container, self::processScreenshotConfig(['info_types' => ['url']]));
+
+      // Compiling removes a private service that nothing references.
+      $container->getDefinition('drevops_behat_screenshot.screenshot_context_initializer')->setPublic(TRUE);
+      $container->compile(TRUE);
+
+      $initializer = $container->get('drevops_behat_screenshot.screenshot_context_initializer');
+      $this->assertInstanceOf(ScreenshotContextInitializer::class, $initializer);
+
+      $context = $this->createMock(ScreenshotAwareContextInterface::class);
+      $context->expects($this->once())->method('setScreenshotConfig')->with(self::createScreenshotConfig(['dir' => '/test/base/screenshots', 'info_types' => ['url']]));
+
+      $initializer->initializeContext($context);
+    }
+    finally {
+      putenv($original_env_purge === FALSE ? 'BEHAT_SCREENSHOT_PURGE' : 'BEHAT_SCREENSHOT_PURGE=' . $original_env_purge);
+      putenv($original_env_dir === FALSE ? 'BEHAT_SCREENSHOT_DIR' : 'BEHAT_SCREENSHOT_DIR=' . $original_env_dir);
+    }
   }
 
   public function testConfigureDefinesTenConfigOptions(): void {

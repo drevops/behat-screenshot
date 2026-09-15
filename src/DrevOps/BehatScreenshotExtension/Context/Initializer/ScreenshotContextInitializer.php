@@ -7,6 +7,7 @@ namespace DrevOps\BehatScreenshotExtension\Context\Initializer;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Initializer\ContextInitializer;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
+use DrevOps\BehatScreenshotExtension\ScreenshotConfig;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -25,41 +26,14 @@ class ScreenshotContextInitializer implements ContextInitializer {
   /**
    * ScreenshotContextInitializer constructor.
    *
-   * @param string $dir
-   *   Screenshot dir.
-   * @param bool $shouldCaptureOnFailed
-   *   Whether to capture a screenshot after a failed step.
-   * @param string $failedPrefix
-   *   Filename prefix for a failed test.
-   * @param bool $shouldPurge
-   *   Whether to purge the dir before the test run starts.
-   * @param bool $shouldAlwaysCaptureFullscreen
-   *   Whether to capture every screenshot fullscreen.
-   * @param bool $shouldCaptureOnEveryStep
-   *   Whether to capture a screenshot after every step.
-   * @param string $filenamePattern
-   *   Filename pattern.
-   * @param string $filenamePatternFailed
-   *   Filename pattern for failed tests.
-   * @param array<int,string> $infoTypes
-   *   Show these info types in the screenshot.
-   * @param array<string,mixed> $animation
-   *   Animated GIF configuration (keys: enabled, frame_delay, max_width,
-   *   max_height).
+   * @param array<mixed> $config
+   *   Configuration processed by the extension's configuration tree, keyed as
+   *   in behat.yml.
    *
    * @codeCoverageIgnore
    */
   public function __construct(
-    protected string $dir,
-    protected bool $shouldCaptureOnFailed,
-    protected string $failedPrefix,
-    protected bool $shouldPurge,
-    protected bool $shouldAlwaysCaptureFullscreen,
-    protected bool $shouldCaptureOnEveryStep,
-    protected string $filenamePattern,
-    protected string $filenamePatternFailed,
-    protected array $infoTypes = [],
-    protected array $animation = [],
+    protected array $config,
   ) {
   }
 
@@ -67,29 +41,49 @@ class ScreenshotContextInitializer implements ContextInitializer {
    * {@inheritdoc}
    */
   public function initializeContext(Context $context): void {
-    if ($context instanceof ScreenshotAwareContextInterface) {
-      $dir = getenv('BEHAT_SCREENSHOT_DIR') ?: $this->dir;
+    if (!$context instanceof ScreenshotAwareContextInterface) {
+      return;
+    }
 
-      if ((getenv('BEHAT_SCREENSHOT_PURGE') || $this->shouldPurge) && !$this->hasPurged) {
-        $fs = $this->getFilesystem();
-        if ($fs->exists($dir)) {
-          $fs->remove($this->getFinder()->files()->in($dir));
-        }
-        $this->hasPurged = TRUE;
+    $config = ScreenshotConfig::fromArray($this->applyEnvironmentOverrides($this->config));
+
+    if ($config->shouldPurge && !$this->hasPurged) {
+      $fs = $this->getFilesystem();
+
+      if ($fs->exists($config->dir)) {
+        $fs->remove($this->getFinder()->files()->in($config->dir));
       }
 
-      $context->setScreenshotConfig(
-        $dir,
-        $this->shouldCaptureOnFailed,
-        $this->failedPrefix,
-        $this->shouldAlwaysCaptureFullscreen,
-        $this->shouldCaptureOnEveryStep,
-        $this->filenamePattern,
-        $this->filenamePatternFailed,
-        $this->infoTypes,
-        $this->animation
-      );
+      $this->hasPurged = TRUE;
     }
+
+    $context->setScreenshotConfig($config);
+  }
+
+  /**
+   * Apply the environment variables that override configuration keys.
+   *
+   * A truthy BEHAT_SCREENSHOT_DIR replaces "dir", and a truthy
+   * BEHAT_SCREENSHOT_PURGE turns "purge" on.
+   *
+   * @param array<mixed> $config
+   *   Processed configuration.
+   *
+   * @return array<mixed>
+   *   Processed configuration with the environment variables applied.
+   */
+  protected function applyEnvironmentOverrides(array $config): array {
+    $dir = getenv('BEHAT_SCREENSHOT_DIR');
+
+    if ($dir) {
+      $config['dir'] = $dir;
+    }
+
+    if (getenv('BEHAT_SCREENSHOT_PURGE')) {
+      $config['purge'] = TRUE;
+    }
+
+    return $config;
   }
 
   /**

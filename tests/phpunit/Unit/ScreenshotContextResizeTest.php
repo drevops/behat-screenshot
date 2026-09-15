@@ -7,6 +7,7 @@ namespace DrevOps\BehatScreenshot\Tests\Unit;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Session;
 use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
+use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 class ScreenshotContextResizeTest extends TestCase {
 
   use ReflectionTrait;
+  use ScreenshotConfigTrait;
 
   public function testGetScreenshotFullscreenWithResizeResizesThenRestoresWindow(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
@@ -113,23 +115,10 @@ class ScreenshotContextResizeTest extends TestCase {
       'getScreenshotFullscreenWithResize',
     ]);
 
-    $screenshot_context->setScreenshotConfig(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      TRUE,
-      FALSE,
-      '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
-      [],
-      []
-    );
-
     $screenshot_context->method('getScreenshotFullscreenWithResize')
       ->willReturn('test-resize-screenshot-content');
 
-    $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreen');
-    $this->assertSame('test-resize-screenshot-content', $result);
+    $this->assertSame('test-resize-screenshot-content', $screenshot_context->getScreenshotFullscreen());
   }
 
   #[DataProvider('dataProviderCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured')]
@@ -151,7 +140,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $screenshot_context->method('getScreenshot')->willReturn('test-png-content');
     $screenshot_context->method('getScreenshotFullscreen')->willReturn('test-fullscreen-png-content');
     $screenshot_context->expects($this->exactly(2))->method('writeScreenshotContent')->willReturnCallback($record_write);
-    $screenshot_context->setScreenshotConfig('test-dir', TRUE, 'failed_', $should_always_capture_fullscreen, FALSE, '{ext}', '{ext}', [], []);
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['always_fullscreen' => $should_always_capture_fullscreen]));
 
     $screenshot_context->captureScreenshot($config);
 

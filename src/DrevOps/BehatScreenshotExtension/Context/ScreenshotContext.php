@@ -13,6 +13,7 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\MinkExtension\Context\RawMinkContext;
 use DrevOps\BehatScreenshotExtension\AnimatedGif;
+use DrevOps\BehatScreenshotExtension\ScreenshotConfig;
 use DrevOps\BehatScreenshotExtension\Tokenizer;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -80,38 +81,14 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   public const WINDOW_RESIZE_SETTLE_MICROSECONDS = 100000;
 
   /**
-   * Screenshot directory path.
+   * Screenshot configuration.
    */
-  protected string $dir = '';
-
-  /**
-   * Whether to capture a screenshot after a failed step.
-   */
-  protected bool $shouldCaptureOnFailed = FALSE;
-
-  /**
-   * Whether to capture every screenshot fullscreen.
-   */
-  protected bool $shouldAlwaysCaptureFullscreen = FALSE;
-
-  /**
-   * Whether to capture a screenshot after every step.
-   */
-  protected bool $shouldCaptureOnEveryStep = FALSE;
+  protected ScreenshotConfig $screenshotConfig;
 
   /**
    * Whether the current scenario has the @screenshots tag.
    */
   protected bool $scenarioHasScreenshotsTag = FALSE;
-
-  /**
-   * Animated GIF configuration.
-   *
-   * Keys: enabled, frame_delay, max_width, max_height.
-   *
-   * @var array<string,mixed>
-   */
-  protected array $animation = [];
 
   /**
    * Whether the current scenario should produce an animated GIF.
@@ -129,28 +106,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected ?string $lastScreenshotContent = NULL;
 
   /**
-   * Prefix for failed screenshot files.
-   */
-  protected string $failedPrefix = '';
-
-  /**
-   * Filename pattern.
-   */
-  protected string $filenamePattern;
-
-  /**
-   * Filename pattern for failed tests.
-   */
-  protected string $filenamePatternFailed;
-
-  /**
-   * Information types to be added to a screenshot.
-   *
-   * @var array<int,string>
-   */
-  protected array $infoTypes = [];
-
-  /**
    * Information to be added to a screenshot.
    *
    * @var array<string,string>
@@ -165,28 +120,21 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function setScreenshotConfig(string $dir, bool $should_capture_on_failed, string $failed_prefix, bool $should_always_capture_fullscreen, bool $should_capture_on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static {
-    $this->dir = $dir;
-    $this->shouldCaptureOnFailed = $should_capture_on_failed;
-    $this->failedPrefix = $failed_prefix;
-    $this->shouldAlwaysCaptureFullscreen = $should_always_capture_fullscreen;
-    $this->shouldCaptureOnEveryStep = $should_capture_on_every_step;
-    $this->filenamePattern = $filename_pattern;
-    $this->filenamePatternFailed = $filename_pattern_failed;
-    $this->infoTypes = $info_types;
-    $this->animation = $animation;
+  public function setScreenshotConfig(ScreenshotConfig $config): static {
+    $this->screenshotConfig = $config;
 
     return $this;
   }
 
   /**
-   * Get screenshot directory.
-   *
-   * @return string
-   *   Screenshot directory.
+   * {@inheritdoc}
    */
-  public function getDir(): string {
-    return $this->dir;
+  public function getScreenshotConfig(): ScreenshotConfig {
+    if (!isset($this->screenshotConfig)) {
+      throw new \RuntimeException(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension extension in behat.yml.', static::class));
+    }
+
+    return $this->screenshotConfig;
   }
 
   /**
@@ -239,7 +187,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       }
     }
 
-    return !empty($this->animation['enabled']);
+    return $this->getScreenshotConfig()->shouldAnimate;
   }
 
   /**
@@ -298,10 +246,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @AfterStep
    */
   public function afterStepCaptureFailedScreenshot(AfterStepScope $scope): void {
-    if (!$scope->getTestResult()->isPassed() && $this->shouldCaptureOnFailed) {
+    if (!$scope->getTestResult()->isPassed() && $this->getScreenshotConfig()->shouldCaptureOnFailed) {
       $this->captureScreenshot([
         'is_failed' => TRUE,
-        'fullscreen' => $this->shouldAlwaysCaptureFullscreen,
+        'fullscreen' => $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen,
       ]);
     }
   }
@@ -318,9 +266,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function afterStepCaptureScreenshot(AfterStepScope $scope): void {
     // Failed steps are covered separately by on_failed to avoid duplicates.
-    if (($this->shouldCaptureOnEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
+    if (($this->getScreenshotConfig()->shouldCaptureOnEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
       $this->captureScreenshot([
-        'fullscreen' => $this->shouldAlwaysCaptureFullscreen,
+        'fullscreen' => $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen,
       ]);
 
       if ($this->scenarioIsAnimated && $this->lastScreenshotContent !== NULL) {
@@ -367,7 +315,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // The encoder is always released, even when rendering or writing fails,
     // so a non-critical artifact does not leak frames into the next scenario.
     try {
-      $content = $encoder->render($this->getAnimationConfig('frame_delay', self::DEFAULT_FRAME_DELAY));
+      $content = $encoder->render($this->getScreenshotConfig()->animationFrameDelay);
       $this->writeScreenshotContent($this->makeAnimationFilename($scope), $content);
     }
     finally {
@@ -436,7 +384,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * {@inheritdoc}
    */
   public function captureScreenshot(array $config = []): void {
-    $is_fullscreen = (isset($config['fullscreen']) && $config['fullscreen']) || $this->shouldAlwaysCaptureFullscreen;
+    $is_fullscreen = (isset($config['fullscreen']) && $config['fullscreen']) || $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen;
 
     $filename = isset($config['filename']) && is_scalar($config['filename']) ? (string) $config['filename'] : NULL;
     $is_failed = isset($config['is_failed']) && is_scalar($config['is_failed']) && $config['is_failed'];
@@ -477,17 +425,14 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Get screenshot.
-   *
-   * @return string
-   *   Screenshot content.
+   * {@inheritdoc}
    */
   public function getScreenshot(): string {
     return $this->getSession()->getDriver()->getScreenshot();
   }
 
   /**
-   * Get fullscreen screenshot.
+   * {@inheritdoc}
    */
   public function getScreenshotFullscreen(): string {
     return $this->getScreenshotFullscreenWithResize();
@@ -571,16 +516,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Write screenshot content into a file.
-   *
-   * @param string $filename
-   *   Filename to write.
-   * @param string $content
-   *   Content to write into a file.
+   * {@inheritdoc}
    */
   public function writeScreenshotContent(string $filename, string $content): void {
-    (new Filesystem())->mkdir($this->dir, 0755);
-    $file_path = $this->dir . DIRECTORY_SEPARATOR . $filename;
+    $dir = $this->getScreenshotConfig()->dir;
+    (new Filesystem())->mkdir($dir, 0755);
+    $file_path = $dir . DIRECTORY_SEPARATOR . $filename;
     $success = file_put_contents($file_path, $content);
     if ($success === FALSE) {
       // @codeCoverageIgnoreStart
@@ -595,7 +536,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @return \Behat\Behat\Hook\Scope\BeforeStepScope
    *   The before step scope.
    */
-  public function getBeforeStepScope(): BeforeStepScope {
+  protected function getBeforeStepScope(): BeforeStepScope {
     return $this->beforeStepScope;
   }
 
@@ -624,7 +565,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * Compile information.
    */
   protected function compileInfo(): void {
-    foreach ($this->infoTypes as $type) {
+    foreach ($this->getScreenshotConfig()->infoTypes as $type) {
       if ($type === 'url') {
         try {
           $current_url = $this->getSession()->getCurrentUrl();
@@ -680,10 +621,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   protected function makeFilename(string $ext, ?string $filename = NULL, bool $is_failed = FALSE): string {
     if ($is_failed) {
-      $filename = $this->filenamePatternFailed;
+      $filename = $this->getScreenshotConfig()->filenamePatternFailed;
     }
     elseif (empty($filename)) {
-      $filename = $this->filenamePattern;
+      $filename = $this->getScreenshotConfig()->filenamePattern;
     }
 
     if (!str_ends_with($filename, self::FILENAME_EXTENSION_SUFFIX)) {
@@ -711,7 +652,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
     $data = [
       'ext' => $ext,
-      'failed_prefix' => $this->failedPrefix,
+      'failed_prefix' => $this->getScreenshotConfig()->failedPrefix,
       'feature_file' => $feature->getFile(),
       'step_line' => $step->getLine(),
       'step_name' => $step->getText(),
@@ -761,22 +702,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   Animated GIF encoder.
    */
   protected function getAnimatedGif(): AnimatedGif {
-    return new AnimatedGif($this->getAnimationConfig('max_width', 0), $this->getAnimationConfig('max_height', 0));
-  }
-
-  /**
-   * Read a numeric animation configuration value.
-   *
-   * @param string $name
-   *   Configuration name.
-   * @param int $default
-   *   Value used when the configuration is absent or not numeric.
-   *
-   * @return int
-   *   Configuration value.
-   */
-  protected function getAnimationConfig(string $name, int $default): int {
-    return isset($this->animation[$name]) && is_numeric($this->animation[$name]) ? (int) $this->animation[$name] : $default;
+    return new AnimatedGif($this->getScreenshotConfig()->animationMaxWidth, $this->getScreenshotConfig()->animationMaxHeight);
   }
 
 }

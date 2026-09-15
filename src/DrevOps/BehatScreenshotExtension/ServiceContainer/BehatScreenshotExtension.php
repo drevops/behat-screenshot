@@ -116,18 +116,7 @@ class BehatScreenshotExtension implements ExtensionInterface {
    * {@inheritdoc}
    */
   public function load(ContainerBuilder $container, array $config): void {
-    $definition = new Definition(ScreenshotContextInitializer::class, [
-      $config['dir'],
-      $config['on_failed'],
-      $config['failed_prefix'],
-      $config['purge'],
-      $config['always_fullscreen'],
-      $config['on_every_step'],
-      $config['filename_pattern'],
-      $config['filename_pattern_failed'],
-      $config['info_types'],
-      $config['animation'],
-    ]);
+    $definition = new Definition(ScreenshotContextInitializer::class, [$config]);
     $definition->addTag(ContextExtension::INITIALIZER_TAG, ['priority' => 0]);
     $container->setDefinition(static::MOD_ID . '.screenshot_context_initializer', $definition);
   }

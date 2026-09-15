@@ -7,6 +7,7 @@ namespace DrevOps\BehatScreenshot\Tests\Unit;
 use Behat\Behat\Context\Annotation\DocBlockHelper;
 use Behat\Behat\Context\Environment\UninitializedContextEnvironment;
 use Behat\Behat\Context\Reader\AnnotatedContextReader;
+use Behat\Behat\Definition\Context\Annotation\DefinitionAnnotationReader;
 use Behat\Behat\Hook\Context\Annotation\HookAnnotationReader;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
@@ -19,10 +20,13 @@ use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
+use Behat\Testwork\Call\Callee;
 use Behat\Testwork\Environment\Environment;
 use Behat\Testwork\Hook\Call\RuntimeHook;
 use Behat\Testwork\Suite\GenericSuite;
 use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
+use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -35,14 +39,11 @@ use PHPUnit\Framework\TestCase;
 class ScreenshotContextTest extends TestCase {
 
   use ReflectionTrait;
+  use ScreenshotConfigTrait;
 
   public function testBehatRegistersHooksOnPhasePrefixedMethods(): void {
-    $reader = new AnnotatedContextReader(new DocBlockHelper());
-    $reader->registerAnnotationReader(new HookAnnotationReader());
-    $environment = new UninitializedContextEnvironment(new GenericSuite('default', []));
-
     $hooks = [];
-    foreach ($reader->readContextCallees($environment, ScreenshotContext::class) as $callee) {
+    foreach ($this->readBehatCallees() as $callee) {
       if (!$callee instanceof RuntimeHook) {
         continue;
       }
@@ -63,6 +64,54 @@ class ScreenshotContextTest extends TestCase {
       'beforeScenarioInit BeforeScenario @javascript',
       'beforeStepInit BeforeStep',
     ], $hooks);
+  }
+
+  public function testPublicMethodsAreDeclaredByInterfaceOrRegisteredWithBehat(): void {
+    $interface_methods = array_map(static fn(\ReflectionMethod $method): string => $method->getName(), (new \ReflectionClass(ScreenshotAwareContextInterface::class))->getMethods());
+    sort($interface_methods);
+
+    $this->assertSame([
+      'appendInfo',
+      'captureScreenshot',
+      'getScreenshot',
+      'getScreenshotConfig',
+      'getScreenshotFullscreen',
+      'renderInfo',
+      'setScreenshotConfig',
+      'writeScreenshotContent',
+    ], $interface_methods);
+
+    $callee_methods = array_map(static fn(Callee $callee): string => $callee->getReflection()->getName(), $this->readBehatCallees());
+
+    foreach ((new \ReflectionClass(ScreenshotContext::class))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+      // Mink's RawMinkContext declares its own public API.
+      if ($method->getDeclaringClass()->getName() !== ScreenshotContext::class) {
+        continue;
+      }
+
+      $name = $method->getName();
+      $this->assertTrue(in_array($name, $interface_methods, TRUE) || in_array($name, $callee_methods, TRUE), sprintf('Public method %s() is neither declared by %s nor registered with Behat as a hook or step definition.', $name, ScreenshotAwareContextInterface::class));
+    }
+  }
+
+  public function testGetScreenshotConfigReturnsConfigSetOnContext(): void {
+    $config = self::createScreenshotConfig(['dir' => 'test-dir']);
+    $screenshot_context = new ScreenshotContext();
+
+    $this->assertSame($screenshot_context, $screenshot_context->setScreenshotConfig($config));
+    $this->assertSame($config, $screenshot_context->getScreenshotConfig());
+  }
+
+  public function testHookThrowsWhenScreenshotConfigIsNotSet(): void {
+    $feature_node = $this->createStub(FeatureNode::class);
+    $feature_node->method('hasTag')->willReturn(FALSE);
+    $scenario = $this->createStub(ScenarioInterface::class);
+    $scenario->method('hasTag')->willReturn(FALSE);
+
+    $this->expectException(\RuntimeException::class);
+    $this->expectExceptionMessage(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension extension in behat.yml.', ScreenshotContext::class));
+
+    (new ScreenshotContext())->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($this->createStub(Environment::class), $feature_node, $scenario));
   }
 
   public function testBeforeScenarioInitPropagatesDriverStartException(): void {
@@ -93,7 +142,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = new ScreenshotContext();
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
     $screenshot_context->beforeStepInit($scope);
-    $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
+    $this->assertSame($scope, self::callProtectedMethod($screenshot_context, 'getBeforeStepScope'));
   }
 
   #[DataProvider('dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig')]
@@ -109,7 +158,7 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->exactly(count($expected_configs)))->method('captureScreenshot')->willReturnCallback($record_config);
-    $screenshot_context->setScreenshotConfig('test-dir', $should_capture_on_failed, 'failed_', $should_always_capture_fullscreen, $should_capture_on_every_step, '{ext}', '{ext}', [], []);
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['on_failed' => $should_capture_on_failed, 'always_fullscreen' => $should_always_capture_fullscreen, 'on_every_step' => $should_capture_on_every_step]));
     self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', $has_screenshots_tag);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', $is_animated);
 
@@ -203,6 +252,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('makeFilename')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
     $screenshot_context->expects($this->exactly(count($expected_writes)))->method('writeScreenshotContent')->willReturnCallback($record_write);
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
 
     // Seed an earlier capture's content, so a missing reset is detected.
     self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'test-previous-png-content');
@@ -224,20 +274,11 @@ class ScreenshotContextTest extends TestCase {
 
   #[DataProvider('dataProviderWriteScreenshotContentWritesContentToFile')]
   public function testWriteScreenshotContentWritesContentToFile(string $filename, string $content): void {
+    $dir = sys_get_temp_dir();
     $screenshot_context = new ScreenshotContext();
-    $screenshot_context->setScreenshotConfig(
-      sys_get_temp_dir(),
-      TRUE,
-      'failed_',
-      FALSE,
-      FALSE,
-      '{datetime:U}.{feature_file}.feature_{step_line}.{ext}',
-      '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
-      [],
-      []
-    );
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['dir' => $dir]));
     self::callProtectedMethod($screenshot_context, 'writeScreenshotContent', [$filename, $content]);
-    $filepath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $filename;
+    $filepath = $dir . DIRECTORY_SEPARATOR . $filename;
     $this->assertFileExists($filepath);
     $this->assertSame($content, file_get_contents($filepath));
 
@@ -291,17 +332,7 @@ class ScreenshotContextTest extends TestCase {
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
     $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
 
-    $screenshot_context->setScreenshotConfig(
-      'test-dir',
-      TRUE,
-      $failed_prefix,
-      FALSE,
-      FALSE,
-      $filename_pattern,
-      $filename_pattern_failed,
-      [],
-      []
-    );
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['failed_prefix' => $failed_prefix, 'filename_pattern' => $filename_pattern, 'filename_pattern_failed' => $filename_pattern_failed]));
 
     $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFilename', [$ext, $filename, $is_failed]);
 
@@ -381,6 +412,20 @@ class ScreenshotContextTest extends TestCase {
         '1721791661.test-feature-file.feature_test-step-name.feature_12.png',
       ],
     ];
+  }
+
+  /**
+   * Read the hooks and step definitions Behat registers for ScreenshotContext.
+   *
+   * @return array<int,\Behat\Testwork\Call\Callee>
+   *   Hook and step definition callees.
+   */
+  protected function readBehatCallees(): array {
+    $reader = new AnnotatedContextReader(new DocBlockHelper());
+    $reader->registerAnnotationReader(new HookAnnotationReader());
+    $reader->registerAnnotationReader(new DefinitionAnnotationReader());
+
+    return $reader->readContextCallees(new UninitializedContextEnvironment(new GenericSuite('default', [])), ScreenshotContext::class);
   }
 
 }
