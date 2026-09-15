@@ -446,9 +446,9 @@ class AnimatedGifEncoderTest extends TestCase {
   /**
    * Extract a structural signature from a GIF binary.
    *
-   * Captures the version, canvas dimensions, frame count, per-frame delays
-   * and looping flag - the parts the encoder controls - while ignoring the
-   * GD-generated colour tables and image data.
+   * The signature holds the version, canvas dimensions, frame count,
+   * per-frame delays and looping flag, which the encoder sets. It excludes
+   * the colour tables and image data that GD generates.
    *
    * @param string $gif
    *   Binary GIF content.

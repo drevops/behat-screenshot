@@ -83,8 +83,6 @@ class ScreenshotContextResizeTest extends TestCase {
     $session = $this->createMock(Session::class);
     $driver = $this->createMock(Selenium2Driver::class);
 
-    // Mock the JavaScript evaluation to return invalid scroll dimensions on
-    // the second call.
     $session->method('evaluateScript')
       ->willReturnOnConsecutiveCalls(
         // First call: get original window dimensions.

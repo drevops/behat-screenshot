@@ -16,9 +16,6 @@ use PHPUnit\Framework\TestCase;
  * Frame geometry is asserted here as it is elsewhere. The encoded GIFs and
  * cropped frames are also written to .logs/animation so the visual outcome
  * can be checked by eye.
- *
- * CI uploads .logs as a build artifact, and .logs is ignored by git, so the
- * images never enter the repository.
  */
 #[CoversClass(AnimatedGifEncoder::class)]
 class AnimationArtifactsTest extends TestCase {
@@ -56,8 +53,6 @@ class AnimationArtifactsTest extends TestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    // GD is a suggested dependency, so there is nothing to render without it -
-    // the animation is skipped at runtime for the same reason.
     if (!function_exists('imagecreatetruecolor') || !function_exists('imagegif')) {
       $this->markTestSkipped('Producing animated GIF artifacts requires the gd extension.');
     }

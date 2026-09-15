@@ -205,7 +205,6 @@ EOL;
   public function behatCliWriteScenarioSteps(PyStringNode $content, string $tags = ''): void {
     $content = strtr((string) $content, ["'''" => '"""']);
 
-    // Normalize indentation in the provided content.
     $content_lines = explode(PHP_EOL, $content);
 
     foreach ($content_lines as $k => $content_line) {

@@ -50,8 +50,8 @@ return RectorConfig::configure()
     RemoveAlwaysTrueIfConditionRector::class,
     SimplifyEmptyCheckOnEmptyArrayRector::class,
     // Rector infers ob_get_clean() as string, but it returns string|false
-    // when no buffer is active. The cast is what maps that FALSE onto the
-    // empty string these callers check for, so it is not redundant.
+    // when no buffer is active. The cast maps that FALSE to the empty string
+    // these callers check for, so it is not redundant.
     RecastingRemovalRector::class => [
       __DIR__ . '/src/DrevOps/BehatScreenshotExtension/AnimatedGifEncoder.php',
       __DIR__ . '/tests/phpunit/Functional/AnimationArtifactsTest.php',

@@ -23,10 +23,9 @@ class Tokenizer {
    * @throws \InvalidArgumentException
    */
   public static function replaceTokens(string $text, array $data = []): string {
-    // A replacement may itself contain tokens - a step name carrying a {url},
-    // for instance - so keep scanning the result until no unseen token is
-    // left. Each token is expanded at most once, which resolves nesting while
-    // guaranteeing the loop terminates on a self-referential value.
+    // A replacement can contain tokens, such as a step name with a {url}, so
+    // rescan the result until no unseen token remains. Each token expands at
+    // most once, so the loop terminates on a self-referential value.
     $expanded = [];
 
     while (TRUE) {

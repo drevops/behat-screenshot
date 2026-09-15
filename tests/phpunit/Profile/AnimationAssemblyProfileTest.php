@@ -26,9 +26,8 @@ use PHPUnit\Framework\TestCase;
  * one very long page among them. Comparing the two isolates the cost of a
  * single tall capture from the cost inherent to encoding that many frames.
  *
- * Excluded from the default suite because it takes minutes to run. Invoke it
- * with `composer profile`. Step counts can be overridden with
- * BEHAT_SCREENSHOT_PROFILE_STEPS, e.g. `BEHAT_SCREENSHOT_PROFILE_STEPS=10,20`.
+ * Step counts can be overridden with BEHAT_SCREENSHOT_PROFILE_STEPS, e.g.
+ * `BEHAT_SCREENSHOT_PROFILE_STEPS=10,20`.
  */
 #[CoversNothing]
 #[Group('profile')]
@@ -61,8 +60,6 @@ class AnimationAssemblyProfileTest extends TestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    // GD is a suggested dependency, so the profiler has nothing to measure
-    // without it - the animation is skipped at runtime for the same reason.
     if (!function_exists('imagecreatetruecolor') || !function_exists('imagegif')) {
       $this->markTestSkipped('Profiling animated GIF assembly requires the gd extension.');
     }
@@ -126,9 +123,9 @@ class AnimationAssemblyProfileTest extends TestCase {
 
     $this->writeReport(implode("\n", $report) . "\n");
 
-    // The timings only describe something real if each scenario did produce an
-    // animation. Comparing the two timings against each other would be a race
-    // rather than an assertion, so the report is left to show that.
+    // The timings are meaningful only if each scenario produced an animation.
+    // An assertion comparing two timings would be nondeterministic, so the
+    // report shows the comparison instead.
     foreach ($rows as $by_step) {
       foreach ($by_step as $row) {
         $this->assertGreaterThan(0, $row['bytes']);
@@ -285,8 +282,8 @@ class AnimationAssemblyProfileTest extends TestCase {
       throw new \RuntimeException(sprintf('Unable to write the profile report to %s.', $file));
     }
 
-    // Diagnostics go to STDERR so the strict no-output-during-tests rule that
-    // guards the default suite still holds.
+    // Write diagnostics to STDERR, so the test passes PHPUnit's check for
+    // output during tests.
     fwrite(STDERR, $report);
   }
 
