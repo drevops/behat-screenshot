@@ -49,6 +49,31 @@ BEHAT_CLI_DEBUG=1 composer test-bdd  # Run BDD tests with debug output.
 composer test-bdd -- --tags=~@selenium --tags=~@headless
 ```
 
+The suite runs in strict mode, so a step without a matching definition fails the run.
+
+### Behat 4
+
+`composer install` sets up Behat 3, which runs the suite from `behat.yml`. Behat 4 reads PHP configuration only, and `behat.php` loads the same `behat.yml`, so a change to the suite goes in `behat.yml` for both. The `@behatcli` scenarios copy `behat.php` next to every `behat.yml` they write, so their inner Behat runs work the same way.
+
+`dmore/behat-chrome-extension` 1.x requires Behat 3, so remove it before switching and skip the `@headless` scenarios:
+
+```shell
+composer remove --dev --no-update dmore/behat-chrome-extension
+composer update --with=behat/behat:^4
+composer test
+composer test-bdd -- --tags=~@headless
+```
+
+To switch back, restore `dmore/behat-chrome-extension` in `composer.json` and run `composer update --with=behat/behat:^3`.
+
+Behat 4 doesn't read docblock annotations, so hooks and step definitions are declared with PHP attributes such as `#[BeforeScenario]` and `#[When('I save screenshot')]`. It also parses feature files in the `gherkin-32` mode, which keeps the leading `@` on tag names, so tags are read through `ScreenshotContext::isTagged()` or a hook filter such as `#[BeforeScenario('@javascript')]` rather than `hasTag()`.
+
+### Continuous integration
+
+CI runs PHP 8.3, 8.4 and 8.5 against Behat 3 and Behat 4, with `normal` and `lowest` dependencies. Each job picks its Behat major with `composer update --with="behat/behat:^3"` or `^4`. Composer combines that temporary constraint with the one in `composer.json` rather than replacing it, so the `lowest` jobs still start from the `composer.json` floors.
+
+Jobs are named `PHP <version>, Behat <major>, Deps <dependencies>`, for example `PHP 8.4, Behat 4, Deps lowest`. The `main` branch ruleset requires every job by that name, so a change to the matrix or to the job name needs the same change to the ruleset's required status checks.
+
 ### Profiling animated GIF assembly
 
 Building a scenario's animated GIF happens in the `AfterScenario` handler, so its cost lands as a pause after the scenario's last step rather than as slower steps. The profiler replays a scenario of a given length through the real hooks and reports how long each phase took, how much memory peaked, and how many pixels were encoded compared to how many were captured.
@@ -68,7 +93,7 @@ The report is printed and written to `.logs/profile/animation-assembly.txt`.
 1. Add the node to `BehatScreenshotExtension::configure()`. The node holds the option's default, written as a literal, and the values it accepts.
 2. Add a promoted property to `ScreenshotConfig` and map the key to it in `ScreenshotConfig::fromArray()`.
 3. Read the property through `getScreenshotConfig()` where `ScreenshotContext` uses it.
-4. Document the option in the options table in `README.md` and add it to `behat.yml.dist`.
+4. Document the option in the options table in `README.md` and add it to both `behat.yml.dist` and `behat.dist.php`.
 5. If an environment variable overrides the option, declare a public `ENV_*` constant for it on `ScreenshotContextInitializer`, named after the variable without its `BEHAT_SCREENSHOT_` prefix, apply it in `applyEnvironmentOverrides()`, and mention the variable in the option's row in `README.md`.
 
-`ScreenshotConfigTest` fails until the new key and property have a dataset in `dataProviderFromArrayMapsKeyToProperty()`, and that dataset fails unless `fromArray()` maps the key to the property. A new top-level option also changes the option count that `BehatScreenshotExtensionTest` asserts. `EnvironmentVariableNamingTest` fails when a class passes `getenv()` anything other than one of its own `ENV_*` constants, and until the class's dataset lists the new variable.
+`ScreenshotConfigTest` fails until the new key and property have a dataset in `dataProviderFromArrayMapsKeyToProperty()`, and that dataset fails unless `fromArray()` maps the key to the property. A new top-level option also changes the option count that `BehatScreenshotExtensionTest` asserts. `BehatDistConfigTest` fails until `behat.yml.dist` sets the new option and `behat.dist.php` holds the same configuration. `EnvironmentVariableNamingTest` fails when a class passes `getenv()` anything other than one of its own `ENV_*` constants, and until the class's dataset lists the new variable.
