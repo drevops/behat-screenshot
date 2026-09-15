@@ -31,25 +31,7 @@ trait BehatCliTrait {
    * @AfterScenario @behatcli
    */
   public function behatCliAfterScenarioPrintOutput(AfterScenarioScope $scope): void {
-    // Copy screenshots from the inner Behat run's working directory into
-    // the outer run's screenshot directory.
-    $context = $scope->getEnvironment()->getContext(ScreenshotContext::class);
-    if ($context instanceof ScreenshotContext) {
-      $src = $this->workingDir . DIRECTORY_SEPARATOR . 'screenshots';
-      if (is_dir($src)) {
-        $dst = $context->getScreenshotConfig()->dir . '/behatcli_screenshots';
-        if (!is_readable($dst)) {
-          mkdir($dst, 0777, TRUE);
-        }
-
-        $finder = Finder::create();
-        $fs = new Filesystem();
-
-        foreach ($finder->in($src)->files() as $file) {
-          $fs->copy($file->getRealPath(), $dst . DIRECTORY_SEPARATOR . $file->getFilename());
-        }
-      }
-    }
+    $this->behatCliCopyScreenshots($scope);
 
     if (static::behatCliIsDebug()) {
       print '-------------------- OUTPUT START --------------------' . PHP_EOL;
@@ -57,6 +39,31 @@ trait BehatCliTrait {
       print $this->getOutput();
       print PHP_EOL;
       print '-------------------- OUTPUT FINISH -------------------' . PHP_EOL;
+    }
+  }
+
+  /**
+   * Copy the inner Behat run's screenshots into the outer run's directory.
+   */
+  protected function behatCliCopyScreenshots(AfterScenarioScope $scope): void {
+    $context = $scope->getEnvironment()->getContext(ScreenshotContext::class);
+    $src = $this->workingDir . DIRECTORY_SEPARATOR . 'screenshots';
+
+    if (!$context instanceof ScreenshotContext || !is_dir($src)) {
+      return;
+    }
+
+    $dst = $context->getScreenshotConfig()->dir . '/behatcli_screenshots';
+
+    if (!is_readable($dst)) {
+      mkdir($dst, 0777, TRUE);
+    }
+
+    $finder = Finder::create();
+    $filesystem = new Filesystem();
+
+    foreach ($finder->in($src)->files() as $file) {
+      $filesystem->copy($file->getRealPath(), $dst . DIRECTORY_SEPARATOR . $file->getFilename());
     }
   }
 
@@ -74,13 +81,16 @@ trait BehatCliTrait {
       '{{USE_DECLARATION}}' => '',
       '{{USE_IN_CLASS}}' => '',
     ];
+
     foreach ($traits as $path => $trait) {
       $trait_name = $trait;
+
       if (str_contains($trait, '\\')) {
         $tokens['{{USE_DECLARATION}}'] .= sprintf('use %s;' . PHP_EOL, $trait);
         $trait_name_parts = explode('\\', $trait);
         $trait_name = end($trait_name_parts);
       }
+
       $tokens['{{USE_IN_CLASS}}'] .= sprintf('use %s;' . PHP_EOL, $trait_name);
 
       if (is_string($path) && file_exists($path)) {
@@ -197,9 +207,11 @@ EOL;
 
     // Normalize indentation in the provided content.
     $content_lines = explode(PHP_EOL, $content);
+
     foreach ($content_lines as $k => $content_line) {
       $content_lines[$k] = str_repeat(' ', 4) . trim($content_line);
     }
+
     $content = implode(PHP_EOL, $content_lines);
 
     $tokens = [
@@ -347,17 +359,19 @@ EOL;
     }
 
     $behat_yml_path = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
-    if (file_exists($behat_yml_path)) {
-      $behat_yml = file_get_contents($behat_yml_path);
-      if (!str_contains($behat_yml, 'FullscreenTestContext')) {
-        $behat_yml = str_replace(
-          'ScreenshotContext',
-          "ScreenshotContext\n        - FullscreenTestContext",
-          $behat_yml
-        );
-        file_put_contents($behat_yml_path, $behat_yml);
-      }
+
+    if (!file_exists($behat_yml_path)) {
+      return;
     }
+
+    $behat_yml = file_get_contents($behat_yml_path);
+
+    if (str_contains($behat_yml, 'FullscreenTestContext')) {
+      return;
+    }
+
+    $behat_yml = str_replace('ScreenshotContext', "ScreenshotContext\n        - FullscreenTestContext", $behat_yml);
+    file_put_contents($behat_yml_path, $behat_yml);
   }
 
   /**
@@ -479,8 +493,8 @@ EOL;
    */
   public function behatCliAssertFileShouldNotContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
-
     $matches = glob($wildcard);
+
     if (empty($matches)) {
       throw new \Exception(sprintf("Unable to find screenshot file matching wildcard '%s'.", $wildcard));
     }

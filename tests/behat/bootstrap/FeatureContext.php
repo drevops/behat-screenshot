@@ -39,14 +39,15 @@ class FeatureContext extends MinkContext implements Context {
    * @BeforeScenario
    */
   public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
-    if ($scope->getScenario()->hasTag('javascript')) {
-      $environment = $scope->getEnvironment();
-      if ($environment instanceof InitializedContextEnvironment) {
-        foreach ($environment->getContexts() as $context) {
-          if ($context instanceof RawMinkContext) {
-            $context->setMinkParameter('base_url', $this->javascriptBaseUrl);
-          }
-        }
+    $environment = $scope->getEnvironment();
+
+    if (!$scope->getScenario()->hasTag('javascript') || !$environment instanceof InitializedContextEnvironment) {
+      return;
+    }
+
+    foreach ($environment->getContexts() as $context) {
+      if ($context instanceof RawMinkContext) {
+        $context->setMinkParameter('base_url', $this->javascriptBaseUrl);
       }
     }
   }

@@ -63,6 +63,7 @@ class AnimationArtifactsTest extends TestCase {
     }
 
     $this->dir = dirname(__DIR__, 3) . '/.logs/animation';
+
     if (!is_dir($this->dir) && !mkdir($this->dir, 0755, TRUE) && !is_dir($this->dir)) {
       throw new \RuntimeException(sprintf('Unable to create the artifact directory %s.', $this->dir));
     }
@@ -150,6 +151,7 @@ class AnimationArtifactsTest extends TestCase {
    */
   protected function scenarioFrames(): array {
     $frames = [];
+
     foreach (self::FRAME_SIZES as $step => $size) {
       $frames[] = $this->createPage($size[0], $size[1], $step + 1);
     }
@@ -215,11 +217,13 @@ class AnimationArtifactsTest extends TestCase {
 
     foreach ($frames as $index => $frame) {
       $image = imagecreatefromstring($frame);
+
       if (!$image instanceof \GdImage) {
         continue;
       }
 
       $result = self::callProtectedMethod($encoder, 'constrain', [$image]);
+
       if (!$result instanceof \GdImage) {
         continue;
       }

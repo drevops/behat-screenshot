@@ -40,9 +40,11 @@ trait ScreenshotTrait {
    */
   public function screenshotGoToTestPage(string $query = '', string $fragment = ''): void {
     $path = 'screenshot.html';
+
     if (!empty($query)) {
       $path = $path . '?' . $query;
     }
+
     if (!empty($fragment)) {
       $path = $path . '#' . $fragment;
     }

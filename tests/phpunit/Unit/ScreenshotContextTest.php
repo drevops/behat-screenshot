@@ -44,6 +44,7 @@ class ScreenshotContextTest extends TestCase {
 
   public function testBehatRegistersHooksOnPhasePrefixedMethods(): void {
     $hooks = [];
+
     foreach ($this->readBehatCallees() as $callee) {
       if (!$callee instanceof RuntimeHook) {
         continue;

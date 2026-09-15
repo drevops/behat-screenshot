@@ -490,9 +490,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return $this->getScreenshot();
     }
 
-    $scroll_height = isset($dimensions['scrollHeight']) && is_numeric($dimensions['scrollHeight'])
-      ? (int) $dimensions['scrollHeight']
-      : 0;
+    $scroll_height = isset($dimensions['scrollHeight']) && is_numeric($dimensions['scrollHeight']) ? (int) $dimensions['scrollHeight'] : 0;
+
     if ($scroll_height <= 0) {
       return $this->getScreenshot();
     }
@@ -527,6 +526,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $this->createFilesystem()->mkdir($dir, 0755);
     $file_path = $dir . DIRECTORY_SEPARATOR . $filename;
     $success = file_put_contents($file_path, $content);
+
     if ($success === FALSE) {
       // @codeCoverageIgnoreStart
       throw new \RuntimeException(sprintf('Failed to save screenshot to %s. Check permissions and disk space.', $file_path));
@@ -645,6 +645,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     if (!empty($url) && !empty(getenv('BEHAT_SCREENSHOT_TOKEN_HOST'))) {
       // @codeCoverageIgnoreStart
       $host = parse_url($url, PHP_URL_HOST);
+
       if ($host) {
         $url = str_replace($host, (string) getenv('BEHAT_SCREENSHOT_TOKEN_HOST'), $url);
       }

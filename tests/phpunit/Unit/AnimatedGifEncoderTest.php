@@ -108,6 +108,7 @@ class AnimatedGifEncoderTest extends TestCase {
   #[DataProvider('dataProviderEncodeSetsDisposalPerFrame')]
   public function testEncodeSetsDisposalPerFrame(array $sizes, array $expected_disposals): void {
     $frames = [];
+
     foreach ($sizes as $size) {
       $frames[] = $this->createPngFrame($size[0], $size[1], [10, 20, 30]);
     }
@@ -131,6 +132,7 @@ class AnimatedGifEncoderTest extends TestCase {
   public function testEncodeDoesNotInflatePixelsWhenOneFrameIsMuchTaller(): void {
     // A long scenario in which a single step captured a very tall page.
     $frames = [];
+
     for ($step = 0; $step < 120; $step++) {
       $frames[] = $step === 60
         ? $this->createPngFrame(160, 2400, [0, 0, 200])
@@ -364,6 +366,7 @@ class AnimatedGifEncoderTest extends TestCase {
    */
   protected function createPngFrame(int $width, int $height, array $rgb): string {
     $image = imagecreatetruecolor(max(1, $width), max(1, $height));
+
     if (!$image instanceof \GdImage) {
       return '';
     }
@@ -391,6 +394,7 @@ class AnimatedGifEncoderTest extends TestCase {
    */
   protected function createGradientPngFrame(int $width, int $height): string {
     $image = imagecreatetruecolor(max(1, $width), max(1, $height));
+
     if (!$image instanceof \GdImage) {
       return '';
     }
@@ -422,6 +426,7 @@ class AnimatedGifEncoderTest extends TestCase {
    */
   protected function createTransparentPngFrame(int $width, int $height): string {
     $image = imagecreate(max(1, $width), max(1, $height));
+
     if (!$image instanceof \GdImage) {
       return '';
     }
@@ -479,6 +484,7 @@ class AnimatedGifEncoderTest extends TestCase {
    */
   protected function firstFrameSize(string $content): array {
     $image = @imagecreatefromstring($content);
+
     if (!$image instanceof \GdImage) {
       return [0, 0];
     }
@@ -501,6 +507,7 @@ class AnimatedGifEncoderTest extends TestCase {
    */
   protected function pixelColor(string $content, int $x, int $y): array {
     $image = @imagecreatefromstring($content);
+
     if (!$image instanceof \GdImage) {
       return [-1, -1, -1];
     }

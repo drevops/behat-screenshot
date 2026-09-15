@@ -56,6 +56,7 @@ class Tokenizer {
     preg_match_all($pattern, $text, $matches);
 
     $tokens = [];
+
     foreach ($matches[0] as $key => $name) {
       $tokens[$name] = $matches[1][$key];
     }
@@ -86,6 +87,7 @@ class Tokenizer {
       $name_qualifier = $parts[0];
       $name_qualifier_parts = explode('_', $name_qualifier);
       $name = array_shift($name_qualifier_parts);
+
       if (!empty($name_qualifier_parts)) {
         $qualifier = implode('_', $name_qualifier_parts);
       }
@@ -115,11 +117,13 @@ class Tokenizer {
    */
   protected static function buildTokenReplacement(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $method = 'replace' . str_replace('_', '', ucwords($name, '_')) . 'Token';
+
     if (is_callable([self::class, $method])) {
       return self::$method($token, $name, $qualifier, $format, $data);
     }
 
     $method = 'replace' . str_replace('_', '', ucwords($name . '_' . $qualifier, '_')) . 'Token';
+
     if (is_callable([self::class, $method])) {
       return self::$method($token, $name, $qualifier, $format, $data);
     }

@@ -83,6 +83,7 @@ class AnimationAssemblyProfileTest extends TestCase {
     ];
 
     $rows = [];
+
     foreach ([self::VIEWPORT_HEIGHT, self::LONG_PAGE_HEIGHT] as $tallest) {
       foreach ($steps as $count) {
         $row = $this->profile($count, $tallest);
@@ -93,6 +94,7 @@ class AnimationAssemblyProfileTest extends TestCase {
 
     $report[] = '';
     $report[] = 'Cost of one long page, against the same scenario without one:';
+
     foreach ($steps as $count) {
       $uniform = $rows[self::VIEWPORT_HEIGHT][$count];
       $long = $rows[self::LONG_PAGE_HEIGHT][$count];
@@ -108,6 +110,7 @@ class AnimationAssemblyProfileTest extends TestCase {
 
     $report[] = '';
     $report[] = 'Share of the total that falls after the last step:';
+
     foreach ($steps as $count) {
       $long = $rows[self::LONG_PAGE_HEIGHT][$count];
       $report[] = sprintf(
@@ -118,6 +121,7 @@ class AnimationAssemblyProfileTest extends TestCase {
         $long['assembly']
       );
     }
+
     $report[] = '';
 
     $this->writeReport(implode("\n", $report) . "\n");
@@ -162,10 +166,12 @@ class AnimationAssemblyProfileTest extends TestCase {
     $screenshot_context->beforeScenarioCheckScreenshotsTag($before_scope);
 
     $started = hrtime(TRUE);
+
     for ($step = 0; $step < $steps; $step++) {
       $screenshot_context->pending = $step === $long_at ? $long : $viewport;
       $screenshot_context->afterStepCaptureScreenshot($after_step_scope);
     }
+
     $steps_elapsed = (hrtime(TRUE) - $started) / 1e9;
     $screenshot_context->pending = '';
 
@@ -250,6 +256,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected function stepCounts(): array {
     $configured = getenv('BEHAT_SCREENSHOT_PROFILE_STEPS');
+
     if (!is_string($configured) || trim($configured) === '') {
       return self::DEFAULT_STEPS;
     }
@@ -267,11 +274,13 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected function writeReport(string $report): void {
     $dir = dirname(__DIR__, 3) . '/.logs/profile';
+
     if (!is_dir($dir) && !mkdir($dir, 0755, TRUE) && !is_dir($dir)) {
       throw new \RuntimeException(sprintf('Unable to create the profile directory %s.', $dir));
     }
 
     $file = $dir . '/animation-assembly.txt';
+
     if (file_put_contents($file, $report) === FALSE) {
       throw new \RuntimeException(sprintf('Unable to write the profile report to %s.', $file));
     }
