@@ -19,6 +19,7 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 - Use snake_case for variable names (e.g., `$file_path` not `$filePath`)
 - Use TRUE/FALSE constants (uppercase) rather than true/false
 - Use NULL constant (uppercase) rather than null
+- Name boolean properties as predicates that describe state: `should` for behaviour the configuration turns on (e.g., `$shouldPurge`), `is` or `has` for state set during a run (e.g., `$hasPurged`, `$scenarioIsAnimated`)
 - Maintain proper docblock annotations
 
 ### PHPUnit Configuration

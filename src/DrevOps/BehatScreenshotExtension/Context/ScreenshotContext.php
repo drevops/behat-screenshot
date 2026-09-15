@@ -85,19 +85,19 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected string $dir = '';
 
   /**
-   * Make screenshots on failed tests.
+   * Whether to capture a screenshot after a failed step.
    */
-  protected bool $onFailed = FALSE;
+  protected bool $shouldCaptureOnFailed = FALSE;
 
   /**
-   * Always capture fullscreen screenshots.
+   * Whether to capture every screenshot fullscreen.
    */
-  protected bool $alwaysFullscreen = FALSE;
+  protected bool $shouldAlwaysCaptureFullscreen = FALSE;
 
   /**
-   * Capture screenshot after every step.
+   * Whether to capture a screenshot after every step.
    */
-  protected bool $onEveryStep = FALSE;
+  protected bool $shouldCaptureOnEveryStep = FALSE;
 
   /**
    * Whether the current scenario has the @screenshots tag.
@@ -165,12 +165,12 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * {@inheritdoc}
    */
-  public function setScreenshotConfig(string $dir, bool $on_failed, string $failed_prefix, bool $always_fullscreen, bool $on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static {
+  public function setScreenshotConfig(string $dir, bool $should_capture_on_failed, string $failed_prefix, bool $should_always_capture_fullscreen, bool $should_capture_on_every_step, string $filename_pattern, string $filename_pattern_failed, array $info_types, array $animation): static {
     $this->dir = $dir;
-    $this->onFailed = $on_failed;
+    $this->shouldCaptureOnFailed = $should_capture_on_failed;
     $this->failedPrefix = $failed_prefix;
-    $this->alwaysFullscreen = $always_fullscreen;
-    $this->onEveryStep = $on_every_step;
+    $this->shouldAlwaysCaptureFullscreen = $should_always_capture_fullscreen;
+    $this->shouldCaptureOnEveryStep = $should_capture_on_every_step;
     $this->filenamePattern = $filename_pattern;
     $this->filenamePatternFailed = $filename_pattern_failed;
     $this->infoTypes = $info_types;
@@ -298,10 +298,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @AfterStep
    */
   public function afterStepCaptureFailedScreenshot(AfterStepScope $scope): void {
-    if (!$scope->getTestResult()->isPassed() && $this->onFailed) {
+    if (!$scope->getTestResult()->isPassed() && $this->shouldCaptureOnFailed) {
       $this->captureScreenshot([
         'is_failed' => TRUE,
-        'fullscreen' => $this->alwaysFullscreen,
+        'fullscreen' => $this->shouldAlwaysCaptureFullscreen,
       ]);
     }
   }
@@ -318,9 +318,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function afterStepCaptureScreenshot(AfterStepScope $scope): void {
     // Failed steps are covered separately by on_failed to avoid duplicates.
-    if (($this->onEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
+    if (($this->shouldCaptureOnEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
       $this->captureScreenshot([
-        'fullscreen' => $this->alwaysFullscreen,
+        'fullscreen' => $this->shouldAlwaysCaptureFullscreen,
       ]);
 
       if ($this->scenarioIsAnimated && $this->lastScreenshotContent !== NULL) {
@@ -436,7 +436,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * {@inheritdoc}
    */
   public function captureScreenshot(array $config = []): void {
-    $is_fullscreen = (isset($config['fullscreen']) && $config['fullscreen']) || $this->alwaysFullscreen;
+    $is_fullscreen = (isset($config['fullscreen']) && $config['fullscreen']) || $this->shouldAlwaysCaptureFullscreen;
 
     $filename = isset($config['filename']) && is_scalar($config['filename']) ? (string) $config['filename'] : NULL;
     $is_failed = isset($config['is_failed']) && is_scalar($config['is_failed']) && $config['is_failed'];
