@@ -116,7 +116,7 @@ class AnimatedGifEncoderTest extends TestCase {
     $frames = [];
 
     foreach ($frame_specs as [$width, $height, $is_transparent]) {
-      $frames[] = $is_transparent ? $this->createTransparentPngFrame($width, $height) : $this->createPngFrame($width, $height, [10, 20, 30]);
+      $frames[] = $is_transparent ? $this->createTransparentFrame($width, $height) : $this->createPngFrame($width, $height, [10, 20, 30]);
     }
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 100);
@@ -172,8 +172,8 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   #[DataProvider('dataProviderEncodeKeepsFrameTransparency')]
-  public function testEncodeKeepsFrameTransparency(bool $is_truecolor, int $max_height, array $expected_size): void {
-    $transparent = $this->createTransparentPngFrame(40, 30, $is_truecolor);
+  public function testEncodeKeepsFrameTransparency(string $format, int $max_height, array $expected_size): void {
+    $transparent = $this->createTransparentFrame(40, 30, $format);
     $opaque = $this->createPngFrame(40, 30, [10, 20, 30]);
 
     $gif = (new AnimatedGifEncoder(0, $max_height))->encode([$transparent, $opaque, $transparent], 100);
@@ -191,11 +191,13 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public static function dataProviderEncodeKeepsFrameTransparency(): array {
+    // GD's PNG writer moves the transparent colour to palette index 0, and a
+    // GIF keeps it at index 1.
     return [
-      'palette frame' => [FALSE, 0, [40, 30]],
-      'truecolor frame' => [TRUE, 0, [40, 30]],
-      'cropped palette frame' => [FALSE, 20, [40, 20]],
-      'cropped truecolor frame' => [TRUE, 20, [40, 20]],
+      'palette PNG frame' => ['png', 0, [40, 30]],
+      'palette GIF frame' => ['gif', 0, [40, 30]],
+      'cropped palette PNG frame' => ['png', 20, [40, 20]],
+      'cropped palette GIF frame' => ['gif', 20, [40, 20]],
     ];
   }
 
@@ -412,6 +414,32 @@ class AnimatedGifEncoderTest extends TestCase {
     $this->assertColorNear([255, 0, 0], $this->pixelColor($gif, 40, 50));
   }
 
+  #[DataProvider('dataProviderConstrainKeepsTheTransparentColour')]
+  public function testConstrainKeepsTheTransparentColour(bool $is_truecolor): void {
+    $image = $this->createTransparentImage(40, 30, $is_truecolor);
+    $transparent = imagecolortransparent($image);
+
+    // imagegif() drops a truecolor image's transparent colour when GD is built
+    // with libimagequant, so the crop is checked on the image itself.
+    $cropped = self::callProtectedMethod(new AnimatedGifEncoder(0, 20), 'constrain', [$image]);
+
+    if (!$cropped instanceof \GdImage) {
+      $this->fail('The constrained frame is not an image.');
+    }
+
+    $this->assertSame([40, 20], [imagesx($cropped), imagesy($cropped)]);
+    $this->assertSame($transparent, imagecolortransparent($cropped));
+    $this->assertSame($transparent, imagecolorat($cropped, 0, 0));
+    $this->assertNotSame($transparent, imagecolorat($cropped, 39, 0));
+  }
+
+  public static function dataProviderConstrainKeepsTheTransparentColour(): array {
+    return [
+      'truecolor image' => [TRUE],
+      'palette image' => [FALSE],
+    ];
+  }
+
   public function testConstrainAppliesToEachFrameIndependently(): void {
     $frames = [
       $this->createPngFrame(400, 200, [10, 20, 30]),
@@ -489,25 +517,26 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   /**
-   * Create a PNG frame whose left half uses a transparent colour.
+   * Create an image whose left half uses a transparent colour.
    *
-   * The right half is opaque rgb(200, 30, 30).
+   * The transparent colour is rgb(0, 255, 0) and the right half is opaque
+   * rgb(200, 30, 30).
    *
    * @param int $width
-   *   Frame width.
+   *   Image width.
    * @param int $height
-   *   Frame height.
+   *   Image height.
    * @param bool $is_truecolor
    *   Whether to create a truecolor image rather than a palette image.
    *
-   * @return string
-   *   Binary PNG content with transparency.
+   * @return \GdImage
+   *   Image with a transparent colour.
    */
-  protected function createTransparentPngFrame(int $width, int $height, bool $is_truecolor = FALSE): string {
+  protected function createTransparentImage(int $width, int $height, bool $is_truecolor): \GdImage {
     $image = $is_truecolor ? imagecreatetruecolor(max(1, $width), max(1, $height)) : imagecreate(max(1, $width), max(1, $height));
 
     if (!$image instanceof \GdImage) {
-      return '';
+      $this->fail('GD could not create the image.');
     }
 
     $opaque = (int) imagecolorallocate($image, 200, 30, 30);
@@ -518,11 +547,35 @@ class AnimatedGifEncoderTest extends TestCase {
     imagecolortransparent($image, $transparent);
     imagefilledrectangle($image, 0, 0, intdiv($width, 2), $height - 1, $transparent);
 
-    ob_start();
-    imagepng($image);
-    $content = ob_get_clean();
+    return $image;
+  }
 
-    return (string) $content;
+  /**
+   * Create a palette frame whose left half uses a transparent colour.
+   *
+   * @param int $width
+   *   Frame width.
+   * @param int $height
+   *   Frame height.
+   * @param string $format
+   *   Format the frame is written in: 'png' or 'gif'.
+   *
+   * @return string
+   *   Binary image content.
+   */
+  protected function createTransparentFrame(int $width, int $height, string $format = 'png'): string {
+    $image = $this->createTransparentImage($width, $height, FALSE);
+
+    ob_start();
+
+    if ($format === 'gif') {
+      imagegif($image);
+    }
+    else {
+      imagepng($image);
+    }
+
+    return (string) ob_get_clean();
   }
 
   /**

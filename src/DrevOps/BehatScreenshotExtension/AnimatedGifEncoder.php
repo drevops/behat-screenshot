@@ -17,7 +17,7 @@ namespace DrevOps\BehatScreenshotExtension;
  * geometry, so a frame smaller than the logical screen is not padded to the
  * largest frame.
  *
- * A frame with a transparent colour keeps that colour transparent in the
+ * The transparent colour GD writes for a frame stays transparent in the
  * animation.
  */
 class AnimatedGifEncoder implements \Countable {
