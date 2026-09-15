@@ -58,10 +58,10 @@ class ScreenshotContextInitializerTest extends TestCase {
 
       $initializer = $this->getStubBuilder(ScreenshotContextInitializer::class)
         ->setConstructorArgs([self::processScreenshotConfig($config)])
-        ->onlyMethods(['getFilesystem', 'getFinder'])
+        ->onlyMethods(['createFilesystem', 'createFinder'])
         ->getStub();
-      $initializer->method('getFilesystem')->willReturn($filesystem);
-      $initializer->method('getFinder')->willReturn($finder);
+      $initializer->method('createFilesystem')->willReturn($filesystem);
+      $initializer->method('createFinder')->willReturn($finder);
 
       // Behat initializes contexts for every scenario, so the second pass
       // checks that a run purges at most once.
@@ -93,6 +93,25 @@ class ScreenshotContextInitializerTest extends TestCase {
       'purge enabled in environment, dir from environment' => [FALSE, '1', 'custom-screenshots-dir', TRUE, 'custom-screenshots-dir', TRUE, 1, 1],
       'purge enabled, empty dir in environment' => [TRUE, NULL, '', TRUE, 'screenshots', TRUE, 1, 1],
       'purge enabled, zero dir in environment' => [TRUE, NULL, '0', TRUE, 'screenshots', TRUE, 1, 1],
+    ];
+  }
+
+  #[DataProvider('dataProviderFactoryMethodsCreateNewInstanceOnEveryCall')]
+  public function testFactoryMethodsCreateNewInstanceOnEveryCall(string $method, string $expected_class): void {
+    $initializer = new ScreenshotContextInitializer([]);
+
+    $first = self::callProtectedMethod($initializer, $method);
+    $second = self::callProtectedMethod($initializer, $method);
+
+    $this->assertInstanceOf($expected_class, $first);
+    $this->assertInstanceOf($expected_class, $second);
+    $this->assertNotSame($first, $second);
+  }
+
+  public static function dataProviderFactoryMethodsCreateNewInstanceOnEveryCall(): array {
+    return [
+      'filesystem' => ['createFilesystem', Filesystem::class],
+      'finder' => ['createFinder', Finder::class],
     ];
   }
 

@@ -118,10 +118,10 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder = $this->createMock(AnimatedGif::class);
     $encoder->expects($this->once())->method('addFrame')->with('png-bytes');
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'isAnimatedGifSupported', 'createAnimatedGif']);
     $screenshot_context->expects($this->once())->method('captureScreenshot');
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(TRUE);
-    $screenshot_context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
+    $screenshot_context->expects($this->once())->method('createAnimatedGif')->willReturn($encoder);
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
     self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
@@ -135,9 +135,9 @@ class ScreenshotContextAnimationTest extends TestCase {
     $encoder = $this->createMock(AnimatedGif::class);
     $encoder->expects($this->exactly(2))->method('addFrame')->with('png-bytes');
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'isAnimatedGifSupported', 'createAnimatedGif']);
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(TRUE);
-    $screenshot_context->expects($this->once())->method('getAnimatedGif')->willReturn($encoder);
+    $screenshot_context->expects($this->once())->method('createAnimatedGif')->willReturn($encoder);
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
     self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
@@ -147,10 +147,10 @@ class ScreenshotContextAnimationTest extends TestCase {
   }
 
   public function testAfterStepCaptureScreenshotSkipsFrameWhenUnsupported(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'isAnimatedGifSupported', 'getAnimatedGif']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'isAnimatedGifSupported', 'createAnimatedGif']);
     $screenshot_context->expects($this->once())->method('captureScreenshot');
     $screenshot_context->method('isAnimatedGifSupported')->willReturn(FALSE);
-    $screenshot_context->expects($this->never())->method('getAnimatedGif');
+    $screenshot_context->expects($this->never())->method('createAnimatedGif');
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
     self::setProtectedValue($screenshot_context, 'lastScreenshotContent', 'png-bytes');
@@ -161,9 +161,9 @@ class ScreenshotContextAnimationTest extends TestCase {
   }
 
   public function testAfterStepCaptureScreenshotDoesNotCollectWhenNotAnimated(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'getAnimatedGif']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'createAnimatedGif']);
     $screenshot_context->expects($this->once())->method('captureScreenshot');
-    $screenshot_context->expects($this->never())->method('getAnimatedGif');
+    $screenshot_context->expects($this->never())->method('createAnimatedGif');
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
     self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', TRUE);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', FALSE);
@@ -175,9 +175,9 @@ class ScreenshotContextAnimationTest extends TestCase {
   }
 
   public function testAfterStepCaptureScreenshotSkipsFailedStep(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'getAnimatedGif']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot', 'createAnimatedGif']);
     $screenshot_context->expects($this->never())->method('captureScreenshot');
-    $screenshot_context->expects($this->never())->method('getAnimatedGif');
+    $screenshot_context->expects($this->never())->method('createAnimatedGif');
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', TRUE);
 
@@ -299,19 +299,20 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertTrue(self::callProtectedMethod(new ScreenshotContext(), 'isAnimatedGifSupported'));
   }
 
-  #[DataProvider('dataProviderGetAnimatedGifCreatesEncoderWithSizeCapsFromConfig')]
-  public function testGetAnimatedGifCreatesEncoderWithSizeCapsFromConfig(array $animation, int $expected_max_width, int $expected_max_height): void {
+  #[DataProvider('dataProviderCreateAnimatedGifCreatesNewEncoderWithSizeCapsFromConfig')]
+  public function testCreateAnimatedGifCreatesNewEncoderWithSizeCapsFromConfig(array $animation, int $expected_max_width, int $expected_max_height): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['animation' => $animation]));
 
-    $encoder = self::callProtectedMethod($screenshot_context, 'getAnimatedGif');
+    $encoder = self::callProtectedMethod($screenshot_context, 'createAnimatedGif');
 
     $this->assertInstanceOf(AnimatedGif::class, $encoder);
     $this->assertSame($expected_max_width, self::getProtectedValue($encoder, 'maxWidth'));
     $this->assertSame($expected_max_height, self::getProtectedValue($encoder, 'maxHeight'));
+    $this->assertNotSame($encoder, self::callProtectedMethod($screenshot_context, 'createAnimatedGif'));
   }
 
-  public static function dataProviderGetAnimatedGifCreatesEncoderWithSizeCapsFromConfig(): array {
+  public static function dataProviderCreateAnimatedGifCreatesNewEncoderWithSizeCapsFromConfig(): array {
     return [
       'no config' => [[], 0, 0],
       'both caps set' => [['max_width' => 800, 'max_height' => 2000], 800, 2000],

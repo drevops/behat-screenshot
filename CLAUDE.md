@@ -21,6 +21,7 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 - Use NULL constant (uppercase) rather than null
 - Name boolean properties as predicates that describe state: `should` for behaviour the configuration turns on (e.g., `$shouldPurge`), `is` or `has` for state set during a run (e.g., `$hasPurged`, `$scenarioIsAnimated`)
 - Declare every public `ScreenshotContext` method on `ScreenshotAwareContextInterface`, except the hooks and step definitions Behat calls
+- Create collaborators with side effects, such as `Filesystem`, `Finder` and `AnimatedGif`, in a protected `create*()` method that returns the new instance, and read the clock through `getCurrentTime()`; create value objects (`ScreenshotConfig`, a container `Definition`) and exceptions inline
 - Maintain proper docblock annotations
 
 ### PHPUnit Configuration

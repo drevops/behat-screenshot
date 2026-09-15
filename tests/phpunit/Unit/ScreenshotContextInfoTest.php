@@ -45,56 +45,54 @@ class ScreenshotContextInfoTest extends TestCase {
   }
 
   #[DataProvider('dataProviderRenderInfoCompilesConfiguredInfoTypes')]
-  public function testRenderInfoCompilesConfiguredInfoTypes(array $info_types, array $expected_keys): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
+  public function testRenderInfoCompilesConfiguredInfoTypes(array $info_types, array $expected_info): void {
+    $env = $this->createStub(Environment::class);
+    $feature_node = $this->createStub(FeatureNode::class);
     $feature_node->method('getTitle')->willReturn('Test Feature Title');
-    $step_node = $this->createMock(StepNode::class);
+    $step_node = $this->createStub(StepNode::class);
     $step_node->method('getText')->willReturn('Test step text');
     $step_node->method('getLine')->willReturn(42);
 
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
 
-    $session = $this->createMock(Session::class);
+    $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willReturn('http://example.com/test');
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession', 'getCurrentTime'])->getStub();
     $screenshot_context->method('getSession')->willReturn($session);
+    $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
 
     $screenshot_context->beforeStepInit($scope);
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['info_types' => $info_types]));
 
     $screenshot_context->renderInfo();
 
-    $info = self::getProtectedValue($screenshot_context, 'info');
-    $this->assertIsArray($info);
-
-    foreach ($expected_keys as $key) {
-      $this->assertArrayHasKey($key, $info);
-    }
+    $this->assertSame($expected_info, self::getProtectedValue($screenshot_context, 'info'));
   }
 
   public static function dataProviderRenderInfoCompilesConfiguredInfoTypes(): array {
+    $datetime = date('Y-m-d H:i:s', 1700000000);
+
     return [
       'url only' => [
         ['url'],
-        ['Current URL'],
+        ['Current URL' => 'http://example.com/test'],
       ],
       'feature only' => [
         ['feature'],
-        ['Feature'],
+        ['Feature' => 'Test Feature Title'],
       ],
       'step only' => [
         ['step'],
-        ['Step'],
+        ['Step' => 'Test step text (line 42)'],
       ],
       'datetime only' => [
         ['datetime'],
-        ['Datetime'],
+        ['Datetime' => $datetime],
       ],
       'all info types' => [
         ['url', 'feature', 'step', 'datetime'],
-        ['Current URL', 'Feature', 'Step', 'Datetime'],
+        ['Current URL' => 'http://example.com/test', 'Feature' => 'Test Feature Title', 'Step' => 'Test step text (line 42)', 'Datetime' => $datetime],
       ],
     ];
   }
@@ -178,15 +176,13 @@ class ScreenshotContextInfoTest extends TestCase {
       $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
         'getSession',
         'getBeforeStepScope',
-        'getCurrentTime',
       ]);
       $screenshot_context->method('getSession')->willReturn($session);
       $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
-      $screenshot_context->method('getCurrentTime')->willReturn(12345678);
 
       $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['filename_pattern' => '{url}.{ext}', 'filename_pattern_failed' => '{failed_prefix}{url}.{ext}']));
 
-      $result = self::callProtectedMethod($screenshot_context, 'makeFilename', ['png', NULL, FALSE]);
+      $result = self::callProtectedMethod($screenshot_context, 'makeFilename', ['png', 12345678, NULL, FALSE]);
       $this->assertIsString($result);
 
       // The Tokenizer collapses each run of characters other than word

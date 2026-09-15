@@ -31,6 +31,7 @@ use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Test ScreenshotContext.
@@ -273,12 +274,49 @@ class ScreenshotContextTest extends TestCase {
     ];
   }
 
-  #[DataProvider('dataProviderWriteScreenshotContentWritesContentToFile')]
-  public function testWriteScreenshotContentWritesContentToFile(string $filename, string $content): void {
+  public function testCaptureScreenshotNamesHtmlAndPngFromOneTimestamp(): void {
+    $driver = $this->createStub(Selenium2Driver::class);
+    $driver->method('getContent')->willReturn('test-html-content');
+    $driver->method('getScreenshot')->willReturn('test-png-content');
+
+    $session = $this->createStub(Session::class);
+    $session->method('getDriver')->willReturn($driver);
+
+    $feature_node = $this->createStub(FeatureNode::class);
+    $feature_node->method('getFile')->willReturn('path/to/test.feature');
+    $step_node = $this->createStub(StepNode::class);
+    $step_node->method('getLine')->willReturn(12);
+
+    $writes = [];
+    $record_write = static function (string $filename, string $content) use (&$writes): void {
+      $writes[] = [$filename, $content];
+    };
+
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'getCurrentTime', 'writeScreenshotContent']);
+    $screenshot_context->method('getSession')->willReturn($session);
+    // The second value models a capture that crosses a second boundary.
+    $screenshot_context->method('getCurrentTime')->willReturn(1700000000, 1700000001);
+    $screenshot_context->expects($this->exactly(2))->method('writeScreenshotContent')->willReturnCallback($record_write);
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
+    $screenshot_context->beforeStepInit(new BeforeStepScope($this->createStub(Environment::class), $feature_node, $step_node));
+
+    $screenshot_context->captureScreenshot();
+
+    $this->assertSame([['1700000000.test.feature_12.html', 'test-html-content'], ['1700000000.test.feature_12.png', 'test-png-content']], $writes);
+  }
+
+  #[DataProvider('dataProviderWriteScreenshotContentCreatesDirectoryAndWritesFile')]
+  public function testWriteScreenshotContentCreatesDirectoryAndWritesFile(string $filename, string $content): void {
     $dir = sys_get_temp_dir();
-    $screenshot_context = new ScreenshotContext();
+    $filesystem = $this->createMock(Filesystem::class);
+    $filesystem->expects($this->once())->method('mkdir')->with($dir, 0755);
+
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['createFilesystem']);
+    $screenshot_context->expects($this->once())->method('createFilesystem')->willReturn($filesystem);
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['dir' => $dir]));
-    self::callProtectedMethod($screenshot_context, 'writeScreenshotContent', [$filename, $content]);
+
+    $screenshot_context->writeScreenshotContent($filename, $content);
+
     $filepath = $dir . DIRECTORY_SEPARATOR . $filename;
     $this->assertFileExists($filepath);
     $this->assertSame($content, file_get_contents($filepath));
@@ -286,11 +324,22 @@ class ScreenshotContextTest extends TestCase {
     unlink($filepath);
   }
 
-  public static function dataProviderWriteScreenshotContentWritesContentToFile(): array {
+  public static function dataProviderWriteScreenshotContentCreatesDirectoryAndWritesFile(): array {
     return [
       'first file' => ['test-save-screenshot-1.txt', 'test-content-1'],
       'second file' => ['test-save-screenshot-2.txt', 'test-content-2'],
     ];
+  }
+
+  public function testCreateFilesystemCreatesNewInstanceOnEveryCall(): void {
+    $screenshot_context = new ScreenshotContext();
+
+    $first = self::callProtectedMethod($screenshot_context, 'createFilesystem');
+    $second = self::callProtectedMethod($screenshot_context, 'createFilesystem');
+
+    $this->assertInstanceOf(Filesystem::class, $first);
+    $this->assertInstanceOf(Filesystem::class, $second);
+    $this->assertNotSame($first, $second);
   }
 
   #[DataProvider('dataProviderMakeFilenameReplacesTokensInPatterns')]
@@ -299,7 +348,7 @@ class ScreenshotContextTest extends TestCase {
     mixed $filename,
     bool $is_failed,
     mixed $url,
-    int $current_time,
+    int $timestamp,
     string $step_text,
     int $step_line,
     string $feature_file,
@@ -311,7 +360,6 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
       'getBeforeStepScope',
       'getSession',
-      'getCurrentTime',
     ]);
     $session = $this->createMock(Session::class);
 
@@ -322,7 +370,6 @@ class ScreenshotContextTest extends TestCase {
       $session->method('getCurrentUrl')->willReturn($url);
     }
 
-    $screenshot_context->method('getCurrentTime')->willReturn($current_time);
     $screenshot_context->method('getSession')->willReturn($session);
     $env = $this->createMock(Environment::class);
     $feature_node = $this->createMock(FeatureNode::class);
@@ -335,7 +382,7 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['failed_prefix' => $failed_prefix, 'filename_pattern' => $filename_pattern, 'filename_pattern_failed' => $filename_pattern_failed]));
 
-    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFilename', [$ext, $filename, $is_failed]);
+    $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFilename', [$ext, $timestamp, $filename, $is_failed]);
 
     $this->assertSame($expected, $filename_processed);
   }

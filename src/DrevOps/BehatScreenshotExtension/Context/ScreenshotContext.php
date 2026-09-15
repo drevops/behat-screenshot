@@ -289,7 +289,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     }
 
     if (!$this->animationEncoder instanceof AnimatedGif) {
-      $this->animationEncoder = $this->getAnimatedGif();
+      $this->animationEncoder = $this->createAnimatedGif();
     }
 
     $this->animationEncoder->addFrame($content);
@@ -389,6 +389,10 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $filename = isset($config['filename']) && is_scalar($config['filename']) ? (string) $config['filename'] : NULL;
     $is_failed = isset($config['is_failed']) && is_scalar($config['is_failed']) && $config['is_failed'];
 
+    // Both filenames use one timestamp, so the HTML and PNG files still share
+    // a name when the capture crosses a second boundary.
+    $timestamp = $this->getCurrentTime();
+
     $this->lastScreenshotContent = NULL;
 
     $driver = $this->getSession()->getDriver();
@@ -403,7 +407,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
 
-    $filename_html = $this->makeFilename('html', $filename, $is_failed);
+    $filename_html = $this->makeFilename('html', $timestamp, $filename, $is_failed);
     $this->writeScreenshotContent($filename_html, $content);
 
     // Drivers that do not support screenshots, including the Goutte driver
@@ -419,7 +423,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // @codeCoverageIgnoreEnd
     // Re-create the filename with a different extension to group the HTML
     // and PNG files together by name.
-    $filename_png = $this->makeFilename('png', $filename, $is_failed);
+    $filename_png = $this->makeFilename('png', $timestamp, $filename, $is_failed);
     $this->writeScreenshotContent($filename_png, $content);
     $this->lastScreenshotContent = $content;
   }
@@ -520,7 +524,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function writeScreenshotContent(string $filename, string $content): void {
     $dir = $this->getScreenshotConfig()->dir;
-    (new Filesystem())->mkdir($dir, 0755);
+    $this->createFilesystem()->mkdir($dir, 0755);
     $file_path = $dir . DIRECTORY_SEPARATOR . $filename;
     $success = file_put_contents($file_path, $content);
     if ($success === FALSE) {
@@ -584,7 +588,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       }
 
       if ($type === 'datetime') {
-        $this->appendInfo('Datetime', date('Y-m-d H:i:s'));
+        $this->appendInfo('Datetime', date('Y-m-d H:i:s', $this->getCurrentTime()));
       }
     }
   }
@@ -594,8 +598,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @return int
    *   Current timestamp.
-   *
-   * @codeCoverageIgnore
    */
   protected function getCurrentTime(): int {
     return time();
@@ -606,6 +608,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @param string $ext
    *   File extension without dot.
+   * @param int $timestamp
+   *   Timestamp the datetime tokens are formatted from.
    * @param string|null $filename
    *   Optional filename.
    * @param bool $is_failed
@@ -616,7 +620,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *
    * @throws \InvalidArgumentException
    */
-  protected function makeFilename(string $ext, ?string $filename = NULL, bool $is_failed = FALSE): string {
+  protected function makeFilename(string $ext, int $timestamp, ?string $filename = NULL, bool $is_failed = FALSE): string {
     if ($is_failed) {
       $filename = $this->getScreenshotConfig()->filenamePatternFailed;
     }
@@ -653,7 +657,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       'feature_file' => $feature->getFile(),
       'step_line' => $step->getLine(),
       'step_name' => $step->getText(),
-      'timestamp' => $this->getCurrentTime(),
+      'timestamp' => $timestamp,
       'url' => $url,
     ];
 
@@ -693,13 +697,23 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Get an animated GIF encoder instance.
+   * Create an animated GIF encoder instance.
    *
    * @return \DrevOps\BehatScreenshotExtension\AnimatedGif
-   *   Animated GIF encoder.
+   *   New animated GIF encoder with the configured frame size caps.
    */
-  protected function getAnimatedGif(): AnimatedGif {
+  protected function createAnimatedGif(): AnimatedGif {
     return new AnimatedGif($this->getScreenshotConfig()->animationMaxWidth, $this->getScreenshotConfig()->animationMaxHeight);
+  }
+
+  /**
+   * Create a filesystem instance.
+   *
+   * @return \Symfony\Component\Filesystem\Filesystem
+   *   New filesystem instance.
+   */
+  protected function createFilesystem(): Filesystem {
+    return new Filesystem();
   }
 
 }
