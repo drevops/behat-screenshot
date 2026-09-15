@@ -66,6 +66,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   public const ENV_ANIMATION_SKIP = 'BEHAT_SCREENSHOT_ANIMATION_SKIP';
 
   /**
+   * Environment variable replacing the current URL's host in filename tokens.
+   */
+  public const ENV_TOKEN_HOST = 'BEHAT_SCREENSHOT_TOKEN_HOST';
+
+  /**
    * Extra window height ensuring the whole page is captured, in pixels.
    */
   public const FULLSCREEN_HEIGHT_BUFFER = 200;
@@ -638,12 +643,14 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $url = NULL;
     }
 
-    if (!empty($url) && !empty(getenv('BEHAT_SCREENSHOT_TOKEN_HOST'))) {
+    $token_host = getenv(self::ENV_TOKEN_HOST);
+
+    if (!empty($url) && !empty($token_host)) {
       // @codeCoverageIgnoreStart
       $host = parse_url($url, PHP_URL_HOST);
 
       if ($host) {
-        $url = str_replace($host, (string) getenv('BEHAT_SCREENSHOT_TOKEN_HOST'), $url);
+        $url = str_replace($host, $token_host, $url);
       }
       // @codeCoverageIgnoreEnd
     }
