@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit;
+namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
-use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
 use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -143,7 +143,6 @@ class BehatScreenshotExtensionTest extends TestCase {
       'purge disabled' => ['purge', FALSE, TRUE],
       'always_fullscreen enabled' => ['always_fullscreen', TRUE, TRUE],
       'on_every_step enabled' => ['on_every_step', TRUE, TRUE],
-      // A quoted 'false' used to pass through as a truthy string.
       'quoted false' => ['on_failed', 'false', FALSE],
       'quoted true' => ['on_failed', 'true', FALSE],
       'integer zero' => ['purge', 0, FALSE],

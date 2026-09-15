@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Traits;
+namespace DrevOps\BehatScreenshotExtension\Tests\Traits;
 
 /**
  * Decodes the structure of a GIF stream for assertions.
  *
- * The block layout is decoded here rather than through
- * AnimatedGifEncoder's own helpers. Reading blocks back with the code that
- * wrote them would hide a fault in how the encoder lays them out.
+ * Parsing does not reuse AnimatedGifEncoder's helpers, so a block layout bug
+ * in the encoder makes the assertions fail.
  *
  * @phpstan-ignore trait.unused
  */

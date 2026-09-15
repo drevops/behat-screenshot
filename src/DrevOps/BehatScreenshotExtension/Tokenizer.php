@@ -23,10 +23,9 @@ class Tokenizer {
    * @throws \InvalidArgumentException
    */
   public static function replaceTokens(string $text, array $data = []): string {
-    // A replacement may itself contain tokens - a step name carrying a {url},
-    // for instance - so keep scanning the result until no unseen token is
-    // left. Each token is expanded at most once, which resolves nesting while
-    // guaranteeing the loop terminates on a self-referential value.
+    // A replacement can contain tokens, such as a step name with a {url}, so
+    // rescan the result until no unseen token remains. Each token expands at
+    // most once, so the loop terminates on a self-referential value.
     $expanded = [];
 
     while (TRUE) {
@@ -56,6 +55,7 @@ class Tokenizer {
     preg_match_all($pattern, $text, $matches);
 
     $tokens = [];
+
     foreach ($matches[0] as $key => $name) {
       $tokens[$name] = $matches[1][$key];
     }
@@ -86,6 +86,7 @@ class Tokenizer {
       $name_qualifier = $parts[0];
       $name_qualifier_parts = explode('_', $name_qualifier);
       $name = array_shift($name_qualifier_parts);
+
       if (!empty($name_qualifier_parts)) {
         $qualifier = implode('_', $name_qualifier_parts);
       }
@@ -115,11 +116,13 @@ class Tokenizer {
    */
   protected static function buildTokenReplacement(string $token, string $name, ?string $qualifier = NULL, ?string $format = NULL, array $data = []): string {
     $method = 'replace' . str_replace('_', '', ucwords($name, '_')) . 'Token';
+
     if (is_callable([self::class, $method])) {
       return self::$method($token, $name, $qualifier, $format, $data);
     }
 
     $method = 'replace' . str_replace('_', '', ucwords($name . '_' . $qualifier, '_')) . 'Token';
+
     if (is_callable([self::class, $method])) {
       return self::$method($token, $name, $qualifier, $format, $data);
     }

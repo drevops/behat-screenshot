@@ -30,7 +30,7 @@
 * Supports both HTML and PNG screenshots.
 * Supports Selenium and Headless drivers.
 * Configurable screenshot directory.
-* Automatically purges screenshots after each test run.
+* Optionally purges the screenshot directory at the start of each test run.
 * Adds additional information to screenshots.
 * Records an animated GIF of a scenario from its per-step screenshots.
 
@@ -72,7 +72,8 @@ default:
       always_fullscreen: false
       failed_prefix: 'failed_'
       filename_pattern: '{datetime:U}.{feature_file}.feature_{step_line}.{ext}'
-      filename_pattern_failed: '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
+      filename_pattern_failed:
+        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
 ```
 
 In your feature:
@@ -89,29 +90,23 @@ Given I am on "http://google.com"
 Then I save fullscreen screenshot
 ```
 
-Fullscreen screenshots work by temporarily resizing the browser window to the
-full height of the page to capture everything in one screenshot.
+Fullscreen screenshots work by temporarily resizing the browser window to the full height of the page to capture everything in one screenshot.
 
-You may optionally specify the size of the browser window in the screenshot
-step:
+You may optionally specify the size of the browser window in the screenshot step:
 
 ```gherkin
 Then I save 1440 x 900 screenshot
-# Or with fullscreen
-Then I save fullscreen 1440 x 900 screenshot
 ```
 
-or a filename:
+or a filename. The `.html` or `.png` extension is appended to the name, which can contain [filename tokens](#filename-tokens):
 
 ```gherkin
-Then I save screenshot with name "my_screenshot.png"
+Then I save screenshot with name "my_screenshot"
 # Or with fullscreen
-Then I save fullscreen screenshot with name "my_screenshot.png"
+Then I save fullscreen screenshot with name "my_screenshot"
 ```
 
-To always capture fullscreen screenshots, even without explicitly using the
-`fullscreen` keyword, set the `always_fullscreen` configuration option to
-`true`:
+To always capture fullscreen screenshots, even without explicitly using the `fullscreen` keyword, set the `always_fullscreen` configuration option to `true`:
 
 ```yaml
 default:
@@ -120,7 +115,7 @@ default:
       always_fullscreen: true
 ```
 
-### Capturing Screenshots After Every Step
+### Capturing screenshots after every step
 
 To automatically capture a screenshot after every step, you can either:
 
@@ -144,7 +139,7 @@ Scenario: My scenario with automatic screenshots
   # Screenshots will be captured after each of these steps
 ```
 
-The `@screenshots` tag takes precedence over the global configuration, allowing you to enable this feature for specific scenarios even when it's disabled globally.
+The `@screenshots` tag is read at both the scenario and feature level. It enables per-step screenshots even when `on_every_step` is disabled, but it cannot disable them when `on_every_step` is enabled.
 
 **Note**: When both `on_every_step` and `on_failed` are enabled, only one screenshot is captured for failed steps (the failed screenshot) to avoid duplicates.
 
@@ -240,7 +235,7 @@ Frames larger than the cap are cropped to it before being encoded, keeping the t
 | `animation.frame_delay`   | `500`                                                                  | Delay between animated GIF frames, in milliseconds.                                                                                                                                                                                                                                             |
 | `animation.max_width`     | `0`                                                                    | Maximum animated GIF frame width, in pixels. Wider frames are cropped to it, keeping the left-hand side. `0` leaves the width unbounded.                                                                                                                                                        |
 | `animation.max_height`    | `0`                                                                    | Maximum animated GIF frame height, in pixels. Taller frames are cropped to it, keeping the top of the page at full resolution and full width. `0` leaves the height unbounded. Useful with `always_fullscreen`, where frame height follows the page height.                                      |
-| `purge`                   | `false`                                                                | Remove all files from the screenshots directory on each test run. Useful during debugging of tests.                                                                                                                                                                                             |
+| `purge`                   | `false`                                                                | Remove all files from the screenshots directory at the start of each test run. Override with `BEHAT_SCREENSHOT_PURGE` env var. Useful during debugging of tests.                                                                                                                                |
 | `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
 | `info_types`              | none                                                                   | List of additional information types to show on screenshots: `url`, `feature`, `step`, `datetime`. Rendered in the order listed. No information is added unless this option is set.                                                                                                            |
 | `failed_prefix`           | `failed_`                                                              | Prefix failed screenshots with `failed_` string. Useful to distinguish failed and intended screenshots.                                                                                                                                                                                         |
@@ -249,7 +244,7 @@ Frames larger than the cap are cropped to it before being encoded, keeping the t
 
 ### Filename tokens
 
-Every character other than a letter, digit, underscore or hyphen is replaced with an underscore, and consecutive replacements collapse into one. The URL examples below are for a page at `http://example.com/mypath/subpath?myquery=1#somefragment`.
+In the URL tokens, every character other than a letter, digit, underscore or hyphen is replaced with an underscore, and consecutive replacements collapse into one. The URL examples below are for a page at `http://example.com/mypath/subpath?myquery=1#somefragment`.
 
 | Token              | Substituted with                                                                | Example value(s)                                             |
 |--------------------|---------------------------------------------------------------------------------|--------------------------------------------------------------|
@@ -271,12 +266,9 @@ Every character other than a letter, digit, underscore or hyphen is replaced wit
 
 ## Auto-purge
 
-By default, the `purge` option is disabled. This means that the screenshot
-directory will not be cleared after each test run. This is useful when you want
-to keep the screenshots for debugging purposes.
+By default, the `purge` option is disabled, so screenshots from previous test runs stay in the directory. This is useful when you want to keep the screenshots for debugging purposes.
 
-If you want to clear the directory after each test run, you can enable the
-`purge` option in the configuration.
+To clear the directory at the start of each test run, enable the `purge` option in the configuration.
 
 ```yaml
 default:
@@ -285,8 +277,7 @@ default:
       purge: true
 ```
 
-Alternatively, you can use `BEHAT_SCREENSHOT_PURGE` environment variable to
-enable the auto-purge feature for a specific test run.
+Alternatively, you can use the `BEHAT_SCREENSHOT_PURGE` environment variable to enable the auto-purge feature for a specific test run.
 
 ```shell
 BEHAT_SCREENSHOT_PURGE=1 vendor/bin/behat

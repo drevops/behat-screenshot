@@ -157,14 +157,17 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Resolve whether the current scenario should produce an animated GIF.
    *
-   * The environment variable is a suite-wide switch that overrides everything
-   * a feature file or the configuration can say, so a run can be stripped of
-   * animation without editing either. Below it, scopes are consulted from the
-   * most specific to the least specific, so a scenario tag decides on its own
-   * and a feature tag only applies when the scenario carries neither tag.
-   * Within a scope the skip tag wins, making a node tagged with both an opt-in
-   * and an opt-out deterministic. The animation.enabled configuration applies
-   * only when no scope is tagged.
+   * The suite-wide environment variable overrides all tags and the
+   * configuration, so a run can disable animation without editing feature
+   * files or the configuration.
+   *
+   * Nodes are checked from the most specific to the least specific. A scenario
+   * tag overrides any feature tag, and a feature tag applies only when the
+   * scenario has neither tag.
+   *
+   * Within a node the skip tag takes precedence over the opt-in tag, so the
+   * result for a node with both tags is deterministic. The animation.enabled
+   * configuration applies only when no node is tagged.
    *
    * @param \Behat\Gherkin\Node\TaggedNodeInterface ...$nodes
    *   Tagged nodes in order of decreasing specificity.
@@ -312,8 +315,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
 
-    // The encoder is always released, even when rendering or writing fails,
-    // so a non-critical artifact does not leak frames into the next scenario.
+    // Release the encoder even when rendering or writing fails, so no frames
+    // remain for the next scenario.
     try {
       $content = $encoder->render($this->getScreenshotConfig()->animationFrameDelay);
       $this->writeScreenshotContent($this->makeAnimationFilename($scope), $content);
@@ -421,8 +424,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return;
     }
     // @codeCoverageIgnoreEnd
-    // Re-create the filename with a different extension to group the HTML
-    // and PNG files together by name.
     $filename_png = $this->makeFilename('png', $timestamp, $filename, $is_failed);
     $this->writeScreenshotContent($filename_png, $content);
     $this->lastScreenshotContent = $content;
@@ -490,9 +491,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       return $this->getScreenshot();
     }
 
-    $scroll_height = isset($dimensions['scrollHeight']) && is_numeric($dimensions['scrollHeight'])
-      ? (int) $dimensions['scrollHeight']
-      : 0;
+    $scroll_height = isset($dimensions['scrollHeight']) && is_numeric($dimensions['scrollHeight']) ? (int) $dimensions['scrollHeight'] : 0;
+
     if ($scroll_height <= 0) {
       return $this->getScreenshot();
     }
@@ -502,8 +502,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
 
     $session->resizeWindow($fullscreen_width, $fullscreen_height, self::WINDOW_NAME_CURRENT);
 
-    // The window is restored in a finally block so that a capture failure
-    // does not leave the browser enlarged for the rest of the scenario.
+    // Restore the window even when the capture fails, so the browser is not
+    // left enlarged for the rest of the scenario.
     try {
       usleep(self::WINDOW_RESIZE_SETTLE_MICROSECONDS);
 
@@ -527,6 +527,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $this->createFilesystem()->mkdir($dir, 0755);
     $file_path = $dir . DIRECTORY_SEPARATOR . $filename;
     $success = file_put_contents($file_path, $content);
+
     if ($success === FALSE) {
       // @codeCoverageIgnoreStart
       throw new \RuntimeException(sprintf('Failed to save screenshot to %s. Check permissions and disk space.', $file_path));
@@ -554,7 +555,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   public function renderInfo(): string {
     $this->compileInfo();
 
-    // Use a non-HTML output to make this output universal.
+    // Output plain text rather than HTML, so it can be used in any format.
     return implode("\n", array_map(
       static fn(string $key, $value): string => sprintf('%s: %s', $key, $value),
       array_keys($this->info),
@@ -645,6 +646,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     if (!empty($url) && !empty(getenv('BEHAT_SCREENSHOT_TOKEN_HOST'))) {
       // @codeCoverageIgnoreStart
       $host = parse_url($url, PHP_URL_HOST);
+
       if ($host) {
         $url = str_replace($host, (string) getenv('BEHAT_SCREENSHOT_TOKEN_HOST'), $url);
       }

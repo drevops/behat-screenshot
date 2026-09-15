@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit;
+namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
-use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Tokenizer;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;

@@ -57,7 +57,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "DrevOps\\BehatScreenshot\\Tests\\": "tests/phpunit"
+            "DrevOps\\BehatScreenshotExtension\\Tests\\": "tests/phpunit"
         }
     },
     "config": {

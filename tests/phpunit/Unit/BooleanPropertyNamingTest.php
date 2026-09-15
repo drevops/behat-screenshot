@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit;
+namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;

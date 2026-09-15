@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Functional;
+namespace DrevOps\BehatScreenshotExtension\Tests\Functional;
 
-use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -16,9 +16,6 @@ use PHPUnit\Framework\TestCase;
  * Frame geometry is asserted here as it is elsewhere. The encoded GIFs and
  * cropped frames are also written to .logs/animation so the visual outcome
  * can be checked by eye.
- *
- * CI uploads .logs as a build artifact, and .logs is ignored by git, so the
- * images never enter the repository.
  */
 #[CoversClass(AnimatedGifEncoder::class)]
 class AnimationArtifactsTest extends TestCase {
@@ -56,13 +53,12 @@ class AnimationArtifactsTest extends TestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    // GD is a suggested dependency, so there is nothing to render without it -
-    // the animation is skipped at runtime for the same reason.
     if (!function_exists('imagecreatetruecolor') || !function_exists('imagegif')) {
       $this->markTestSkipped('Producing animated GIF artifacts requires the gd extension.');
     }
 
     $this->dir = dirname(__DIR__, 3) . '/.logs/animation';
+
     if (!is_dir($this->dir) && !mkdir($this->dir, 0755, TRUE) && !is_dir($this->dir)) {
       throw new \RuntimeException(sprintf('Unable to create the artifact directory %s.', $this->dir));
     }
@@ -150,6 +146,7 @@ class AnimationArtifactsTest extends TestCase {
    */
   protected function scenarioFrames(): array {
     $frames = [];
+
     foreach (self::FRAME_SIZES as $step => $size) {
       $frames[] = $this->createPage($size[0], $size[1], $step + 1);
     }
@@ -215,11 +212,13 @@ class AnimationArtifactsTest extends TestCase {
 
     foreach ($frames as $index => $frame) {
       $image = imagecreatefromstring($frame);
+
       if (!$image instanceof \GdImage) {
         continue;
       }
 
       $result = self::callProtectedMethod($encoder, 'constrain', [$image]);
+
       if (!$result instanceof \GdImage) {
         continue;
       }

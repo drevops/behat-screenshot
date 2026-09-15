@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Profile;
+namespace DrevOps\BehatScreenshotExtension\Tests\Profile;
 
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Node\ScenarioInterface;
 use Behat\Testwork\Environment\Environment;
-use DrevOps\BehatScreenshot\Tests\Traits\BehatScopeTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\GifParserTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -26,9 +26,8 @@ use PHPUnit\Framework\TestCase;
  * one very long page among them. Comparing the two isolates the cost of a
  * single tall capture from the cost inherent to encoding that many frames.
  *
- * Excluded from the default suite because it takes minutes to run. Invoke it
- * with `composer profile`. Step counts can be overridden with
- * BEHAT_SCREENSHOT_PROFILE_STEPS, e.g. `BEHAT_SCREENSHOT_PROFILE_STEPS=10,20`.
+ * Step counts can be overridden with BEHAT_SCREENSHOT_PROFILE_STEPS, e.g.
+ * `BEHAT_SCREENSHOT_PROFILE_STEPS=10,20`.
  */
 #[CoversNothing]
 #[Group('profile')]
@@ -61,8 +60,6 @@ class AnimationAssemblyProfileTest extends TestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    // GD is a suggested dependency, so the profiler has nothing to measure
-    // without it - the animation is skipped at runtime for the same reason.
     if (!function_exists('imagecreatetruecolor') || !function_exists('imagegif')) {
       $this->markTestSkipped('Profiling animated GIF assembly requires the gd extension.');
     }
@@ -83,6 +80,7 @@ class AnimationAssemblyProfileTest extends TestCase {
     ];
 
     $rows = [];
+
     foreach ([self::VIEWPORT_HEIGHT, self::LONG_PAGE_HEIGHT] as $tallest) {
       foreach ($steps as $count) {
         $row = $this->profile($count, $tallest);
@@ -93,6 +91,7 @@ class AnimationAssemblyProfileTest extends TestCase {
 
     $report[] = '';
     $report[] = 'Cost of one long page, against the same scenario without one:';
+
     foreach ($steps as $count) {
       $uniform = $rows[self::VIEWPORT_HEIGHT][$count];
       $long = $rows[self::LONG_PAGE_HEIGHT][$count];
@@ -108,6 +107,7 @@ class AnimationAssemblyProfileTest extends TestCase {
 
     $report[] = '';
     $report[] = 'Share of the total that falls after the last step:';
+
     foreach ($steps as $count) {
       $long = $rows[self::LONG_PAGE_HEIGHT][$count];
       $report[] = sprintf(
@@ -118,13 +118,14 @@ class AnimationAssemblyProfileTest extends TestCase {
         $long['assembly']
       );
     }
+
     $report[] = '';
 
     $this->writeReport(implode("\n", $report) . "\n");
 
-    // The timings only describe something real if each scenario did produce an
-    // animation. Comparing the two timings against each other would be a race
-    // rather than an assertion, so the report is left to show that.
+    // The timings are meaningful only if each scenario produced an animation.
+    // An assertion comparing two timings would be nondeterministic, so the
+    // report shows the comparison instead.
     foreach ($rows as $by_step) {
       foreach ($by_step as $row) {
         $this->assertGreaterThan(0, $row['bytes']);
@@ -162,10 +163,12 @@ class AnimationAssemblyProfileTest extends TestCase {
     $screenshot_context->beforeScenarioCheckScreenshotsTag($before_scope);
 
     $started = hrtime(TRUE);
+
     for ($step = 0; $step < $steps; $step++) {
       $screenshot_context->pending = $step === $long_at ? $long : $viewport;
       $screenshot_context->afterStepCaptureScreenshot($after_step_scope);
     }
+
     $steps_elapsed = (hrtime(TRUE) - $started) / 1e9;
     $screenshot_context->pending = '';
 
@@ -250,6 +253,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected function stepCounts(): array {
     $configured = getenv('BEHAT_SCREENSHOT_PROFILE_STEPS');
+
     if (!is_string($configured) || trim($configured) === '') {
       return self::DEFAULT_STEPS;
     }
@@ -267,17 +271,19 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected function writeReport(string $report): void {
     $dir = dirname(__DIR__, 3) . '/.logs/profile';
+
     if (!is_dir($dir) && !mkdir($dir, 0755, TRUE) && !is_dir($dir)) {
       throw new \RuntimeException(sprintf('Unable to create the profile directory %s.', $dir));
     }
 
     $file = $dir . '/animation-assembly.txt';
+
     if (file_put_contents($file, $report) === FALSE) {
       throw new \RuntimeException(sprintf('Unable to write the profile report to %s.', $file));
     }
 
-    // Diagnostics go to STDERR so the strict no-output-during-tests rule that
-    // guards the default suite still holds.
+    // Write diagnostics to STDERR, so the test passes PHPUnit's check for
+    // output during tests.
     fwrite(STDERR, $report);
   }
 

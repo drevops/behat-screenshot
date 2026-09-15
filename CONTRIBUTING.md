@@ -38,10 +38,15 @@ brew install --cask chromium
   --remote-debugging-port=9222
 ```
 
+Selenium reaches the test server at `http://host.docker.internal:8888`. Where that host does not resolve, such as Docker on Linux, set `BEHAT_JAVASCRIPT_BASE_URL`, for example to `http://172.17.0.1:8888`.
+
 ```shell
 composer test-bdd  # Run BDD tests.
 
 BEHAT_CLI_DEBUG=1 composer test-bdd  # Run BDD tests with debug output.
+
+# Run only the BDD tests that need neither Selenium nor Chromium.
+composer test-bdd -- --tags=~@selenium --tags=~@headless
 ```
 
 ### Profiling animated GIF assembly
@@ -56,13 +61,13 @@ composer profile  # Profile 25, 50 and 100-step scenarios.
 BEHAT_SCREENSHOT_PROFILE_STEPS=10,20 composer profile  # Profile other lengths.
 ```
 
-The report is printed and written to `.logs/profile/animation-assembly.txt`, which CI collects as a build artifact.
+The report is printed and written to `.logs/profile/animation-assembly.txt`.
 
 ## Adding a configuration option
 
 1. Add the node to `BehatScreenshotExtension::configure()`. The node holds the option's default and the values it accepts.
 2. Add a promoted property to `ScreenshotConfig` and map the key to it in `ScreenshotConfig::fromArray()`.
 3. Read the property through `getScreenshotConfig()` where `ScreenshotContext` uses it.
-4. Document the option in the options table in `README.md`.
+4. Document the option in the options table in `README.md` and add it to `behat.yml.dist`.
 
-`ScreenshotConfigTest` fails until the new key and property have a dataset in `dataProviderFromArrayMapsKeyToProperty()`, and that dataset fails unless `fromArray()` maps the key to the property.
+`ScreenshotConfigTest` fails until the new key and property have a dataset in `dataProviderFromArrayMapsKeyToProperty()`, and that dataset fails unless `fromArray()` maps the key to the property. A new top-level option also changes the option count that `BehatScreenshotExtensionTest` asserts.

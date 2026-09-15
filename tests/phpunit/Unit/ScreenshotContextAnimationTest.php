@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit;
+namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Node\ScenarioInterface;
 use Behat\Testwork\Environment\Environment;
-use DrevOps\BehatScreenshot\Tests\Traits\BehatScopeTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

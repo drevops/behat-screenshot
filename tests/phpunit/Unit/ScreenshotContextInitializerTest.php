@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Unit;
+namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use Behat\Behat\Context\Context;
-use DrevOps\BehatScreenshot\Tests\Traits\ReflectionTrait;
-use DrevOps\BehatScreenshot\Tests\Traits\ScreenshotConfigTrait;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -25,8 +25,8 @@ class ScreenshotContextInitializerTest extends TestCase {
   use ScreenshotConfigTrait;
 
   public function testInitializeContextIgnoresNonScreenshotAwareContext(): void {
-    // An empty configuration cannot become a ScreenshotConfig, so reaching
-    // that step would throw.
+    // An empty configuration makes ScreenshotConfig::fromArray() throw, so the
+    // test fails if the initializer calls it.
     $initializer = new ScreenshotContextInitializer([]);
 
     $initializer->initializeContext($this->createStub(Context::class));
@@ -43,8 +43,8 @@ class ScreenshotContextInitializerTest extends TestCase {
       putenv($env_purge === NULL ? 'BEHAT_SCREENSHOT_PURGE' : 'BEHAT_SCREENSHOT_PURGE=' . $env_purge);
       putenv($env_dir === NULL ? 'BEHAT_SCREENSHOT_DIR' : 'BEHAT_SCREENSHOT_DIR=' . $env_dir);
 
-      // Keys the environment does not override carry non-default values, so
-      // the assertion shows they reach the context unchanged.
+      // Keys the environment does not override have non-default values, so
+      // the assertion shows they are passed to the context unchanged.
       $config = ['dir' => 'screenshots', 'purge' => $should_purge, 'on_failed' => FALSE, 'info_types' => ['url'], 'animation' => ['enabled' => TRUE]];
       $expected_config = self::createScreenshotConfig(['dir' => $expected_dir, 'purge' => $expected_purge] + $config);
 

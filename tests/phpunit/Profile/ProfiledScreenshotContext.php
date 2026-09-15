@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\BehatScreenshot\Tests\Profile;
+namespace DrevOps\BehatScreenshotExtension\Tests\Profile;
 
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 
 /**
- * A screenshot context whose captures are supplied rather than driven.
+ * Screenshot context that takes capture content from $pending, not a driver.
  *
  * A scenario of any length can be replayed without a running driver. The
- * hooks, the frame collection and the scenario-end assembly remain the real
- * ones.
+ * hooks, the frame collection and the scenario-end assembly are inherited.
  */
 class ProfiledScreenshotContext extends ScreenshotContext {
 
