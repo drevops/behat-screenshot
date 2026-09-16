@@ -182,7 +182,7 @@ class FeatureContextTest extends MinkContext implements Context {
   /**
    * Throw an exception with the given message.
    */
-  #[Given('I throw test exception with message :message')]
+  #[When('I throw test exception with message :message')]
   public function throwTestException(string $message): void {
     throw new \RuntimeException($message);
   }

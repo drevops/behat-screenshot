@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Behat\Step\Given;
 use Behat\Step\Then;
+use Behat\Step\When;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 
 /**
@@ -90,7 +91,7 @@ trait ScreenshotTrait {
   /**
    * Remove all files from screenshot directory.
    */
-  #[Given('I remove all files from screenshot directory')]
+  #[When('I remove all files from screenshot directory')]
   public function screenshotEmptyDirectory(): void {
     $files = glob($this->screenshotDir . DIRECTORY_SEPARATOR . '*');
 
