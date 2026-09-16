@@ -96,12 +96,12 @@ class ScreenshotContextInfoTest extends TestCase {
   }
 
   public function testRenderInfoMarksUrlNotAvailableOnException(): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $step_node = $this->createMock(StepNode::class);
+    $env = $this->createStub(Environment::class);
+    $feature_node = $this->createStub(FeatureNode::class);
+    $step_node = $this->createStub(StepNode::class);
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
 
-    $session = $this->createMock(Session::class);
+    $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willThrowException(new \Exception('URL not available'));
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);

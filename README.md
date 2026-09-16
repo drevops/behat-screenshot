@@ -299,11 +299,18 @@ In the URL tokens, every character other than a letter, digit, underscore or hyp
 | `{url_query}`      | Query                                                                           | `myquery_1`                                                  |
 | `{url_fragment}`   | Fragment                                                                        | `somefragment`                                               |
 | `{feature_file}`   | The filename of the `.feature` file currently being executed, without extension | `my_example.feature` -> `my_example`                         |
+| `{feature}`        | Alias of `{feature_file}`                                                       | `my_example.feature` -> `my_example`                         |
 | `{step_line}`      | Step line number                                                                | `1`, `10`, `100`                                             |
 | `{step_line:%03d}` | Step line number with leading zeros. Modifiers are from `sprintf()`.            | `001`, `010`, `100`                                          |
-| `{step_name}`      | Step name without `Given/When/Then`, with spaces replaced by underscores        | `I_am_on_the_test_page`                                      |
+| `{step_name}`      | Step name without `Given/When/Then`, with spaces replaced by underscores and double quotes removed | `I_am_on_the_test_page`                   |
 | `{datetime}`       | Current date and time. Defaults to the `Ymd_His` format.                        | `20010310_171618`                                            |
 | `{datetime:U}`     | Current date and time as a Unix timestamp. Modifiers are from `date()`.         | `1697490961`                                                 |
+
+Set the `BEHAT_SCREENSHOT_TOKEN_HOST` environment variable to substitute the host of the current URL before the URL tokens expand. Filenames then stay the same across environments that serve the site under different hosts, such as a local machine and CI.
+
+```shell
+BEHAT_SCREENSHOT_TOKEN_HOST=example.com vendor/bin/behat
+```
 
 ## Auto-purge
 
@@ -336,11 +343,10 @@ $extension = new Extension(BehatScreenshotExtension::class, [
 With all four types enabled, the information is prepended to the captured HTML:
 
 ```html
-Current URL: http://example.com<br/>
-Feature: My feature<br/>
-Step: I save screenshot (line 8)<br/>
-Datetime: 2025-01-19 00:01:10
-<hr/>
+Current URL: http://example.com<br />
+Feature: My feature<br />
+Step: I save screenshot (line 8)<br />
+Datetime: 2025-01-19 00:01:10<hr/>
 <!DOCTYPE html>
 <html>
 ...

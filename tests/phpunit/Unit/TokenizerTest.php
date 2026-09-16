@@ -221,6 +221,11 @@ class TokenizerTest extends TestCase {
         $data,
         '20240312_045703.foo-failed_foo-file.feature_6_Foo_step_name.png',
       ],
+      'feature token alias' => [
+        '{feature}.{feature_file}.{ext}',
+        $data,
+        'foo-file.foo-file.png',
+      ],
       'url token' => [
         '{url}.{ext}',
         $data,

@@ -134,9 +134,8 @@ class FeatureContextTest extends MinkContext implements Context {
   public function __construct($parameters) {
     $this->screenshotInitParams($parameters);
 
-    // Set the screenshot token host to override any real host.
+    // Override any real host in the screenshot token.
     putenv('BEHAT_SCREENSHOT_TOKEN_HOST=example.com');
-    // Set the JavaScript override base URL.
     $this->javascriptBaseUrl = getenv('BEHAT_JAVASCRIPT_BASE_URL') ?: 'http://host.docker.internal:8888';
   }
 
@@ -146,11 +145,14 @@ class FeatureContextTest extends MinkContext implements Context {
   #[BeforeScenario('@javascript&&~@skip-base-url-rewrite')]
   public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
     $environment = $scope->getEnvironment();
-    if ($environment instanceof InitializedContextEnvironment) {
-      foreach ($environment->getContexts() as $context) {
-        if ($context instanceof RawMinkContext) {
-          $context->setMinkParameter('base_url', $this->javascriptBaseUrl);
-        }
+
+    if (!$environment instanceof InitializedContextEnvironment) {
+      return;
+    }
+
+    foreach ($environment->getContexts() as $context) {
+      if ($context instanceof RawMinkContext) {
+        $context->setMinkParameter('base_url', $this->javascriptBaseUrl);
       }
     }
   }
@@ -334,7 +336,7 @@ EOL;
    *
    * @return string|false
    *   Value of the BEHAT_CLI_DEBUG environment variable, or FALSE when it is
-   *   not set. Debug output is enabled when the value is a non-empty string.
+   *   not set.
    */
   protected static function behatCliIsDebug(): string|false {
     return getenv('BEHAT_CLI_DEBUG');

@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshotExtension\Tests\Profile;
 
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Behat\Gherkin\Node\FeatureNode;
-use Behat\Gherkin\Node\ScenarioInterface;
-use Behat\Testwork\Environment\Environment;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
@@ -280,21 +276,6 @@ class AnimationAssemblyProfileTest extends TestCase {
     // Write diagnostics to STDERR, so the test passes PHPUnit's check for
     // output during tests.
     fwrite(STDERR, $report);
-  }
-
-  /**
-   * Create a before scenario scope.
-   *
-   * @return \Behat\Behat\Hook\Scope\BeforeScenarioScope
-   *   Before scenario scope.
-   */
-  protected function createBeforeScenarioScope(): BeforeScenarioScope {
-    $feature_node = $this->createStub(FeatureNode::class);
-    $feature_node->method('getTags')->willReturn([]);
-    $scenario = $this->createStub(ScenarioInterface::class);
-    $scenario->method('getTags')->willReturn([]);
-
-    return new BeforeScenarioScope($this->createStub(Environment::class), $feature_node, $scenario);
   }
 
 }
