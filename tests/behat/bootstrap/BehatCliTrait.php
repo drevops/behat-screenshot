@@ -23,7 +23,7 @@ trait BehatCliTrait {
    * Write the feature context used by the inner run.
    */
   #[BeforeScenario('@behatcli')]
-  public function behatCliBeforeScenario(): void {
+  public function behatCliBeforeScenarioWriteFeatureContext(): void {
     $traits = [
       'tests/behat/bootstrap/ScreenshotTrait.php' => 'ScreenshotTrait',
     ];
