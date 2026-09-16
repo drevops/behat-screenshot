@@ -228,7 +228,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Init values required for screenshots.
+   * Start the driver and resize the window to the default size.
    *
    * @param \Behat\Behat\Hook\Scope\BeforeScenarioScope $scope
    *   Scenario scope.
