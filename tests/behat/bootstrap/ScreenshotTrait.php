@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Behat\Step\Given;
+use Behat\Step\Then;
 use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 
 /**
@@ -60,7 +61,7 @@ trait ScreenshotTrait {
    * @param string $wildcard
    *   Filename with a wildcard.
    */
-  #[Given('/^file wildcard "([^"]*)" should exist$/')]
+  #[Then('/^file wildcard "([^"]*)" should exist$/')]
   public function screenshotAssertFileShouldExist(string $wildcard): void {
     $wildcard = $this->screenshotDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -76,7 +77,7 @@ trait ScreenshotTrait {
    * @param string $wildcard
    *   Filename with a wildcard.
    */
-  #[Given('/^file wildcard "([^"]*)" should not exist$/')]
+  #[Then('/^file wildcard "([^"]*)" should not exist$/')]
   public function screenshotAssertFileShouldNotExist(string $wildcard): void {
     $wildcard = $this->screenshotDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);

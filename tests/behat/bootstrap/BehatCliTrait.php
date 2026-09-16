@@ -349,7 +349,7 @@ EOL;
    * @param string $wildcard
    *   Filename with a wildcard.
    */
-  #[Given('/^behat cli file wildcard "([^"]*)" should exist$/')]
+  #[Then('/^behat cli file wildcard "([^"]*)" should exist$/')]
   public function behatCliAssertFileShouldExist(string $wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -369,7 +369,7 @@ EOL;
    * @param \Behat\Gherkin\Node\PyStringNode $text
    *   Text in the file.
    */
-  #[Given('/^behat screenshot file matching "([^"]*)" should contain:$/')]
+  #[Then('/^behat screenshot file matching "([^"]*)" should contain:$/')]
   public function behatCliAssertFileShouldContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -396,7 +396,7 @@ EOL;
    * @param \Behat\Gherkin\Node\PyStringNode $text
    *   Text in the file.
    */
-  #[Given('/^behat screenshot file matching "([^"]*)" should not contain:$/')]
+  #[Then('/^behat screenshot file matching "([^"]*)" should not contain:$/')]
   public function behatCliAssertFileShouldNotContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -421,7 +421,7 @@ EOL;
    * @param string $wildcard
    *   Filename with a wildcard.
    */
-  #[Given('/^behat cli file wildcard "([^"]*)" should not exist$/')]
+  #[Then('/^behat cli file wildcard "([^"]*)" should not exist$/')]
   public function behatCliAssertFileShouldNotExist(string $wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
