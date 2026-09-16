@@ -200,31 +200,6 @@ class AnimatedGifEncoderTest extends TestCase {
     ];
   }
 
-  #[DataProvider('dataProviderReadExtensionBlocksFindsDescriptorAndTransparency')]
-  public function testReadExtensionBlocksFindsDescriptorAndTransparency(string $gif, int $expected_descriptor_offset, ?int $expected_transparent_index): void {
-    $result = self::callProtectedMethod(new AnimatedGifEncoder(), 'readExtensionBlocks', [$gif]);
-
-    $this->assertSame(['descriptor_offset' => $expected_descriptor_offset, 'transparent_index' => $expected_transparent_index], $result);
-  }
-
-  public static function dataProviderReadExtensionBlocksFindsDescriptorAndTransparency(): array {
-    // The header with its two-entry global colour table takes 19 bytes, a
-    // Graphic Control Extension 8 bytes and the comment extension 7 bytes.
-    $header = 'GIF89a' . pack('vv', 1, 1) . "\x80\x00\x00\x00\x00\x00\xFF\xFF\xFF";
-    $image = "\x2C" . pack('vvvv', 0, 0, 1, 1) . "\x00\x02\x02\x44\x01\x00\x3B";
-    $transparent_control = "\x21\xF9\x04\x01\x00\x00\x05\x00";
-    $opaque_control = "\x21\xF9\x04\x00\x00\x00\x05\x00";
-    $comment = "\x21\xFE\x03abc\x00";
-
-    return [
-      'no extension blocks' => [$header . $image, 19, NULL],
-      'transparent graphic control' => [$header . $transparent_control . $image, 27, 5],
-      'opaque graphic control' => [$header . $opaque_control . $image, 27, NULL],
-      'comment before graphic control' => [$header . $comment . $transparent_control . $image, 34, 5],
-      'graphic control before comment' => [$header . $transparent_control . $comment . $image, 34, 5],
-    ];
-  }
-
   public function testEncodeMatchesFixture(): void {
     $dir = __DIR__ . '/../fixtures/animation';
 
@@ -451,6 +426,31 @@ class AnimatedGifEncoderTest extends TestCase {
       ['left' => 0, 'top' => 0, 'width' => 100, 'height' => 200],
       ['left' => 0, 'top' => 0, 'width' => 50, 'height' => 40],
     ], $this->readFrameGeometry($gif));
+  }
+
+  #[DataProvider('dataProviderReadExtensionBlocksFindsDescriptorAndTransparency')]
+  public function testReadExtensionBlocksFindsDescriptorAndTransparency(string $gif, int $expected_descriptor_offset, ?int $expected_transparent_index): void {
+    $result = self::callProtectedMethod(new AnimatedGifEncoder(), 'readExtensionBlocks', [$gif]);
+
+    $this->assertSame(['descriptor_offset' => $expected_descriptor_offset, 'transparent_index' => $expected_transparent_index], $result);
+  }
+
+  public static function dataProviderReadExtensionBlocksFindsDescriptorAndTransparency(): array {
+    // The header with its two-entry global colour table takes 19 bytes, a
+    // Graphic Control Extension 8 bytes and the comment extension 7 bytes.
+    $header = 'GIF89a' . pack('vv', 1, 1) . "\x80\x00\x00\x00\x00\x00\xFF\xFF\xFF";
+    $image = "\x2C" . pack('vvvv', 0, 0, 1, 1) . "\x00\x02\x02\x44\x01\x00\x3B";
+    $transparent_control = "\x21\xF9\x04\x01\x00\x00\x05\x00";
+    $opaque_control = "\x21\xF9\x04\x00\x00\x00\x05\x00";
+    $comment = "\x21\xFE\x03abc\x00";
+
+    return [
+      'no extension blocks' => [$header . $image, 19, NULL],
+      'transparent graphic control' => [$header . $transparent_control . $image, 27, 5],
+      'opaque graphic control' => [$header . $opaque_control . $image, 27, NULL],
+      'comment before graphic control' => [$header . $comment . $transparent_control . $image, 34, 5],
+      'graphic control before comment' => [$header . $transparent_control . $comment . $image, 34, 5],
+    ];
   }
 
   /**
