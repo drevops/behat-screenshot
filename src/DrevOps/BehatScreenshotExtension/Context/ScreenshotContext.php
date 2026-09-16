@@ -97,7 +97,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected ScreenshotConfig $screenshotConfig;
 
   /**
-   * Whether the current scenario has the @screenshots tag.
+   * Whether the current scenario or its feature has the @screenshots tag.
    */
   protected bool $scenarioHasScreenshotsTag = FALSE;
 

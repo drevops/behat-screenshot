@@ -16,9 +16,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * Measure how long a scenario's animated GIF takes to assemble.
  *
- * Drives ScreenshotContext through the same hooks Behat calls, with the driver
- * replaced by prepared images. The steps and the AfterScenario handler that
- * builds the GIF are timed separately.
+ * Drives ScreenshotContext through its tag, capture and animation hooks, with
+ * the driver replaced by prepared images. The steps and the AfterScenario
+ * handler that builds the GIF are timed separately.
  *
  * Each run is measured twice: with every frame at viewport height, and with
  * one very long page among them. Comparing the two isolates the cost of a
