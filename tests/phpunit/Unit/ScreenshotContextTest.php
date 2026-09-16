@@ -375,7 +375,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'getCurrentTime', 'writeScreenshotContent']);
     $screenshot_context->method('getSession')->willReturn($session);
     // The second value models a capture that crosses a second boundary.
-    $screenshot_context->method('getCurrentTime')->willReturn(1700000000, 1700000001);
+    $screenshot_context->method('getCurrentTime')->willReturnOnConsecutiveCalls(1700000000, 1700000001);
     $screenshot_context->expects($this->exactly(2))->method('writeScreenshotContent')->willReturnCallback($record_write);
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
     $screenshot_context->beforeStepInit(new BeforeStepScope($this->createStub(Environment::class), $feature_node, $step_node));
