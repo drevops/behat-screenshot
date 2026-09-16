@@ -129,6 +129,7 @@ class ScreenshotContextResizeTest extends TestCase {
       'not requested, configured' => [TRUE, [], 'test-fullscreen-png-content'],
       'requested, configured' => [TRUE, ['is_fullscreen' => TRUE], 'test-fullscreen-png-content'],
       'declined, configured' => [TRUE, ['is_fullscreen' => FALSE], 'test-fullscreen-png-content'],
+      'non-scalar request ignored' => [FALSE, ['is_fullscreen' => [TRUE]], 'test-png-content'],
     ];
   }
 

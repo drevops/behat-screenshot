@@ -327,7 +327,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       throw new \InvalidArgumentException(sprintf('Unsupported screenshot configuration keys: %s. Supported keys: %s.', implode(', ', $unsupported_keys), implode(', ', self::CAPTURE_CONFIG_KEYS)));
     }
 
-    $is_fullscreen = (isset($config['is_fullscreen']) && $config['is_fullscreen']) || $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen;
+    $is_fullscreen_requested = isset($config['is_fullscreen']) && is_scalar($config['is_fullscreen']) && $config['is_fullscreen'];
+    $is_fullscreen = $is_fullscreen_requested || $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen;
 
     $filename = isset($config['filename']) && is_scalar($config['filename']) ? (string) $config['filename'] : NULL;
     $is_failed = isset($config['is_failed']) && is_scalar($config['is_failed']) && $config['is_failed'];
