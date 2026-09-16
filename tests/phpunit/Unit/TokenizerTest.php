@@ -184,8 +184,8 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceTokensResolvesKnownTokensAndKeepsUnknown')]
-  public function testReplaceTokensResolvesKnownTokensAndKeepsUnknown(string $string_contains_tokens, array $data, string $expected): void {
-    $replacement = Tokenizer::replaceTokens($string_contains_tokens, $data);
+  public function testReplaceTokensResolvesKnownTokensAndKeepsUnknown(string $text_contains_tokens, array $data, string $expected): void {
+    $replacement = Tokenizer::replaceTokens($text_contains_tokens, $data);
     $this->assertSame($expected, $replacement);
   }
 
