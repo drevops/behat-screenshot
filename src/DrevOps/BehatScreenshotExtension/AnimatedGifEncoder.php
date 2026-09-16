@@ -198,7 +198,7 @@ class AnimatedGifEncoder implements \Countable {
     $width = max(array_column($this->frames, 'width'));
     $height = max(array_column($this->frames, 'height'));
 
-    $output = 'GIF89a' . $this->screenDescriptor($width, $height);
+    $output = 'GIF89a' . $this->makeScreenDescriptor($width, $height);
     // Netscape Application Extension instructing viewers to loop forever.
     $output .= "\x21\xFF\x0B" . 'NETSCAPE2.0' . "\x03\x01" . pack('v', 0) . "\x00";
 
@@ -212,7 +212,7 @@ class AnimatedGifEncoder implements \Countable {
       $is_covered = $next['transparent_index'] === NULL && $next['width'] >= $frame['width'] && $next['height'] >= $frame['height'];
       $disposal = $is_covered ? self::DISPOSAL_KEEP : self::DISPOSAL_BACKGROUND;
 
-      $output .= $this->frameBlock($frame['gif'], $delay, $disposal);
+      $output .= $this->makeFrameBlock($frame['gif'], $delay, $disposal);
     }
 
     return $output . chr(self::TRAILER);
@@ -285,7 +285,7 @@ class AnimatedGifEncoder implements \Countable {
    * @return string
    *   Logical Screen Descriptor followed by a two-entry global colour table.
    */
-  protected function screenDescriptor(int $width, int $height): string {
+  protected function makeScreenDescriptor(int $width, int $height): string {
     // Global colour table present, 8-bit colour resolution, two entries. Each
     // frame carries its own local colour table, so the global one only gives
     // the background colour index a value to point at.
@@ -311,12 +311,12 @@ class AnimatedGifEncoder implements \Countable {
    * @return string
    *   Concatenated Graphic Control Extension and image block for the frame.
    */
-  protected function frameBlock(string $frame, int $delay, int $disposal): string {
+  protected function makeFrameBlock(string $frame, int $delay, int $disposal): string {
     // GD writes each frame's palette as a global colour table; lift it so it
     // can be re-emitted as a local colour table on the frame's image block.
     $packed = ord($frame[10]);
     $size_bits = $packed & 0x07;
-    $color_table = substr($frame, 13, $this->colorTableBytes($packed));
+    $color_table = substr($frame, 13, $this->countColorTableBytes($packed));
 
     ['descriptor_offset' => $offset, 'transparent_index' => $transparent_index] = $this->readExtensionBlocks($frame);
 
@@ -349,7 +349,7 @@ class AnimatedGifEncoder implements \Countable {
    *   Extension marks transparent, or NULL when none is marked.
    */
   protected function readExtensionBlocks(string $frame): array {
-    $offset = 13 + $this->colorTableBytes(ord($frame[10]));
+    $offset = 13 + $this->countColorTableBytes(ord($frame[10]));
     $transparent_index = NULL;
 
     while (ord($frame[$offset]) === self::EXTENSION_INTRODUCER) {
@@ -376,7 +376,7 @@ class AnimatedGifEncoder implements \Countable {
    * @return int
    *   Number of bytes occupied by the colour table.
    */
-  protected function colorTableBytes(int $packed): int {
+  protected function countColorTableBytes(int $packed): int {
     return 3 * (1 << (($packed & 0x07) + 1));
   }
 

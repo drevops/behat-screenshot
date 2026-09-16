@@ -38,7 +38,7 @@ trait GifParserTrait {
    */
   protected function parseFrames(string $gif): array {
     $packed = ord($gif[10]);
-    $offset = 13 + (($packed & 0x80) !== 0 ? $this->colorTableBytes($packed) : 0);
+    $offset = 13 + (($packed & 0x80) !== 0 ? $this->countColorTableBytes($packed) : 0);
 
     $frames = [];
     $disposal = self::GIF_MISSING_CONTROL;
@@ -81,7 +81,7 @@ trait GifParserTrait {
       $delay = self::GIF_MISSING_CONTROL;
       $transparent_index = self::GIF_NO_TRANSPARENT_INDEX;
 
-      $offset += 10 + (($image_packed & 0x80) !== 0 ? $this->colorTableBytes($image_packed) : 0);
+      $offset += 10 + (($image_packed & 0x80) !== 0 ? $this->countColorTableBytes($image_packed) : 0);
       // Skip the LZW minimum code size byte and the image data sub-blocks.
       $offset = $this->skipSubBlocks($gif, $offset + 1);
     }
@@ -98,7 +98,7 @@ trait GifParserTrait {
    * @return array<int,array<string,int>>
    *   Left, top, width and height for each frame.
    */
-  protected function frameGeometry(string $gif): array {
+  protected function readFrameGeometry(string $gif): array {
     return array_map(
       static fn(array $frame): array => array_intersect_key($frame, array_flip(['left', 'top', 'width', 'height'])),
       $this->parseFrames($gif)
@@ -114,7 +114,7 @@ trait GifParserTrait {
    * @return array<int,array<int,int>>
    *   Width and height for each frame.
    */
-  protected function frameSizes(string $gif): array {
+  protected function readFrameSizes(string $gif): array {
     return array_map(
       static fn(array $frame): array => [$frame['width'], $frame['height']],
       $this->parseFrames($gif)
@@ -130,7 +130,7 @@ trait GifParserTrait {
    * @return int
    *   Sum of each image block's area, in pixels.
    */
-  protected function encodedPixels(string $gif): int {
+  protected function countEncodedPixels(string $gif): int {
     return array_sum(array_map(
       static fn(array $frame): int => $frame['width'] * $frame['height'],
       $this->parseFrames($gif)
@@ -146,7 +146,7 @@ trait GifParserTrait {
    * @return array<int,int>
    *   The canvas width and height.
    */
-  protected function canvasSize(string $gif): array {
+  protected function readCanvasSize(string $gif): array {
     $size = @getimagesizefromstring($gif);
 
     return $size === FALSE ? [0, 0] : [$size[0], $size[1]];
@@ -176,7 +176,7 @@ trait GifParserTrait {
    * @return int
    *   Number of bytes occupied by the colour table.
    */
-  protected function colorTableBytes(int $packed): int {
+  protected function countColorTableBytes(int $packed): int {
     return 3 * (1 << (($packed & 0x07) + 1));
   }
 

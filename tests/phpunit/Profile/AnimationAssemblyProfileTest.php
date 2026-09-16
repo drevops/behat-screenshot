@@ -64,7 +64,7 @@ class AnimationAssemblyProfileTest extends TestCase {
   public const ENV_PROFILE_STEPS = 'BEHAT_SCREENSHOT_PROFILE_STEPS';
 
   public function testAnimationAssemblyProducesGifForEveryProfiledScenario(): void {
-    $steps = $this->stepCounts();
+    $steps = $this->readStepCounts();
 
     $report = [
       'Animated GIF assembly cost',
@@ -184,7 +184,7 @@ class AnimationAssemblyProfileTest extends TestCase {
       'total' => $steps_elapsed + $assembly_elapsed,
       'peak' => (memory_get_peak_usage() - $baseline) / 1048576,
       'captured' => $captured,
-      'encoded' => $this->encodedPixels($screenshot_context->gif),
+      'encoded' => $this->countEncodedPixels($screenshot_context->gif),
       'bytes' => strlen($screenshot_context->gif),
     ];
   }
@@ -218,7 +218,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    * @return array<int,int>
    *   Step counts.
    */
-  protected function stepCounts(): array {
+  protected function readStepCounts(): array {
     $configured = getenv(self::ENV_PROFILE_STEPS);
 
     if (!is_string($configured) || trim($configured) === '') {
