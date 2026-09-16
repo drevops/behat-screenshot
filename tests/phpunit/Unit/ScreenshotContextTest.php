@@ -110,7 +110,7 @@ class ScreenshotContextTest extends TestCase {
 
       #[\Override]
       public function iSaveScreenshot(): void {
-        $this->captureScreenshot(['fullscreen' => TRUE]);
+        $this->captureScreenshot(['is_fullscreen' => TRUE]);
       }
 
     };
@@ -254,16 +254,16 @@ class ScreenshotContextTest extends TestCase {
     return [
       'passed step, nothing enabled' => [TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, []],
       'passed step, on_failed' => [TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, []],
-      'passed step, on_every_step' => [TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, [['fullscreen' => FALSE]]],
-      'passed step, screenshots tag' => [TRUE, FALSE, FALSE, TRUE, FALSE, FALSE, [['fullscreen' => FALSE]]],
-      'passed step, animated' => [TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, [['fullscreen' => FALSE]]],
-      'passed step, on_every_step and always_fullscreen' => [TRUE, FALSE, TRUE, FALSE, FALSE, TRUE, [['fullscreen' => TRUE]]],
-      'passed step, all triggers' => [TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, [['fullscreen' => FALSE]]],
+      'passed step, on_every_step' => [TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, [['is_fullscreen' => FALSE]]],
+      'passed step, screenshots tag' => [TRUE, FALSE, FALSE, TRUE, FALSE, FALSE, [['is_fullscreen' => FALSE]]],
+      'passed step, animated' => [TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, [['is_fullscreen' => FALSE]]],
+      'passed step, on_every_step and always_fullscreen' => [TRUE, FALSE, TRUE, FALSE, FALSE, TRUE, [['is_fullscreen' => TRUE]]],
+      'passed step, all triggers' => [TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, [['is_fullscreen' => FALSE]]],
       'failed step, nothing enabled' => [FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, []],
-      'failed step, on_failed' => [FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, [['is_failed' => TRUE, 'fullscreen' => FALSE]]],
-      'failed step, on_failed and always_fullscreen' => [FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, [['is_failed' => TRUE, 'fullscreen' => TRUE]]],
+      'failed step, on_failed' => [FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, [['is_failed' => TRUE, 'is_fullscreen' => FALSE]]],
+      'failed step, on_failed and always_fullscreen' => [FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, [['is_failed' => TRUE, 'is_fullscreen' => TRUE]]],
       'failed step, per-step triggers only' => [FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, []],
-      'failed step, all triggers' => [FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, [['is_failed' => TRUE, 'fullscreen' => FALSE]]],
+      'failed step, all triggers' => [FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, [['is_failed' => TRUE, 'is_fullscreen' => FALSE]]],
     ];
   }
 
@@ -287,7 +287,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->once())
       ->method('captureScreenshot')
-      ->with(['filename' => 'test-fullscreen-name', 'fullscreen' => TRUE]);
+      ->with(['filename' => 'test-fullscreen-name', 'is_fullscreen' => TRUE]);
     $screenshot_context->iSaveFullscreenScreenshotWithName('test-fullscreen-name');
   }
 
@@ -295,7 +295,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->once())
       ->method('captureScreenshot')
-      ->with(['fullscreen' => TRUE]);
+      ->with(['is_fullscreen' => TRUE]);
     $screenshot_context->iSaveFullscreenScreenshot();
   }
 
@@ -383,6 +383,25 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->captureScreenshot();
 
     $this->assertSame([['1700000000.test.feature_12.html', 'test-html-content'], ['1700000000.test.feature_12.png', 'test-png-content']], $writes);
+  }
+
+  #[DataProvider('dataProviderCaptureScreenshotRejectsUnsupportedConfigKeys')]
+  public function testCaptureScreenshotRejectsUnsupportedConfigKeys(array $config, string $expected_message): void {
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);
+    $screenshot_context->expects($this->never())->method('getSession');
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage($expected_message);
+
+    $screenshot_context->captureScreenshot($config);
+  }
+
+  public static function dataProviderCaptureScreenshotRejectsUnsupportedConfigKeys(): array {
+    return [
+      'unsupported key' => [['fullscreen' => TRUE], 'Unsupported screenshot configuration keys: fullscreen. Supported keys: filename, is_failed, is_fullscreen.'],
+      'unsupported keys among supported ones' => [['filename' => 'test', 'size' => 1, 'is_failed' => TRUE, 'mode' => 'test'], 'Unsupported screenshot configuration keys: size, mode. Supported keys: filename, is_failed, is_fullscreen.'],
+      'positional value' => [['test'], 'Unsupported screenshot configuration keys: 0. Supported keys: filename, is_failed, is_fullscreen.'],
+    ];
   }
 
   #[DataProvider('dataProviderWriteScreenshotContentCreatesDirectoryAndWritesFile')]
