@@ -685,7 +685,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Make animated GIF filename for a scenario.
    *
-   * Format: timestamp.featurefilename_scenariolinenumber.gif.
+   * Format: {datetime:U}.{feature_file}.feature_<scenario line>.gif. The
+   * step tokens of a configured filename_pattern have no scenario-level
+   * value, so this pattern is fixed.
    *
    * @param \Behat\Behat\Hook\Scope\AfterScenarioScope $scope
    *   After scenario scope.
