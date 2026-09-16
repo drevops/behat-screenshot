@@ -1375,9 +1375,8 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/fullscreen-short.html" should exist
     And behat cli file wildcard "screenshots/fullscreen-short.png" should exist
 
-  # Test for a headless browser using behat-chrome/behat-chrome-extension driver.
   # @see https://gitlab.com/behat-chrome/behat-chrome-extension
-  # Note: this test does not use the Docker container. See CONTRIBUTING.md for more information.
+  # This test does not use the Docker container. See CONTRIBUTING.md.
   @headless
   Scenario: Test Screenshot context using behat-chrome/behat-chrome-extension
     Given screenshot fixture
@@ -1448,7 +1447,7 @@ Feature: Screenshot context
       """
       When I am on the phpserver test page
       And the response status code should be 200
-      # Deliberately empty line to assert for a newly created screenshot file on re-run.
+      # Filler line so the re-run asserts a newly created screenshot file.
       And I save screenshot
       """
     When I run "behat --no-colors --strict"

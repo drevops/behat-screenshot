@@ -589,7 +589,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
         $session->resizeWindow($original_width, $original_height, self::WINDOW_NAME_CURRENT);
       }
       catch (\Exception) {
-        // Restoration is best effort - errors are ignored.
+        // Restoration is best effort.
       }
     }
   }
