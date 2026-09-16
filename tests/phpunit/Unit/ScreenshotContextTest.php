@@ -11,15 +11,12 @@ use Behat\Behat\Definition\Call\RuntimeDefinition;
 use Behat\Behat\Definition\Context\Attribute\DefinitionAttributeReader;
 use Behat\Behat\Hook\Context\Attribute\HookAttributeReader;
 use Behat\Behat\Hook\Scope\AfterStepScope;
-use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Gherkin\Node\FeatureNode;
-use Behat\Gherkin\Node\StepNode;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Call\Callee;
-use Behat\Testwork\Environment\Environment;
 use Behat\Testwork\Hook\Call\RuntimeHook;
 use Behat\Testwork\Suite\GenericSuite;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
@@ -218,13 +215,8 @@ class ScreenshotContextTest extends TestCase {
   }
 
   public function testBeforeStepInitStoresScopeForLaterRetrieval(): void {
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $step_node = $this->createStub(StepNode::class);
-
-    $feature_node->method('getFile')->willReturn(TRUE);
     $screenshot_context = new ScreenshotContext();
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
+    $scope = $this->createBeforeStepScope();
     $screenshot_context->beforeStepInit($scope);
     $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
@@ -362,11 +354,6 @@ class ScreenshotContextTest extends TestCase {
     $session = $this->createStub(Session::class);
     $session->method('getDriver')->willReturn($driver);
 
-    $feature_node = $this->createStub(FeatureNode::class);
-    $feature_node->method('getFile')->willReturn('path/to/test.feature');
-    $step_node = $this->createStub(StepNode::class);
-    $step_node->method('getLine')->willReturn(12);
-
     $writes = [];
     $record_write = static function (string $filename, string $content) use (&$writes): void {
       $writes[] = [$filename, $content];
@@ -378,7 +365,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context->method('getCurrentTime')->willReturnOnConsecutiveCalls(1700000000, 1700000001);
     $screenshot_context->expects($this->exactly(2))->method('writeScreenshotContent')->willReturnCallback($record_write);
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
-    $screenshot_context->beforeStepInit(new BeforeStepScope($this->createStub(Environment::class), $feature_node, $step_node));
+    $screenshot_context->beforeStepInit($this->createBeforeStepScope('path/to/test.feature', 12));
 
     $screenshot_context->captureScreenshot();
 
@@ -474,14 +461,7 @@ class ScreenshotContextTest extends TestCase {
     }
 
     $screenshot_context->method('getSession')->willReturn($session);
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $step_node = $this->createStub(StepNode::class);
-    $step_node->method('getText')->willReturn($step_text);
-    $step_node->method('getLine')->willReturn($step_line);
-    $feature_node->method('getFile')->willReturn($feature_file);
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
-    $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
+    $screenshot_context->method('getBeforeStepScope')->willReturn($this->createBeforeStepScope($feature_file, $step_line, $step_text));
 
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['failed_prefix' => $failed_prefix, 'filename_pattern' => $filename_pattern, 'filename_pattern_failed' => $filename_pattern_failed]));
 
@@ -568,13 +548,7 @@ class ScreenshotContextTest extends TestCase {
   public function testMakeFilenameReplacesUrlHostFromEnvironment(): void {
     $this->setEnvironmentVariable(ScreenshotContext::ENV_TOKEN_HOST, 'example.org');
 
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $feature_node->method('getFile')->willReturn('test-feature-file');
-    $step_node = $this->createStub(StepNode::class);
-    $step_node->method('getText')->willReturn('test-step');
-    $step_node->method('getLine')->willReturn(123);
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
+    $scope = $this->createBeforeStepScope('test-feature-file', 123, 'test-step');
 
     $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willReturn('http://localhost:8080/test-page');

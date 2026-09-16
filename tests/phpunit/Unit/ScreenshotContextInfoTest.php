@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
-use Behat\Behat\Hook\Scope\BeforeStepScope;
-use Behat\Gherkin\Node\FeatureNode;
-use Behat\Gherkin\Node\StepNode;
 use Behat\Mink\Session;
-use Behat\Testwork\Environment\Environment;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -22,6 +19,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ScreenshotContext::class)]
 class ScreenshotContextInfoTest extends TestCase {
 
+  use BehatScopeTrait;
   use ReflectionTrait;
   use ScreenshotConfigTrait;
 
@@ -44,14 +42,7 @@ class ScreenshotContextInfoTest extends TestCase {
 
   #[DataProvider('dataProviderRenderInfoCompilesConfiguredInfoTypes')]
   public function testRenderInfoCompilesConfiguredInfoTypes(array $info_types, array $expected_info): void {
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $feature_node->method('getTitle')->willReturn('Test Feature Title');
-    $step_node = $this->createStub(StepNode::class);
-    $step_node->method('getText')->willReturn('Test step text');
-    $step_node->method('getLine')->willReturn(42);
-
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
+    $scope = $this->createBeforeStepScope(NULL, 42, 'Test step text', 'Test Feature Title');
 
     $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willReturn('http://example.com/test');
@@ -96,10 +87,7 @@ class ScreenshotContextInfoTest extends TestCase {
   }
 
   public function testRenderInfoMarksUrlNotAvailableOnException(): void {
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $step_node = $this->createStub(StepNode::class);
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
+    $scope = $this->createBeforeStepScope();
 
     $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willThrowException(new \Exception('URL not available'));

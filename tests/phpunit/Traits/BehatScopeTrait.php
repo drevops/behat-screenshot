@@ -7,6 +7,7 @@ namespace DrevOps\BehatScreenshotExtension\Tests\Traits;
 use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Behat\Tester\Result\StepResult;
 use Behat\Gherkin\Node\FeatureNode;
 use Behat\Gherkin\Node\ScenarioInterface;
@@ -39,6 +40,32 @@ trait BehatScopeTrait {
     $scenario->method('getTags')->willReturn($scenario_tags);
 
     return new BeforeScenarioScope($this->createStub(Environment::class), $feature_node, $scenario);
+  }
+
+  /**
+   * Create a before step scope for the given feature file and step.
+   *
+   * @param string|null $feature_file
+   *   Feature file path.
+   * @param int $step_line
+   *   Step line number.
+   * @param string $step_text
+   *   Step text.
+   * @param string|null $feature_title
+   *   Feature title.
+   *
+   * @return \Behat\Behat\Hook\Scope\BeforeStepScope
+   *   Before step scope.
+   */
+  protected function createBeforeStepScope(?string $feature_file = NULL, int $step_line = 0, string $step_text = '', ?string $feature_title = NULL): BeforeStepScope {
+    $feature_node = $this->createStub(FeatureNode::class);
+    $feature_node->method('getFile')->willReturn($feature_file);
+    $feature_node->method('getTitle')->willReturn($feature_title);
+    $step_node = $this->createStub(StepNode::class);
+    $step_node->method('getLine')->willReturn($step_line);
+    $step_node->method('getText')->willReturn($step_text);
+
+    return new BeforeStepScope($this->createStub(Environment::class), $feature_node, $step_node);
   }
 
   /**
