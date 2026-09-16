@@ -52,12 +52,12 @@ Feature: Behat CLI Trait context
     Given scenario steps tagged with "@phpserver":
       """
       Given I am on the phpserver test page
-      And the response status code should be 400
+      And the response status code should be 404
       """
     When I run "behat --no-colors --strict"
     Then it should fail with an error:
       """
-      Current response status code is 200, but 400 expected.
+      Current response status code is 200, but 404 expected.
       """
 
   Scenario: Test fails with exception

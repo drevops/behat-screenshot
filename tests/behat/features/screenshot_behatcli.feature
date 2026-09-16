@@ -144,7 +144,7 @@ Feature: Screenshot context
     Then it should pass
     And behat cli file wildcard "screenshots/*.stub.feature_007.html" should exist
 
-  Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_DIR set to custom dir
+  Scenario: Test Screenshot context with environment variable BEHAT_SCREENSHOT_DIR set to custom dir
     Given screenshot fixture
     And behat configuration:
       """
@@ -190,7 +190,7 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6.html" should exist
 
-  Scenario: Test Screenshot context with 'dir' set to '%paths.base%/screenshots' env variable BEHAT_SCREENSHOT_DIR set to custom dir
+  Scenario: Test Screenshot context with 'dir' set to '%paths.base%/screenshots' and environment variable BEHAT_SCREENSHOT_DIR set to custom dir
     Given screenshot fixture
     And behat configuration:
       """
@@ -380,7 +380,7 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should not exist
 
-  Scenario: Test Screenshot context with 'filename_pattern_failed' override & save screenshot on fail
+  Scenario: Test Screenshot context with 'filename_pattern_failed' override and save screenshot on fail
     Given screenshot fixture
     And behat configuration:
       """
@@ -428,7 +428,7 @@ Feature: Screenshot context
     Then it should fail
     And behat cli file wildcard "screenshots/*.failed_stub.feature_006.html" should exist
 
-  Scenario: Test Screenshot context with 'filename_pattern_failed' override & not save screenshot on fail
+  Scenario: Test Screenshot context with 'filename_pattern_failed' override and not save screenshot on fail
     Given screenshot fixture
     And behat configuration:
       """
@@ -593,7 +593,7 @@ Feature: Screenshot context
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should not exist
 
-  Scenario: Test Screenshot context with 'purge' set to 'false', but env variable set to 'true' which will purge files between runs
+  Scenario: Test Screenshot context with 'purge' set to 'false', but environment variable set to 'true' which will purge files between runs
     Given screenshot fixture
     And behat configuration:
       """
@@ -652,7 +652,7 @@ Feature: Screenshot context
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots/*.failed_stub.feature_6.html" should not exist
 
-  Scenario: Test Screenshot context with env variable BEHAT_SCREENSHOT_PURGE set to '1' which will purge files between runs and env variable BEHAT_SCREENSHOT_DIR set to 'screenshots_custom'
+  Scenario: Test Screenshot context with environment variable BEHAT_SCREENSHOT_PURGE set to '1' which will purge files between runs and environment variable BEHAT_SCREENSHOT_DIR set to 'screenshots_custom'
     Given screenshot fixture
     And behat configuration:
       """
@@ -920,7 +920,7 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots" should not exist
 
   @selenium
-  Scenario: Test Screenshot context with JS and all parameters defined in the configuration
+  Scenario: Test Screenshot context with JavaScript and all parameters defined in the configuration
     Given screenshot fixture
     And behat configuration:
       """
@@ -997,7 +997,7 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/*.stub.feature_6.png" should exist
 
   @selenium
-  Scenario: Test Screenshot context with JS full-screen screenshot
+  Scenario: Test Screenshot context with JavaScript fullscreen screenshot
     Given screenshot fixture
     And behat configuration:
       """
@@ -1299,7 +1299,7 @@ Feature: Screenshot context
     And behat cli file wildcard "screenshots/*.gif" should not exist
 
   @selenium
-  Scenario: Test Screenshot context with JS full-screen short screenshot
+  Scenario: Test Screenshot context with JavaScript fullscreen short screenshot
     Given short screenshot fixture
     And behat configuration:
       """

@@ -1,7 +1,7 @@
 @html
 Feature: HTML screenshots
 
-  Ensure that screenshots for HTML-base driver can be captured.
+  Ensure that screenshots for HTML-based driver can be captured.
 
   @phpserver
   Scenario: Capture a screenshot using HTML-based driver
