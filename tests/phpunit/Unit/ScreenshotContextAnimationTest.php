@@ -10,6 +10,7 @@ use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\EnvironmentVariableTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
+use DrevOps\BehatScreenshotExtension\Tokenizer;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresFunction;
@@ -273,6 +274,19 @@ class ScreenshotContextAnimationTest extends TestCase {
     $result = self::callProtectedMethod($screenshot_context, 'makeAnimationFilename', [$scope]);
 
     $this->assertSame('1700000000.login.feature_7.gif', $result);
+  }
+
+  public function testMakeAnimationFilenameMatchesDefaultStepFilenamePattern(): void {
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
+    $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
+
+    $step_pattern = str_replace(['{step_line}', '{ext}'], ['7', 'gif'], self::createScreenshotConfig()->filenamePattern);
+    $expected = Tokenizer::replaceTokens($step_pattern, ['feature_file' => 'path/to/login.feature', 'timestamp' => 1700000000]);
+
+    $scope = $this->createAfterScenarioScope('path/to/login.feature', 7);
+    $result = self::callProtectedMethod($screenshot_context, 'makeAnimationFilename', [$scope]);
+
+    $this->assertSame($expected, $result);
   }
 
   #[RequiresFunction('imagecreatefromstring')]
