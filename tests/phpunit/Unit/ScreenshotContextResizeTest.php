@@ -40,23 +40,12 @@ class ScreenshotContextResizeTest extends TestCase {
         ]
       );
 
-    $session->expects($this->exactly(2))
-      ->method('resizeWindow')
-      ->willReturnCallback(function ($width, $height, $name): void {
-        static $call_count = 0;
-        $call_count++;
+    $resizes = [];
+    $record_resize = static function (int $width, int $height, ?string $name) use (&$resizes): void {
+      $resizes[] = [$width, $height, $name];
+    };
 
-        if ($call_count === 1) {
-          $this->assertSame(1440, $width);
-          $this->assertSame(2200, $height);
-          $this->assertSame('current', $name);
-        }
-        elseif ($call_count === 2) {
-          $this->assertSame(1440, $width);
-          $this->assertSame(900, $height);
-          $this->assertSame('current', $name);
-        }
-      });
+    $session->expects($this->exactly(2))->method('resizeWindow')->willReturnCallback($record_resize);
 
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
@@ -65,6 +54,7 @@ class ScreenshotContextResizeTest extends TestCase {
 
     $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreenWithResize');
     $this->assertSame('test-screenshot-content', $result);
+    $this->assertSame([[1440, 2200, 'current'], [1440, 900, 'current']], $resizes);
   }
 
   public function testGetScreenshotFullscreenWithResizeSkipsResizeOnInvalidDimensions(): void {
