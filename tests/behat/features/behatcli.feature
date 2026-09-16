@@ -11,28 +11,33 @@ Feature: Behat CLI context
     Given a file named "features/bootstrap/FeatureContextTest.php" with:
       """
       <?php
-       use Behat\Behat\Context\Context;
-       use Behat\MinkExtension\Context\MinkContext;
-       use Behat\Step\Given;
-       use Behat\Step\When;
-       class FeatureContextTest extends MinkContext implements Context {
-       /**
-        * Go to the phpserver test page.
-        */
+
+      declare(strict_types=1);
+
+      use Behat\Behat\Context\Context;
+      use Behat\MinkExtension\Context\MinkContext;
+      use Behat\Step\Given;
+      use Behat\Step\When;
+
+      class FeatureContextTest extends MinkContext implements Context {
+
+        /**
+         * Go to the phpserver test page.
+         */
         #[Given('/^(?:|I )am on (?:|the )phpserver test page$/')]
         #[When('/^(?:|I )go to (?:|the )phpserver test page$/')]
-        public function goToPhpServerTestPage()
-        {
-            $this->getSession()->visit('http://0.0.0.0:8888/screenshot.html');
+        public function goToPhpServerTestPage(): void {
+          $this->getSession()->visit('http://0.0.0.0:8888/screenshot.html');
         }
 
         /**
          * Throw an exception with the given message.
          */
         #[Given('I throw test exception with message :message')]
-        public function throwTestException($message) {
+        public function throwTestException(string $message): void {
           throw new \RuntimeException($message);
         }
+
       }
       """
     And behat configuration:
@@ -66,13 +71,13 @@ Feature: Behat CLI context
     And a file named "tests/behat/fixtures/screenshot.html" with:
       """
       <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Test page</title>
-        </head>
-        <body style="background-color: blue;">
-        Test page
-        </body>
+      <html>
+      <head>
+        <title>Test page</title>
+      </head>
+      <body style="background-color: blue;">
+      Test page
+      </body>
       </html>
       """
 

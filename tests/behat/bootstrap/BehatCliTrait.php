@@ -111,6 +111,8 @@ trait BehatCliTrait {
     $content = <<<'EOL'
 <?php
 
+declare(strict_types=1);
+
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
@@ -142,7 +144,7 @@ class FeatureContextTest extends MinkContext implements Context {
    *
    * @param array $parameters Array of parameters from config.
    */
-  public function __construct($parameters) {
+  public function __construct(array $parameters) {
     $this->screenshotInitParams($parameters);
 
     // Override any real host in the screenshot token.
@@ -173,8 +175,7 @@ class FeatureContextTest extends MinkContext implements Context {
    */
   #[Given('/^(?:|I )am on (?:|the )phpserver test page$/')]
   #[When('/^(?:|I )go to (?:|the )phpserver test page$/')]
-  public function goToPhpServerTestPage()
-  {
+  public function goToPhpServerTestPage(): void {
     $this->visitPath('/screenshot.html');
   }
 
@@ -182,7 +183,7 @@ class FeatureContextTest extends MinkContext implements Context {
    * Throw an exception with the given message.
    */
   #[Given('I throw test exception with message :message')]
-  public function throwTestException($message) {
+  public function throwTestException(string $message): void {
     throw new \RuntimeException($message);
   }
 
@@ -190,7 +191,7 @@ class FeatureContextTest extends MinkContext implements Context {
    * Assert that an environment variable holds the given value.
    */
   #[Then('the environment variable :name should have the value :value')]
-  public function assertEnvironmentVariableValue($name, $value) {
+  public function assertEnvironmentVariableValue(string $name, string $value): void {
     $actual = getenv($name);
 
     if ($actual === FALSE) {
