@@ -36,12 +36,12 @@ trait ScreenshotTrait {
   }
 
   /**
-   * Go to the screenshot test page.
+   * Go to the phpserver test page.
    */
-  #[Given('/^(?:|I )am on (?:|the )screenshot test page$/')]
-  #[Given('/^(?:|I )go to (?:|the )screenshot test page$/')]
-  #[Given('/^(?:|I )am on (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/')]
-  #[Given('/^(?:|I )go to (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/')]
+  #[Given('/^(?:|I )am on (?:|the )phpserver test page$/')]
+  #[Given('/^(?:|I )go to (?:|the )phpserver test page$/')]
+  #[Given('/^(?:|I )am on (?:|the )phpserver test page with query "([^"]+)" and fragment "([^"]+)"$/')]
+  #[Given('/^(?:|I )go to (?:|the )phpserver test page with query "([^"]+)" and fragment "([^"]+)"$/')]
   public function screenshotGoToTestPage(string $query = '', string $fragment = ''): void {
     $path = 'screenshot.html';
 

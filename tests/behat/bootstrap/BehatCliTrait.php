@@ -119,7 +119,6 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Hook\BeforeScenario;
 use Behat\MinkExtension\Context\MinkContext;
 use Behat\MinkExtension\Context\RawMinkContext;
-use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
@@ -168,15 +167,6 @@ class FeatureContextTest extends MinkContext implements Context {
         $context->setMinkParameter('base_url', $this->javascriptBaseUrl);
       }
     }
-  }
-
-  /**
-   * Go to the phpserver test page.
-   */
-  #[Given('/^(?:|I )am on (?:|the )phpserver test page$/')]
-  #[When('/^(?:|I )go to (?:|the )phpserver test page$/')]
-  public function goToPhpServerTestPage(): void {
-    $this->visitPath('/screenshot.html');
   }
 
   /**

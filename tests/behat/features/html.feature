@@ -5,7 +5,7 @@ Feature: HTML screenshots
 
   @phpserver
   Scenario: Capture a screenshot using HTML-based driver
-    When I am on the screenshot test page
+    When I am on the phpserver test page
     And the response status code should be 200
     And I save screenshot
     Then file wildcard "*.html.feature_10.html" should exist
@@ -13,7 +13,7 @@ Feature: HTML screenshots
 
   @phpserver
   Scenario: Capture a screenshot with name using HTML-based driver
-    When I am on the screenshot test page
+    When I am on the phpserver test page
     And the response status code should be 200
     And I save screenshot with name "hello-screenshot"
     Then file wildcard "hello-screenshot.html" should exist
