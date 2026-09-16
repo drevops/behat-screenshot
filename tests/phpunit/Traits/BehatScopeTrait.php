@@ -24,9 +24,9 @@ trait BehatScopeTrait {
   /**
    * Create a before scenario scope whose nodes carry the given tags.
    *
-   * @param array<int, string> $scenario_tags
+   * @param array<int,string> $scenario_tags
    *   Tags of the scenario, as the Gherkin parser returns them.
-   * @param array<int, string> $feature_tags
+   * @param array<int,string> $feature_tags
    *   Tags of the feature, as the Gherkin parser returns them.
    *
    * @return \Behat\Behat\Hook\Scope\BeforeScenarioScope
@@ -44,15 +44,15 @@ trait BehatScopeTrait {
   /**
    * Create an after step scope with the given result state.
    *
-   * @param bool $passed
+   * @param bool $is_passed
    *   Whether the step passed.
    *
    * @return \Behat\Behat\Hook\Scope\AfterStepScope
    *   After step scope.
    */
-  protected function createAfterStepScope(bool $passed = TRUE): AfterStepScope {
+  protected function createAfterStepScope(bool $is_passed = TRUE): AfterStepScope {
     $step_result = $this->createStub(StepResult::class);
-    $step_result->method('isPassed')->willReturn($passed);
+    $step_result->method('isPassed')->willReturn($is_passed);
 
     return new AfterStepScope($this->createStub(Environment::class), $this->createStub(FeatureNode::class), $this->createStub(StepNode::class), $step_result);
   }

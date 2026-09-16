@@ -33,12 +33,10 @@ class ScreenshotContextResizeTest extends TestCase {
 
     $session->method('evaluateScript')
       ->willReturnOnConsecutiveCalls(
-        // First call: get original window dimensions.
         [
           'width' => 1440,
           'height' => 900,
         ],
-        // Second call: get document scroll dimensions.
         [
           'scrollWidth' => 1440,
           'scrollHeight' => 2000,
@@ -52,13 +50,11 @@ class ScreenshotContextResizeTest extends TestCase {
         $call_count++;
 
         if ($call_count === 1) {
-          // First call: resize to fullscreen.
           $this->assertSame(1440, $width);
           $this->assertSame(2200, $height);
           $this->assertSame('current', $name);
         }
         elseif ($call_count === 2) {
-          // Second call: restore to original.
           $this->assertSame(1440, $width);
           $this->assertSame(900, $height);
           $this->assertSame('current', $name);
@@ -85,12 +81,10 @@ class ScreenshotContextResizeTest extends TestCase {
 
     $session->method('evaluateScript')
       ->willReturnOnConsecutiveCalls(
-        // First call: get original window dimensions.
         [
           'width' => 1440,
           'height' => 900,
         ],
-        // Second call: get document scroll dimensions (invalid).
         [
           'scrollWidth' => 0,
           'scrollHeight' => 0,
@@ -148,11 +142,11 @@ class ScreenshotContextResizeTest extends TestCase {
   public static function dataProviderCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured(): array {
     return [
       'not requested, not configured' => [FALSE, [], 'test-png-content'],
-      'requested, not configured' => [FALSE, ['fullscreen' => TRUE], 'test-fullscreen-png-content'],
-      'declined, not configured' => [FALSE, ['fullscreen' => FALSE], 'test-png-content'],
+      'requested, not configured' => [FALSE, ['is_fullscreen' => TRUE], 'test-fullscreen-png-content'],
+      'declined, not configured' => [FALSE, ['is_fullscreen' => FALSE], 'test-png-content'],
       'not requested, configured' => [TRUE, [], 'test-fullscreen-png-content'],
-      'requested, configured' => [TRUE, ['fullscreen' => TRUE], 'test-fullscreen-png-content'],
-      'declined, configured' => [TRUE, ['fullscreen' => FALSE], 'test-fullscreen-png-content'],
+      'requested, configured' => [TRUE, ['is_fullscreen' => TRUE], 'test-fullscreen-png-content'],
+      'declined, configured' => [TRUE, ['is_fullscreen' => FALSE], 'test-fullscreen-png-content'],
     ];
   }
 

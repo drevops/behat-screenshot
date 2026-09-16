@@ -73,9 +73,6 @@ class ScreenshotContextInitializer implements ContextInitializer {
   /**
    * Apply the environment variables that override configuration keys.
    *
-   * A truthy BEHAT_SCREENSHOT_DIR replaces "dir", and a truthy
-   * BEHAT_SCREENSHOT_PURGE turns "purge" on.
-   *
    * @param array<mixed> $config
    *   Processed configuration.
    *

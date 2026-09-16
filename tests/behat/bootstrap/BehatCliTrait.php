@@ -23,7 +23,7 @@ trait BehatCliTrait {
    * Write the feature context used by the inner run.
    */
   #[BeforeScenario('@behatcli')]
-  public function behatCliBeforeScenario(): void {
+  public function behatCliBeforeScenarioWriteFeatureContext(): void {
     $traits = [
       'tests/behat/bootstrap/ScreenshotTrait.php' => 'ScreenshotTrait',
     ];
@@ -37,7 +37,7 @@ trait BehatCliTrait {
   public function behatCliAfterScenarioPrintOutput(AfterScenarioScope $scope): void {
     $this->behatCliCopyScreenshots($scope);
 
-    if (static::behatCliIsDebug()) {
+    if (self::behatCliIsDebug()) {
       print '-------------------- OUTPUT START --------------------' . PHP_EOL;
       print PHP_EOL;
       print $this->getOutput();
@@ -80,7 +80,7 @@ trait BehatCliTrait {
    * @return string
    *   Path to written file.
    */
-  public function behatCliWriteFeatureContextFile(array $traits = []): string {
+  protected function behatCliWriteFeatureContextFile(array $traits = []): string {
     $tokens = [
       '{{USE_DECLARATION}}' => '',
       '{{USE_IN_CLASS}}' => '',
@@ -115,6 +115,7 @@ use Behat\MinkExtension\Context\RawMinkContext;
 use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 
 {{USE_DECLARATION}}
 
@@ -135,7 +136,7 @@ class FeatureContextTest extends MinkContext implements Context {
     $this->screenshotInitParams($parameters);
 
     // Override any real host in the screenshot token.
-    putenv('BEHAT_SCREENSHOT_TOKEN_HOST=example.com');
+    putenv(ScreenshotContext::ENV_TOKEN_HOST . '=example.com');
     $this->javascriptBaseUrl = getenv('BEHAT_JAVASCRIPT_BASE_URL') ?: 'http://host.docker.internal:8888';
   }
 
@@ -200,8 +201,8 @@ EOL;
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/bootstrap/FeatureContextTest.php';
     $this->createFile($filename, $content);
 
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'FeatureContextTest.php');
+    if (self::behatCliIsDebug()) {
+      self::behatCliPrintFileContents($filename, 'FeatureContextTest.php');
     }
 
     return $filename;
@@ -241,8 +242,8 @@ EOL;
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/stub.feature';
     $this->createFile($filename, $content);
 
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'Feature Stub');
+    if (self::behatCliIsDebug()) {
+      self::behatCliPrintFileContents($filename, 'Feature Stub');
     }
   }
 
@@ -254,8 +255,8 @@ EOL;
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.php';
     $this->createFile($filename, (string) $content);
 
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'Behat Config');
+    if (self::behatCliIsDebug()) {
+      self::behatCliPrintFileContents($filename, 'Behat Config');
     }
   }
 
@@ -288,8 +289,8 @@ EOL;
   public function behatCliAssertFailWithError(PyStringNode $message): void {
     $this->itShouldFail('fail');
     Assert::assertStringContainsString(trim((string) $message), $this->getOutput());
-    // Enforce \Exception for all assertion exceptions. Non-assertion
-    // exceptions should be thrown as \RuntimeException.
+    // An assertion failure throws an exception class other than
+    // \RuntimeException, which is reserved for non-assertion errors.
     Assert::assertStringContainsString('Exception)', $this->getOutput());
     Assert::assertStringNotContainsString('(RuntimeException)', $this->getOutput());
   }
@@ -301,8 +302,8 @@ EOL;
   public function behatCliAssertFailWithException(PyStringNode $message): void {
     $this->itShouldFail('fail');
     Assert::assertStringContainsString(trim((string) $message), $this->getOutput());
-    // Enforce \RuntimeException for all non-assertion exceptions. Assertion
-    // exceptions should be thrown as \Exception.
+    // A non-assertion error throws \RuntimeException, while assertion
+    // failures throw other exception classes.
     Assert::assertStringContainsString('(RuntimeException)', $this->getOutput());
   }
 
@@ -348,7 +349,7 @@ EOL;
    * @param string $wildcard
    *   Filename with a wildcard.
    */
-  #[Given('/^behat cli file wildcard "([^"]*)" should exist$/')]
+  #[Then('/^behat cli file wildcard "([^"]*)" should exist$/')]
   public function behatCliAssertFileShouldExist(string $wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -368,7 +369,7 @@ EOL;
    * @param \Behat\Gherkin\Node\PyStringNode $text
    *   Text in the file.
    */
-  #[Given('/^behat screenshot file matching "([^"]*)" should contain:$/')]
+  #[Then('/^behat screenshot file matching "([^"]*)" should contain:$/')]
   public function behatCliAssertFileShouldContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -395,7 +396,7 @@ EOL;
    * @param \Behat\Gherkin\Node\PyStringNode $text
    *   Text in the file.
    */
-  #[Given('/^behat screenshot file matching "([^"]*)" should not contain:$/')]
+  #[Then('/^behat screenshot file matching "([^"]*)" should not contain:$/')]
   public function behatCliAssertFileShouldNotContain(string $wildcard, PyStringNode $text): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -420,7 +421,7 @@ EOL;
    * @param string $wildcard
    *   Filename with a wildcard.
    */
-  #[Given('/^behat cli file wildcard "([^"]*)" should not exist$/')]
+  #[Then('/^behat cli file wildcard "([^"]*)" should not exist$/')]
   public function behatCliAssertFileShouldNotExist(string $wildcard): void {
     $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);

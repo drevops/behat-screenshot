@@ -51,9 +51,9 @@ class EnvironmentVariableNamingTest extends TestCase {
 
       $this->assertTrue($constant->isPublic(), sprintf('%s::%s is not public.', $class, $name));
       $this->assertContains($name, $read_constants, sprintf('%s declares %s but does not pass it to getenv().', $class, $name));
-      $this->assertStringStartsWith(static::VARIABLE_PREFIX, $value, sprintf('%s::%s holds %s, which does not start with %s.', $class, $name, $value, static::VARIABLE_PREFIX));
+      $this->assertStringStartsWith(self::VARIABLE_PREFIX, $value, sprintf('%s::%s holds %s, which does not start with %s.', $class, $name, $value, self::VARIABLE_PREFIX));
 
-      $expected_name = 'ENV_' . substr($value, strlen(static::VARIABLE_PREFIX));
+      $expected_name = 'ENV_' . substr($value, strlen(self::VARIABLE_PREFIX));
       $this->assertSame($expected_name, $name, sprintf('%s::%s holds %s, so it must be named %s.', $class, $name, $value, $expected_name));
 
       $variables[$name] = $value;

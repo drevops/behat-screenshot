@@ -28,25 +28,25 @@ class EnvironmentVariableTraitTest extends TestCase {
   protected const UNSET_VARIABLE = 'ENVIRONMENT_VARIABLE_TRAIT_TEST_UNSET';
 
   public function testSetEnvironmentVariableChangesVariables(): void {
-    putenv(static::SET_VARIABLE . '=original');
-    putenv(static::UNSET_VARIABLE);
+    putenv(self::SET_VARIABLE . '=original');
+    putenv(self::UNSET_VARIABLE);
 
-    $this->setEnvironmentVariable(static::SET_VARIABLE, NULL);
-    $this->setEnvironmentVariable(static::UNSET_VARIABLE, 'first');
-    $this->setEnvironmentVariable(static::UNSET_VARIABLE, 'second');
+    $this->setEnvironmentVariable(self::SET_VARIABLE, NULL);
+    $this->setEnvironmentVariable(self::UNSET_VARIABLE, 'first');
+    $this->setEnvironmentVariable(self::UNSET_VARIABLE, 'second');
 
-    $this->assertFalse(getenv(static::SET_VARIABLE));
-    $this->assertSame('second', getenv(static::UNSET_VARIABLE));
+    $this->assertFalse(getenv(self::SET_VARIABLE));
+    $this->assertSame('second', getenv(self::UNSET_VARIABLE));
   }
 
   #[Depends('testSetEnvironmentVariableChangesVariables')]
   public function testChangedVariablesAreRestoredAfterTest(): void {
     $message = 'The trait did not restore the variables after the previous test. A hook method named like a private TestCase method runs that method instead.';
 
-    $this->assertSame('original', getenv(static::SET_VARIABLE), $message);
-    $this->assertFalse(getenv(static::UNSET_VARIABLE), $message);
+    $this->assertSame('original', getenv(self::SET_VARIABLE), $message);
+    $this->assertFalse(getenv(self::UNSET_VARIABLE), $message);
 
-    putenv(static::SET_VARIABLE);
+    putenv(self::SET_VARIABLE);
   }
 
 }

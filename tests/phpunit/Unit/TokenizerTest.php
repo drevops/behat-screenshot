@@ -184,8 +184,8 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceTokensResolvesKnownTokensAndKeepsUnknown')]
-  public function testReplaceTokensResolvesKnownTokensAndKeepsUnknown(string $string_contains_tokens, array $data, string $expected): void {
-    $replacement = Tokenizer::replaceTokens($string_contains_tokens, $data);
+  public function testReplaceTokensResolvesKnownTokensAndKeepsUnknown(string $text_contains_tokens, array $data, string $expected): void {
+    $replacement = Tokenizer::replaceTokens($text_contains_tokens, $data);
     $this->assertSame($expected, $replacement);
   }
 
@@ -236,14 +236,13 @@ class TokenizerTest extends TestCase {
         $data,
         '{nontoken}.png',
       ],
-      // A step name carrying a token has that token resolved too.
       'token inside step name' => [
         '{step_name}.{ext}',
         ['step_name' => 'Visit {url} page', 'url' => 'http://example.com/foo', 'ext' => 'png'] + $data,
         'Visit_http_example_com_foo_page.png',
       ],
-      // A token nested inside a step name that resolves to nothing known is
-      // left alone rather than looped over.
+      // An unknown token inside a step name is kept unchanged rather than
+      // looped over.
       'unknown token inside step name' => [
         '{step_name}.{ext}',
         ['step_name' => 'Visit {nontoken} page'] + $data,

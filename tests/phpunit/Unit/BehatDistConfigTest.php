@@ -6,11 +6,9 @@ namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use Behat\Config\Config;
 use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Config\Definition\ArrayNode;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\PrototypedArrayNode;
 
 /**
  * Test the reference configuration in behat.dist.php.
@@ -18,17 +16,11 @@ use Symfony\Component\Config\Definition\PrototypedArrayNode;
 #[CoversNothing]
 class BehatDistConfigTest extends TestCase {
 
+  use ScreenshotConfigTrait;
+
   public function testSetsEveryOption(): void {
-    $tree_builder = new TreeBuilder('root');
-    (new BehatScreenshotExtension())->configure($tree_builder->getRootNode());
-    $tree = $tree_builder->buildTree();
-
-    if (!$tree instanceof ArrayNode) {
-      $this->fail('The extension configuration tree is not an array node.');
-    }
-
-    $expected = static::getNodeOptionNames($tree);
-    $actual = static::getSettingOptionNames(static::getExtensionSettings());
+    $expected = self::collectLeafKeyPaths(self::buildScreenshotConfigTree());
+    $actual = self::collectSettingKeyPaths(self::getExtensionSettings());
     sort($expected);
     sort($actual);
 
@@ -58,7 +50,7 @@ class BehatDistConfigTest extends TestCase {
    *   The extension settings, keyed by option name.
    */
   protected static function getExtensionSettings(): array {
-    $settings = static::loadPhpConfig();
+    $settings = self::loadPhpConfig();
 
     foreach (['default', 'extensions', BehatScreenshotExtension::class] as $key) {
       if (!is_array($settings) || !isset($settings[$key])) {
@@ -76,55 +68,30 @@ class BehatDistConfigTest extends TestCase {
   }
 
   /**
-   * Get the option names a configuration node defines.
-   *
-   * @param \Symfony\Component\Config\Definition\ArrayNode $node
-   *   The configuration node.
-   * @param string $prefix
-   *   Prefix of the parent option, ending with a dot.
-   *
-   * @return array<int, string>
-   *   Option names, with a nested option joined to its parent by a dot.
-   */
-  protected static function getNodeOptionNames(ArrayNode $node, string $prefix = ''): array {
-    $names = [];
-
-    foreach ($node->getChildren() as $name => $child) {
-      if ($child instanceof ArrayNode && !$child instanceof PrototypedArrayNode) {
-        $names = [...$names, ...static::getNodeOptionNames($child, $prefix . $name . '.')];
-        continue;
-      }
-
-      $names[] = $prefix . $name;
-    }
-
-    return $names;
-  }
-
-  /**
-   * Get the option names a settings array sets.
+   * Collect the key paths a settings array sets.
    *
    * @param array<mixed> $settings
    *   The settings, keyed by option name.
    * @param string $prefix
-   *   Prefix of the parent option, ending with a dot.
+   *   Key path of the parent setting, with a trailing dot.
    *
-   * @return array<int, string>
-   *   Option names, with a nested option joined to its parent by a dot.
+   * @return array<int,string>
+   *   Key paths, with nested keys separated by dots.
    */
-  protected static function getSettingOptionNames(array $settings, string $prefix = ''): array {
-    $names = [];
+  protected static function collectSettingKeyPaths(array $settings, string $prefix = ''): array {
+    $paths = [];
 
     foreach ($settings as $name => $value) {
       if (is_array($value) && !array_is_list($value)) {
-        $names = [...$names, ...static::getSettingOptionNames($value, $prefix . $name . '.')];
+        $paths = [...$paths, ...self::collectSettingKeyPaths($value, $prefix . $name . '.')];
+
         continue;
       }
 
-      $names[] = $prefix . $name;
+      $paths[] = $prefix . $name;
     }
 
-    return $names;
+    return $paths;
   }
 
 }

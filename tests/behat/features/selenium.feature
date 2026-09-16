@@ -6,20 +6,20 @@ Feature: Selenium screenshots
   @phpserver @javascript
   Scenario: Capture a screenshot using Selenium driver
     Given I am on the screenshot test page
-    When save screenshot
-    Then file wildcard "*.selenium.feature_9.png" should exist
+    Then save screenshot
+    And file wildcard "*.selenium.feature_9.png" should exist
     And file wildcard "*.selenium.feature_9.html" should exist
-    When save 800 x 600 screenshot
-    Then file wildcard "*.selenium.feature_12.png" should exist
-    When save 1440 x 900 screenshot
+    And save 800 x 600 screenshot
+    And file wildcard "*.selenium.feature_12.png" should exist
+    And save 1440 x 900 screenshot
     And file wildcard "*.selenium.feature_14.html" should exist
 
   @phpserver @javascript @fullscreen
   Scenario: Capture a fullscreen screenshot using Selenium driver
     Given I am on the screenshot test page
-    When save fullscreen screenshot
-    Then file wildcard "*.selenium.feature_20.html" should exist
-    Then file wildcard "*.selenium.feature_20.png" should exist
+    Then save fullscreen screenshot
+    And file wildcard "*.selenium.feature_20.html" should exist
+    And file wildcard "*.selenium.feature_20.png" should exist
 
   @phpserver @javascript @fullscreen
   Scenario: Capture a fullscreen screenshot with name using Selenium driver

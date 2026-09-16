@@ -6,6 +6,7 @@ namespace DrevOps\BehatScreenshotExtension\Tests\Functional;
 
 use DrevOps\BehatScreenshotExtension\AnimatedGifEncoder;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\PageImageTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RequiresFunction;
@@ -24,10 +25,11 @@ use PHPUnit\Framework\TestCase;
 class AnimationArtifactsTest extends TestCase {
 
   use GifParserTrait;
+  use PageImageTrait;
   use ReflectionTrait;
 
   /**
-   * Frame sizes standing in for a scenario that visits pages of every length.
+   * Frame sizes of a simulated scenario that visits pages of mixed height.
    *
    * @var array<int,array<int,int>>
    */
@@ -147,51 +149,10 @@ class AnimationArtifactsTest extends TestCase {
     $frames = [];
 
     foreach (self::FRAME_SIZES as $step => $size) {
-      $frames[] = $this->createPage($size[0], $size[1], $step + 1);
+      $frames[] = $this->createPage($size[0], $size[1], sprintf('STEP %d - captured %dx%d', $step + 1, $size[0], $size[1]));
     }
 
     return $frames;
-  }
-
-  /**
-   * Render a page carrying its own dimensions and depth markings.
-   *
-   * @param int $width
-   *   Page width.
-   * @param int $height
-   *   Page height.
-   * @param int $step
-   *   Step number shown in the page header.
-   *
-   * @return string
-   *   Binary PNG content.
-   */
-  protected function createPage(int $width, int $height, int $step): string {
-    $image = imagecreatetruecolor(max(1, $width), max(1, $height));
-
-    $paper = (int) imagecolorallocate($image, 252, 252, 254);
-    $header = (int) imagecolorallocate($image, 26, 38, 84);
-    $rule = (int) imagecolorallocate($image, 208, 212, 224);
-    $ink = (int) imagecolorallocate($image, 40, 44, 60);
-    $paper_white = (int) imagecolorallocate($image, 255, 255, 255);
-
-    imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, $paper);
-    imagefilledrectangle($image, 0, 0, $width - 1, 56, $header);
-    imagestring($image, 5, 16, 20, sprintf('STEP %d - captured %dx%d', $step, $width, $height), $paper_white);
-
-    // A ruler every 200px, so a crop's cut-off point is readable off the image.
-    for ($y = 200; $y < $height; $y += 200) {
-      imageline($image, 0, $y, $width - 1, $y, $rule);
-      imagestring($image, 3, 16, $y + 6, sprintf('y = %d', $y), $ink);
-    }
-
-    // A band down the right edge, so a width crop is equally visible.
-    imagefilledrectangle($image, $width - 40, 60, $width - 1, $height - 1, (int) imagecolorallocate($image, 220, 90, 60));
-
-    ob_start();
-    imagepng($image);
-
-    return (string) ob_get_clean();
   }
 
   /**

@@ -39,9 +39,11 @@ interface ScreenshotAwareContextInterface extends Context {
    *   Screenshot configuration with the following keys:
    *   - filename: (string|null) Custom filename for the screenshot.
    *   - is_failed: (bool) Whether this is a failed test screenshot.
-   *   - fullscreen: (bool) Whether to capture a fullscreen screenshot.
+   *   - is_fullscreen: (bool) Whether to capture a fullscreen screenshot.
    *
    * @throws \Behat\Mink\Exception\DriverException
+   * @throws \InvalidArgumentException
+   *   When the configuration holds a key not listed above.
    */
   public function captureScreenshot(array $config = []): void;
 

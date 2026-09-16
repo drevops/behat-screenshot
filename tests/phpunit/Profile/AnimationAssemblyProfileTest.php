@@ -6,6 +6,7 @@ namespace DrevOps\BehatScreenshotExtension\Tests\Profile;
 
 use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\GifParserTrait;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\PageImageTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
@@ -34,6 +35,7 @@ class AnimationAssemblyProfileTest extends TestCase {
 
   use BehatScopeTrait;
   use GifParserTrait;
+  use PageImageTrait;
   use ScreenshotConfigTrait;
 
   /**
@@ -206,37 +208,6 @@ class AnimationAssemblyProfileTest extends TestCase {
   }
 
   /**
-   * Render a page of the given size.
-   *
-   * @param int $width
-   *   Page width.
-   * @param int $height
-   *   Page height.
-   *
-   * @return string
-   *   Binary PNG content.
-   */
-  protected function createPage(int $width, int $height): string {
-    $image = imagecreatetruecolor(max(1, $width), max(1, $height));
-    imagefilledrectangle($image, 0, 0, $width - 1, $height - 1, (int) imagecolorallocate($image, 250, 250, 252));
-    imagefilledrectangle($image, 0, 0, $width - 1, 60, (int) imagecolorallocate($image, 28, 42, 88));
-
-    $ink = (int) imagecolorallocate($image, 40, 44, 60);
-    $muted = (int) imagecolorallocate($image, 150, 155, 170);
-
-    for ($y = 96; $y < $height - 30; $y += 26) {
-      $length = 300 + (($y * 7) % (int) ($width * 0.55));
-      imagefilledrectangle($image, 40, $y, 40 + $length, $y + 11, $ink);
-      imagefilledrectangle($image, 40, $y + 14, 40 + (int) ($length * 0.7), $y + 20, $muted);
-    }
-
-    ob_start();
-    imagepng($image);
-
-    return (string) ob_get_clean();
-  }
-
-  /**
    * Read the step counts to profile.
    *
    * @return array<int,int>
@@ -255,7 +226,7 @@ class AnimationAssemblyProfileTest extends TestCase {
   }
 
   /**
-   * Write the report where CI collects it.
+   * Write the report to the profile log directory.
    *
    * @param string $report
    *   Report content.

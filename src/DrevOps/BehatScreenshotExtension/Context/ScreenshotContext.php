@@ -52,6 +52,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   public const FILENAME_EXTENSION_SUFFIX = '.{ext}';
 
   /**
+   * Configuration keys captureScreenshot() accepts.
+   */
+  public const CAPTURE_CONFIG_KEYS = ['filename', 'is_failed', 'is_fullscreen'];
+
+  /**
    * Tag enabling per-step screenshots for a scenario or feature.
    */
   public const TAG_SCREENSHOTS = 'screenshots';
@@ -228,7 +233,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   }
 
   /**
-   * Init values required for screenshots.
+   * Start the driver and resize the window to the default size.
    *
    * @param \Behat\Behat\Hook\Scope\BeforeScenarioScope $scope
    *   Scenario scope.
@@ -245,7 +250,8 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $this->getSession()->resizeWindow(self::DEFAULT_WINDOW_WIDTH, self::DEFAULT_WINDOW_HEIGHT, self::WINDOW_NAME_CURRENT);
     }
     catch (UnsupportedDriverActionException) {
-      // Drivers without visual screenshot support do not have them created.
+      // No image screenshots are created for drivers without visual screenshot
+      // support.
     }
     catch (DriverException $exception) {
       throw new \RuntimeException(sprintf("Unable to connect to the driver's server: %s.", $exception->getMessage()), $exception->getCode(), $exception);
@@ -273,7 +279,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     if (!$scope->getTestResult()->isPassed() && $this->getScreenshotConfig()->shouldCaptureOnFailed) {
       $this->captureScreenshot([
         'is_failed' => TRUE,
-        'fullscreen' => $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen,
+        'is_fullscreen' => $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen,
       ]);
     }
   }
@@ -291,7 +297,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     // Failed steps are covered separately by on_failed to avoid duplicates.
     if (($this->getScreenshotConfig()->shouldCaptureOnEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
       $this->captureScreenshot([
-        'fullscreen' => $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen,
+        'is_fullscreen' => $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen,
       ]);
 
       if ($this->scenarioIsAnimated && $this->lastScreenshotContent !== NULL) {
@@ -360,7 +366,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   #[When('I save fullscreen screenshot')]
   #[Then('save fullscreen screenshot')]
   public function iSaveFullscreenScreenshot(): void {
-    $this->captureScreenshot(['fullscreen' => TRUE]);
+    $this->captureScreenshot(['is_fullscreen' => TRUE]);
   }
 
   /**
@@ -378,7 +384,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   #[When('I save fullscreen screenshot with name :filename')]
   #[Then('save fullscreen screenshot with name :filename')]
   public function iSaveFullscreenScreenshotWithName(string $filename): void {
-    $this->captureScreenshot(['filename' => $filename, 'fullscreen' => TRUE]);
+    $this->captureScreenshot(['filename' => $filename, 'is_fullscreen' => TRUE]);
   }
 
   /**
@@ -391,7 +397,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
       $this->getSession()->resizeWindow((int) $width, (int) $height, self::WINDOW_NAME_CURRENT);
     }
     catch (UnsupportedDriverActionException) {
-      // Drivers without resize support may proceed.
+      // The screenshot is still captured for drivers without resize support.
     }
 
     $this->captureScreenshot();
@@ -401,7 +407,13 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * {@inheritdoc}
    */
   public function captureScreenshot(array $config = []): void {
-    $is_fullscreen = (isset($config['fullscreen']) && $config['fullscreen']) || $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen;
+    $unsupported_keys = array_diff(array_keys($config), self::CAPTURE_CONFIG_KEYS);
+
+    if ($unsupported_keys !== []) {
+      throw new \InvalidArgumentException(sprintf('Unsupported screenshot configuration keys: %s. Supported keys: %s.', implode(', ', $unsupported_keys), implode(', ', self::CAPTURE_CONFIG_KEYS)));
+    }
+
+    $is_fullscreen = (isset($config['is_fullscreen']) && $config['is_fullscreen']) || $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen;
 
     $filename = isset($config['filename']) && is_scalar($config['filename']) ? (string) $config['filename'] : NULL;
     $is_failed = isset($config['is_failed']) && is_scalar($config['is_failed']) && $config['is_failed'];
@@ -427,9 +439,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $filename_html = $this->makeFilename('html', $timestamp, $filename, $is_failed);
     $this->writeScreenshotContent($filename_html, $content);
 
-    // A driver without screenshot support throws instead of capturing, leaving
-    // the HTML file written above as the only record of the page, without its
-    // referenced assets.
+    // A driver without screenshot support throws instead of capturing, so the
+    // HTML file written above is the only record of the page. That file does
+    // not include the page's referenced assets.
     try {
       $content = $is_fullscreen ? $this->getScreenshotFullscreen() : $this->getScreenshot();
     }
@@ -631,7 +643,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   Make filename for fail case.
    *
    * @return string
-   *   Unique filename.
+   *   Filename with its tokens replaced.
    *
    * @throws \InvalidArgumentException
    */
@@ -693,7 +705,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   After scenario scope.
    *
    * @return string
-   *   Unique animated GIF filename grouped with the scenario step files.
+   *   Animated GIF filename grouped with the scenario step files.
    *
    * @throws \InvalidArgumentException
    */

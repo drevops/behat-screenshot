@@ -108,7 +108,7 @@ readonly class ScreenshotConfig {
 
     foreach (explode('.', $path) as $key) {
       if (!is_array($value)) {
-        throw self::createTypeException(implode('.', $parents), 'an array', $value);
+        throw self::makeTypeException(implode('.', $parents), 'an array', $value);
       }
 
       if (!array_key_exists($key, $value)) {
@@ -140,7 +140,7 @@ readonly class ScreenshotConfig {
     $value = self::readValue($config, $path);
 
     if (!is_bool($value)) {
-      throw self::createTypeException($path, 'a boolean', $value);
+      throw self::makeTypeException($path, 'a boolean', $value);
     }
 
     return $value;
@@ -164,7 +164,7 @@ readonly class ScreenshotConfig {
     $value = self::readValue($config, $path);
 
     if (!is_int($value)) {
-      throw self::createTypeException($path, 'an integer', $value);
+      throw self::makeTypeException($path, 'an integer', $value);
     }
 
     return $value;
@@ -188,7 +188,7 @@ readonly class ScreenshotConfig {
     $value = self::readValue($config, $path);
 
     if (!is_scalar($value)) {
-      throw self::createTypeException($path, 'a scalar', $value);
+      throw self::makeTypeException($path, 'a scalar', $value);
     }
 
     return (string) $value;
@@ -212,14 +212,14 @@ readonly class ScreenshotConfig {
     $value = self::readValue($config, $path);
 
     if (!is_array($value)) {
-      throw self::createTypeException($path, 'an array', $value);
+      throw self::makeTypeException($path, 'an array', $value);
     }
 
     $list = [];
 
     foreach ($value as $key => $item) {
       if (!is_scalar($item)) {
-        throw self::createTypeException($path . '.' . $key, 'a scalar', $item);
+        throw self::makeTypeException($path . '.' . $key, 'a scalar', $item);
       }
 
       $list[] = (string) $item;
@@ -229,7 +229,7 @@ readonly class ScreenshotConfig {
   }
 
   /**
-   * Create an exception for a value of the wrong type.
+   * Make an exception for a value of the wrong type.
    *
    * @param string $path
    *   Key path of the value.
@@ -241,7 +241,7 @@ readonly class ScreenshotConfig {
    * @return \InvalidArgumentException
    *   Exception naming the key path and both types.
    */
-  protected static function createTypeException(string $path, string $expected, mixed $value): \InvalidArgumentException {
+  protected static function makeTypeException(string $path, string $expected, mixed $value): \InvalidArgumentException {
     return new \InvalidArgumentException(sprintf('Screenshot configuration "%s" must be %s, %s given.', $path, $expected, get_debug_type($value)));
   }
 
