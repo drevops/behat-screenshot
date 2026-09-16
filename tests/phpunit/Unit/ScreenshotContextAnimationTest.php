@@ -289,6 +289,17 @@ class ScreenshotContextAnimationTest extends TestCase {
     $this->assertSame($expected, $result);
   }
 
+  public function testMakeAnimationFilenameIgnoresCustomFilenamePattern(): void {
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
+    $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['filename_pattern' => '{feature_file}_{step_line}.{ext}']));
+
+    $scope = $this->createAfterScenarioScope('path/to/login.feature', 7);
+    $result = self::callProtectedMethod($screenshot_context, 'makeAnimationFilename', [$scope]);
+
+    $this->assertSame('1700000000.login.feature_7.gif', $result);
+  }
+
   #[RequiresFunction('imagecreatefromstring')]
   #[RequiresFunction('imagegif')]
   public function testIsAnimatedGifSupportedReturnsTrueWhenGdIsAvailable(): void {
