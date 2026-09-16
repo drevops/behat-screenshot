@@ -38,7 +38,11 @@ class BooleanPropertyNamingTest extends TestCase {
       }
 
       $name = $property->getName();
-      $this->assertMatchesRegularExpression('/^(?:should|is|has|[a-z]+(?:Is|Has))[A-Z]/', $name, sprintf('Boolean property %s::$%s does not start with "should", "is" or "has", or with a subject followed by "Is" or "Has".', $class, $name));
+      $this->assertMatchesRegularExpression(
+        '/^(?:should|is|has|[a-z]+(?:Is|Has))[A-Z]/',
+        $name,
+        sprintf('Boolean property %s::$%s does not start with "should", "is" or "has", or with a subject followed by "Is" or "Has".', $class, $name),
+      );
       $properties[] = $name;
     }
 
@@ -51,7 +55,10 @@ class BooleanPropertyNamingTest extends TestCase {
     return [
       'AnimatedGifEncoder' => [AnimatedGifEncoder::class, []],
       'BehatScreenshotExtension' => [BehatScreenshotExtension::class, []],
-      'ScreenshotConfig' => [ScreenshotConfig::class, ['shouldAlwaysCaptureFullscreen', 'shouldAnimate', 'shouldCaptureOnEveryStep', 'shouldCaptureOnFailed', 'shouldPurge']],
+      'ScreenshotConfig' => [
+        ScreenshotConfig::class,
+        ['shouldAlwaysCaptureFullscreen', 'shouldAnimate', 'shouldCaptureOnEveryStep', 'shouldCaptureOnFailed', 'shouldPurge'],
+      ],
       'ScreenshotContext' => [ScreenshotContext::class, ['scenarioHasScreenshotsTag', 'scenarioIsAnimated']],
       'ScreenshotContextInitializer' => [ScreenshotContextInitializer::class, ['hasPurged']],
       'Tokenizer' => [Tokenizer::class, []],

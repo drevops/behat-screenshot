@@ -50,8 +50,20 @@ class CollaboratorCreationTest extends TestCase {
       }
 
       $return_type = $method->getReturnType();
-      $is_factory = $method->isProtected() && str_starts_with($method->getName(), 'create') && $return_type instanceof \ReflectionNamedType && $return_type->getName() === $created_class;
-      $this->assertTrue($is_factory, sprintf('%s::%s() creates %s on line %d. Create collaborators in a protected create*() method that returns them.', $class, $method->getName(), $created_class, $line));
+      $is_factory = $method->isProtected()
+        && str_starts_with($method->getName(), 'create')
+        && $return_type instanceof \ReflectionNamedType
+        && $return_type->getName() === $created_class;
+      $this->assertTrue(
+        $is_factory,
+        sprintf(
+          '%s::%s() creates %s on line %d. Create collaborators in a protected create*() method that returns them.',
+          $class,
+          $method->getName(),
+          $created_class,
+          $line,
+        ),
+      );
 
       $factories[$method->getName()] = $created_class;
     }

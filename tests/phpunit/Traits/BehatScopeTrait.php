@@ -57,7 +57,12 @@ trait BehatScopeTrait {
    * @return \Behat\Behat\Hook\Scope\BeforeStepScope
    *   Before step scope.
    */
-  protected function createBeforeStepScope(?string $feature_file = NULL, int $step_line = 0, string $step_text = '', ?string $feature_title = NULL): BeforeStepScope {
+  protected function createBeforeStepScope(
+    ?string $feature_file = NULL,
+    int $step_line = 0,
+    string $step_text = '',
+    ?string $feature_title = NULL,
+  ): BeforeStepScope {
     $feature_node = $this->createStub(FeatureNode::class);
     $feature_node->method('getFile')->willReturn($feature_file);
     $feature_node->method('getTitle')->willReturn($feature_title);

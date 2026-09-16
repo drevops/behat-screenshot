@@ -115,10 +115,7 @@ trait GifParserTrait {
    *   Width and height for each frame.
    */
   protected function readFrameSizes(string $gif): array {
-    return array_map(
-      static fn(array $frame): array => [$frame['width'], $frame['height']],
-      $this->parseFrames($gif)
-    );
+    return array_map(static fn(array $frame): array => [$frame['width'], $frame['height']], $this->parseFrames($gif));
   }
 
   /**
@@ -131,10 +128,7 @@ trait GifParserTrait {
    *   Sum of each image block's area, in pixels.
    */
   protected function countEncodedPixels(string $gif): int {
-    return array_sum(array_map(
-      static fn(array $frame): int => $frame['width'] * $frame['height'],
-      $this->parseFrames($gif)
-    ));
+    return array_sum(array_map(static fn(array $frame): int => $frame['width'] * $frame['height'], $this->parseFrames($gif)));
   }
 
   /**

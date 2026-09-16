@@ -51,7 +51,11 @@ class EnvironmentVariableNamingTest extends TestCase {
 
       $this->assertTrue($constant->isPublic(), sprintf('%s::%s is not public.', $class, $name));
       $this->assertContains($name, $read_constants, sprintf('%s declares %s but does not pass it to getenv().', $class, $name));
-      $this->assertStringStartsWith(self::VARIABLE_PREFIX, $value, sprintf('%s::%s holds %s, which does not start with %s.', $class, $name, $value, self::VARIABLE_PREFIX));
+      $this->assertStringStartsWith(
+        self::VARIABLE_PREFIX,
+        $value,
+        sprintf('%s::%s holds %s, which does not start with %s.', $class, $name, $value, self::VARIABLE_PREFIX),
+      );
 
       $expected_name = 'ENV_' . substr($value, strlen(self::VARIABLE_PREFIX));
       $this->assertSame($expected_name, $name, sprintf('%s::%s holds %s, so it must be named %s.', $class, $name, $value, $expected_name));
@@ -73,7 +77,10 @@ class EnvironmentVariableNamingTest extends TestCase {
       'AnimatedGifEncoder' => [AnimatedGifEncoder::class, []],
       'BehatScreenshotExtension' => [BehatScreenshotExtension::class, []],
       'ScreenshotConfig' => [ScreenshotConfig::class, []],
-      'ScreenshotContext' => [ScreenshotContext::class, ['ENV_ANIMATION_SKIP' => 'BEHAT_SCREENSHOT_ANIMATION_SKIP', 'ENV_TOKEN_HOST' => 'BEHAT_SCREENSHOT_TOKEN_HOST']],
+      'ScreenshotContext' => [
+        ScreenshotContext::class,
+        ['ENV_ANIMATION_SKIP' => 'BEHAT_SCREENSHOT_ANIMATION_SKIP', 'ENV_TOKEN_HOST' => 'BEHAT_SCREENSHOT_TOKEN_HOST'],
+      ],
       'ScreenshotContextInitializer' => [ScreenshotContextInitializer::class, ['ENV_DIR' => 'BEHAT_SCREENSHOT_DIR', 'ENV_PURGE' => 'BEHAT_SCREENSHOT_PURGE']],
       'Tokenizer' => [Tokenizer::class, []],
     ];
@@ -119,7 +126,12 @@ class EnvironmentVariableNamingTest extends TestCase {
       }
 
       if (!preg_match('/^\(self::(ENV_[A-Z0-9_]+)\)$/', $call, $matches)) {
-        $this->fail(sprintf('%s calls getenv%s on line %d. Pass a public ENV_* constant of the class as self::ENV_*.', $reflection->getName(), $call, $token->line));
+        $this->fail(sprintf(
+          '%s calls getenv%s on line %d. Pass a public ENV_* constant of the class as self::ENV_*.',
+          $reflection->getName(),
+          $call,
+          $token->line,
+        ));
       }
 
       $constants[] = $matches[1];

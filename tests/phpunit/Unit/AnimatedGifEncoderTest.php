@@ -24,11 +24,7 @@ class AnimatedGifEncoderTest extends TestCase {
   use ReflectionTrait;
 
   public function testEncodeProducesValidAnimatedGif(): void {
-    $frames = [
-      $this->createPngFrame(120, 90, [255, 0, 0]),
-      $this->createPngFrame(120, 90, [0, 255, 0]),
-      $this->createPngFrame(120, 90, [0, 0, 255]),
-    ];
+    $frames = [$this->createPngFrame(120, 90, [255, 0, 0]), $this->createPngFrame(120, 90, [0, 255, 0]), $this->createPngFrame(120, 90, [0, 0, 255])];
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 500);
 
@@ -41,11 +37,7 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public function testEncodeSizesCanvasToLargestFrame(): void {
-    $frames = [
-      $this->createPngFrame(100, 100, [10, 20, 30]),
-      $this->createPngFrame(64, 48, [200, 100, 50]),
-      $this->createPngFrame(150, 120, [0, 0, 0]),
-    ];
+    $frames = [$this->createPngFrame(100, 100, [10, 20, 30]), $this->createPngFrame(64, 48, [200, 100, 50]), $this->createPngFrame(150, 120, [0, 0, 0])];
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 200);
 
@@ -53,11 +45,7 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public function testEncodeWritesFramesAtCapturedSize(): void {
-    $frames = [
-      $this->createPngFrame(100, 100, [10, 20, 30]),
-      $this->createPngFrame(64, 48, [200, 100, 50]),
-      $this->createPngFrame(150, 120, [0, 0, 0]),
-    ];
+    $frames = [$this->createPngFrame(100, 100, [10, 20, 30]), $this->createPngFrame(64, 48, [200, 100, 50]), $this->createPngFrame(150, 120, [0, 0, 0])];
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 200);
 
@@ -69,10 +57,7 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public function testEncodeDoesNotStretchSmallerFrames(): void {
-    $frames = [
-      $this->createPngFrame(40, 30, [255, 0, 0]),
-      $this->createPngFrame(80, 60, [0, 0, 255]),
-    ];
+    $frames = [$this->createPngFrame(40, 30, [255, 0, 0]), $this->createPngFrame(80, 60, [0, 0, 255])];
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
@@ -82,10 +67,7 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public function testEncodeExposesWhiteAroundSmallerFrames(): void {
-    $frames = [
-      $this->createPngFrame(40, 30, [255, 0, 0]),
-      $this->createPngFrame(80, 60, [0, 0, 255]),
-    ];
+    $frames = [$this->createPngFrame(40, 30, [255, 0, 0]), $this->createPngFrame(80, 60, [0, 0, 255])];
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
@@ -98,11 +80,7 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public function testEncodeKeepsFramesOnScreenWhenTheyDoNotShrink(): void {
-    $frames = [
-      $this->createPngFrame(80, 60, [255, 0, 0]),
-      $this->createPngFrame(80, 60, [0, 255, 0]),
-      $this->createPngFrame(80, 60, [0, 0, 255]),
-    ];
+    $frames = [$this->createPngFrame(80, 60, [255, 0, 0]), $this->createPngFrame(80, 60, [0, 255, 0]), $this->createPngFrame(80, 60, [0, 0, 255])];
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
@@ -144,9 +122,7 @@ class AnimatedGifEncoderTest extends TestCase {
     $frames = [];
 
     for ($step = 0; $step < 120; $step++) {
-      $frames[] = $step === 60
-        ? $this->createPngFrame(160, 2400, [0, 0, 200])
-        : $this->createPngFrame(160, 120, [200, 0, 0]);
+      $frames[] = $step === 60 ? $this->createPngFrame(160, 2400, [0, 0, 200]) : $this->createPngFrame(160, 120, [200, 0, 0]);
     }
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 500);
@@ -221,10 +197,7 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public function testEncodeSkipsUndecodableFrames(): void {
-    $frames = [
-      $this->createPngFrame(30, 20, [0, 128, 0]),
-      'not-an-image',
-    ];
+    $frames = [$this->createPngFrame(30, 20, [0, 128, 0]), 'not-an-image'];
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 100);
 
@@ -259,10 +232,7 @@ class AnimatedGifEncoderTest extends TestCase {
 
   #[DataProvider('dataProviderEncodeConvertsDelayToCentiseconds')]
   public function testEncodeConvertsDelayToCentiseconds(int $milliseconds, int $expected_centiseconds): void {
-    $frames = [
-      $this->createPngFrame(20, 20, [1, 2, 3]),
-      $this->createPngFrame(20, 20, [4, 5, 6]),
-    ];
+    $frames = [$this->createPngFrame(20, 20, [1, 2, 3]), $this->createPngFrame(20, 20, [4, 5, 6])];
 
     $gif = (new AnimatedGifEncoder())->encode($frames, $milliseconds);
 
@@ -415,10 +385,7 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public function testConstrainAppliesToEachFrameIndependently(): void {
-    $frames = [
-      $this->createPngFrame(400, 200, [10, 20, 30]),
-      $this->createPngFrame(50, 40, [200, 100, 50]),
-    ];
+    $frames = [$this->createPngFrame(400, 200, [10, 20, 30]), $this->createPngFrame(50, 40, [200, 100, 50])];
 
     $gif = (new AnimatedGifEncoder(100, 0))->encode($frames, 100);
 

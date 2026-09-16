@@ -37,7 +37,16 @@ class ScreenshotContextInitializerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderInitializeContextAppliesEnvironmentAndPurgesOnce')]
-  public function testInitializeContextAppliesEnvironmentAndPurgesOnce(bool $should_purge, ?string $env_purge, ?string $env_dir, bool $is_dir_present, string $expected_dir, bool $expected_purge, int $expected_exists_calls, int $expected_remove_calls): void {
+  public function testInitializeContextAppliesEnvironmentAndPurgesOnce(
+    bool $should_purge,
+    ?string $env_purge,
+    ?string $env_dir,
+    bool $is_dir_present,
+    string $expected_dir,
+    bool $expected_purge,
+    int $expected_exists_calls,
+    int $expected_remove_calls,
+  ): void {
     $this->setEnvironmentVariable(ScreenshotContextInitializer::ENV_PURGE, $env_purge);
     $this->setEnvironmentVariable(ScreenshotContextInitializer::ENV_DIR, $env_dir);
 

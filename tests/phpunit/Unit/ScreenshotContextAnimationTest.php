@@ -28,7 +28,13 @@ class ScreenshotContextAnimationTest extends TestCase {
   use ScreenshotConfigTrait;
 
   #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTagSetsFlagsFromTagsAndConfig')]
-  public function testBeforeScenarioCheckScreenshotsTagSetsFlagsFromTagsAndConfig(array $scenario_tags, array $feature_tags, array $animation, bool $expected_screenshots, bool $expected_animated): void {
+  public function testBeforeScenarioCheckScreenshotsTagSetsFlagsFromTagsAndConfig(
+    array $scenario_tags,
+    array $feature_tags,
+    array $animation,
+    bool $expected_screenshots,
+    bool $expected_animated,
+  ): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['animation' => $animation]));
     self::setProtectedValue($screenshot_context, 'animationEncoder', new AnimatedGifEncoder());
@@ -63,14 +69,32 @@ class ScreenshotContextAnimationTest extends TestCase {
       'feature animated tag with prefix' => [[], ['@screenshots:animated'], [], FALSE, TRUE],
       'scenario skip tag with prefix over enabled config' => [['@screenshots:animated:skip'], [], ['enabled' => TRUE], FALSE, FALSE],
       'feature skip tag with prefix over feature animated tag with prefix' => [[], ['@screenshots:animated', '@screenshots:animated:skip'], [], FALSE, FALSE],
-      'scenario animated tag with prefix over feature skip tag with prefix' => [['@screenshots:animated'], ['@screenshots:animated:skip'], ['enabled' => FALSE], FALSE, TRUE],
+      'scenario animated tag with prefix over feature skip tag with prefix' => [
+        ['@screenshots:animated'],
+        ['@screenshots:animated:skip'],
+        ['enabled' => FALSE],
+        FALSE,
+        TRUE,
+      ],
       'screenshots tag with prefix among other tags' => [['@smoke', '@screenshots'], ['@api'], [], TRUE, FALSE],
-      'tags that only contain a screenshot tag name' => [['@screenshots-extra', 'my-screenshots:animated'], ['@no-screenshots:animated:skip'], [], FALSE, FALSE],
+      'tags that only contain a screenshot tag name' => [
+        ['@screenshots-extra', 'my-screenshots:animated'],
+        ['@no-screenshots:animated:skip'],
+        [],
+        FALSE,
+        FALSE,
+      ],
     ];
   }
 
   #[DataProvider('dataProviderBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable')]
-  public function testBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable(?string $env_value, array $scenario_tags, array $feature_tags, array $animation, bool $expected_animated): void {
+  public function testBeforeScenarioCheckScreenshotsTagHonoursSuiteEnvironmentVariable(
+    ?string $env_value,
+    array $scenario_tags,
+    array $feature_tags,
+    array $animation,
+    bool $expected_animated,
+  ): void {
     $this->setEnvironmentVariable(ScreenshotContext::ENV_ANIMATION_SKIP, $env_value);
 
     $screenshot_context = new ScreenshotContext();
@@ -307,7 +331,11 @@ class ScreenshotContextAnimationTest extends TestCase {
   }
 
   #[DataProvider('dataProviderCreateAnimatedGifEncoderReturnsNewEncoderWithSizeCapsFromConfig')]
-  public function testCreateAnimatedGifEncoderReturnsNewEncoderWithSizeCapsFromConfig(array $animation, int $expected_max_width, int $expected_max_height): void {
+  public function testCreateAnimatedGifEncoderReturnsNewEncoderWithSizeCapsFromConfig(
+    array $animation,
+    int $expected_max_width,
+    int $expected_max_height,
+  ): void {
     $screenshot_context = new ScreenshotContext();
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['animation' => $animation]));
 

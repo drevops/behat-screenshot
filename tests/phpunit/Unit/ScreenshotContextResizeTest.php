@@ -28,17 +28,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $session = $this->createMock(Session::class);
     $driver = $this->createStub(Selenium2Driver::class);
 
-    $session->method('evaluateScript')
-      ->willReturnOnConsecutiveCalls(
-        [
-          'width' => 1440,
-          'height' => 900,
-        ],
-        [
-          'scrollWidth' => 1440,
-          'scrollHeight' => 2000,
-        ]
-      );
+    $session->method('evaluateScript')->willReturnOnConsecutiveCalls(['width' => 1440, 'height' => 900], ['scrollWidth' => 1440, 'scrollHeight' => 2000]);
 
     $resizes = [];
     $record_resize = static function (int $width, int $height, ?string $name) use (&$resizes): void {
@@ -63,17 +53,7 @@ class ScreenshotContextResizeTest extends TestCase {
     $session = $this->createMock(Session::class);
     $driver = $this->createStub(Selenium2Driver::class);
 
-    $session->method('evaluateScript')
-      ->willReturnOnConsecutiveCalls(
-        [
-          'width' => 1440,
-          'height' => 900,
-        ],
-        [
-          'scrollWidth' => 0,
-          'scrollHeight' => 0,
-        ]
-      );
+    $session->method('evaluateScript')->willReturnOnConsecutiveCalls(['width' => 1440, 'height' => 900], ['scrollWidth' => 0, 'scrollHeight' => 0]);
 
     $session->expects($this->never())->method('resizeWindow');
 
@@ -89,14 +69,17 @@ class ScreenshotContextResizeTest extends TestCase {
   public function testGetScreenshotFullscreenDelegatesToResizeAlgorithm(): void {
     $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getScreenshotFullscreenWithResize'])->getStub();
 
-    $screenshot_context->method('getScreenshotFullscreenWithResize')
-      ->willReturn('test-resize-screenshot-content');
+    $screenshot_context->method('getScreenshotFullscreenWithResize')->willReturn('test-resize-screenshot-content');
 
     $this->assertSame('test-resize-screenshot-content', $screenshot_context->getScreenshotFullscreen());
   }
 
   #[DataProvider('dataProviderCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured')]
-  public function testCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured(bool $should_always_capture_fullscreen, array $config, string $expected_png_content): void {
+  public function testCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured(
+    bool $should_always_capture_fullscreen,
+    array $config,
+    string $expected_png_content,
+  ): void {
     $driver = $this->createStub(Selenium2Driver::class);
     $driver->method('getContent')->willReturn('test-html-content');
 
@@ -108,7 +91,13 @@ class ScreenshotContextResizeTest extends TestCase {
       $writes[] = [$filename, $content];
     };
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'makeFilename', 'getScreenshot', 'getScreenshotFullscreen', 'writeScreenshotContent']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
+      'getSession',
+      'makeFilename',
+      'getScreenshot',
+      'getScreenshotFullscreen',
+      'writeScreenshotContent',
+    ]);
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('makeFilename')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
     $screenshot_context->method('getScreenshot')->willReturn('test-png-content');

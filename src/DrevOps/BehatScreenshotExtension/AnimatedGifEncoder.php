@@ -330,7 +330,8 @@ class AnimatedGifEncoder implements \Countable {
     // Graphic Control Extension carrying the disposal method, the delay and
     // the transparent colour index GD recorded for the frame.
     $flags = ($disposal << 2) | ($transparent_index === NULL ? 0 : self::TRANSPARENT_COLOR_FLAG);
-    $graphic_control = chr(self::EXTENSION_INTRODUCER) . chr(self::GRAPHIC_CONTROL_LABEL) . "\x04" . chr($flags) . pack('v', $delay) . chr($transparent_index ?? 0) . "\x00";
+    $graphic_control = chr(self::EXTENSION_INTRODUCER) . chr(self::GRAPHIC_CONTROL_LABEL) . "\x04" . chr($flags);
+    $graphic_control .= pack('v', $delay) . chr($transparent_index ?? 0) . "\x00";
 
     // Image Descriptor flagged to use the frame's own local colour table.
     $descriptor = chr(self::IMAGE_SEPARATOR) . $geometry . chr(0x80 | $size_bits);

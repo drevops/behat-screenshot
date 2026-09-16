@@ -33,12 +33,7 @@ class AnimationArtifactsTest extends TestCase {
    *
    * @var array<int,array<int,int>>
    */
-  protected const FRAME_SIZES = [
-    [800, 400],
-    [800, 1200],
-    [800, 6000],
-    [800, 400],
-  ];
+  protected const FRAME_SIZES = [[800, 400], [800, 1200], [800, 6000], [800, 400]];
 
   /**
    * Height cap applied to the cropped variants.

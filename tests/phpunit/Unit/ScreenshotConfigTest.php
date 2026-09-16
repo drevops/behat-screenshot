@@ -77,7 +77,8 @@ class ScreenshotConfigTest extends TestCase {
 
     $this->assertSame($tree_keys, $mapped_keys, 'Every configuration tree key needs a dataset in dataProviderFromArrayMapsKeyToProperty().');
 
-    $properties = array_map(static fn(\ReflectionProperty $property): string => $property->getName(), (new \ReflectionClass(ScreenshotConfig::class))->getProperties());
+    $reflected_properties = (new \ReflectionClass(ScreenshotConfig::class))->getProperties();
+    $properties = array_map(static fn(\ReflectionProperty $property): string => $property->getName(), $reflected_properties);
     $mapped_properties = array_column($datasets, 1);
     sort($properties);
     sort($mapped_properties);
@@ -116,12 +117,21 @@ class ScreenshotConfigTest extends TestCase {
 
     return [
       'missing key' => [$without_dir, 'Screenshot configuration "dir" is missing.'],
-      'missing nested key' => [['animation' => ['frame_delay' => 500, 'max_width' => 0, 'max_height' => 0]] + $config, 'Screenshot configuration "animation.enabled" is missing.'],
+      'missing nested key' => [
+        ['animation' => ['frame_delay' => 500, 'max_width' => 0, 'max_height' => 0]] + $config,
+        'Screenshot configuration "animation.enabled" is missing.',
+      ],
       'nested key parent not an array' => [['animation' => 'enabled'] + $config, 'Screenshot configuration "animation" must be an array, string given.'],
       'boolean as string' => [['on_failed' => 'false'] + $config, 'Screenshot configuration "on_failed" must be a boolean, string given.'],
       'boolean as integer' => [['purge' => 1] + $config, 'Screenshot configuration "purge" must be a boolean, int given.'],
-      'integer as numeric string' => [['animation' => ['enabled' => FALSE, 'frame_delay' => '250', 'max_width' => 0, 'max_height' => 0]] + $config, 'Screenshot configuration "animation.frame_delay" must be an integer, string given.'],
-      'integer as float' => [['animation' => ['enabled' => FALSE, 'frame_delay' => 500, 'max_width' => 0, 'max_height' => 1.5]] + $config, 'Screenshot configuration "animation.max_height" must be an integer, float given.'],
+      'integer as numeric string' => [
+        ['animation' => ['enabled' => FALSE, 'frame_delay' => '250', 'max_width' => 0, 'max_height' => 0]] + $config,
+        'Screenshot configuration "animation.frame_delay" must be an integer, string given.',
+      ],
+      'integer as float' => [
+        ['animation' => ['enabled' => FALSE, 'frame_delay' => 500, 'max_width' => 0, 'max_height' => 1.5]] + $config,
+        'Screenshot configuration "animation.max_height" must be an integer, float given.',
+      ],
       'scalar as array' => [['dir' => ['screenshots']] + $config, 'Screenshot configuration "dir" must be a scalar, array given.'],
       'scalar as null' => [['failed_prefix' => NULL] + $config, 'Screenshot configuration "failed_prefix" must be a scalar, null given.'],
       'list as string' => [['info_types' => 'url'] + $config, 'Screenshot configuration "info_types" must be an array, string given.'],

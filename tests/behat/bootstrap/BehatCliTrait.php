@@ -29,9 +29,7 @@ trait BehatCliTrait {
    */
   #[BeforeScenario('@behatcli')]
   public function behatCliBeforeScenarioWriteFeatureContext(): void {
-    $traits = [
-      'tests/behat/bootstrap/ScreenshotTrait.php' => 'ScreenshotTrait',
-    ];
+    $traits = ['tests/behat/bootstrap/ScreenshotTrait.php' => 'ScreenshotTrait'];
     $this->behatCliWriteFeatureContextFile($traits);
   }
 
@@ -86,10 +84,7 @@ trait BehatCliTrait {
    *   Path to written file.
    */
   protected function behatCliWriteFeatureContextFile(array $traits = []): string {
-    $tokens = [
-      '{{USE_DECLARATION}}' => '',
-      '{{USE_IN_CLASS}}' => '',
-    ];
+    $tokens = ['{{USE_DECLARATION}}' => '', '{{USE_IN_CLASS}}' => ''];
 
     foreach ($traits as $path => $trait) {
       $trait_name = $trait;
@@ -177,10 +172,7 @@ EOL;
 
     $content = implode(PHP_EOL, $content_lines);
 
-    $tokens = [
-      '{{SCENARIO_CONTENT}}' => $content,
-      '{{ADDITIONAL_TAGS}}' => $tags,
-    ];
+    $tokens = ['{{SCENARIO_CONTENT}}' => $content, '{{ADDITIONAL_TAGS}}' => $tags];
 
     $content = <<<'EOL'
 @behatcli

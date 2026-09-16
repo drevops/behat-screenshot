@@ -63,22 +63,10 @@ class ScreenshotContextInfoTest extends TestCase {
     $datetime = date('Y-m-d H:i:s', 1700000000);
 
     return [
-      'url only' => [
-        ['url'],
-        ['Current URL' => 'http://example.com/test'],
-      ],
-      'feature only' => [
-        ['feature'],
-        ['Feature' => 'Test Feature Title'],
-      ],
-      'step only' => [
-        ['step'],
-        ['Step' => 'Test step text (line 42)'],
-      ],
-      'datetime only' => [
-        ['datetime'],
-        ['Datetime' => $datetime],
-      ],
+      'url only' => [['url'], ['Current URL' => 'http://example.com/test']],
+      'feature only' => [['feature'], ['Feature' => 'Test Feature Title']],
+      'step only' => [['step'], ['Step' => 'Test step text (line 42)']],
+      'datetime only' => [['datetime'], ['Datetime' => $datetime]],
       'all info types' => [
         ['url', 'feature', 'step', 'datetime'],
         ['Current URL' => 'http://example.com/test', 'Feature' => 'Test Feature Title', 'Step' => 'Test step text (line 42)', 'Datetime' => $datetime],
