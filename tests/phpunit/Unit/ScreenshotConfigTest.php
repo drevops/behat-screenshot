@@ -9,9 +9,6 @@ use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Config\Definition\ArrayNode;
-use Symfony\Component\Config\Definition\NodeInterface;
-use Symfony\Component\Config\Definition\PrototypedArrayNode;
 
 /**
  * Test ScreenshotConfig.
@@ -130,38 +127,6 @@ class ScreenshotConfigTest extends TestCase {
       'list as string' => [['info_types' => 'url'] + $config, 'Screenshot configuration "info_types" must be an array, string given.'],
       'list item as array' => [['info_types' => ['url', ['step']]] + $config, 'Screenshot configuration "info_types.1" must be a scalar, array given.'],
     ];
-  }
-
-  /**
-   * Collect the key paths of every leaf node in a configuration tree.
-   *
-   * @param \Symfony\Component\Config\Definition\NodeInterface $node
-   *   Configuration tree node.
-   * @param string $prefix
-   *   Key path of the node's parent, with a trailing dot.
-   *
-   * @return array<int,string>
-   *   Key paths, with nested keys separated by dots.
-   */
-  protected static function collectLeafKeyPaths(NodeInterface $node, string $prefix = ''): array {
-    if (!$node instanceof ArrayNode) {
-      return [];
-    }
-
-    $paths = [];
-
-    foreach ($node->getChildren() as $name => $child) {
-      // A prototyped array is a list value, not a set of named keys.
-      if ($child instanceof ArrayNode && !$child instanceof PrototypedArrayNode) {
-        $paths = [...$paths, ...self::collectLeafKeyPaths($child, $prefix . $name . '.')];
-
-        continue;
-      }
-
-      $paths[] = $prefix . $name;
-    }
-
-    return $paths;
   }
 
 }
