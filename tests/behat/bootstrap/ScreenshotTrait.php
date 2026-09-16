@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Behat\Step\Given;
+use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
 
 /**
  * Additional screenshot helpers.
@@ -21,8 +22,8 @@ trait ScreenshotTrait {
    *   Array of parameters from config.
    */
   protected function screenshotInitParams(array $parameters): void {
-    if (getenv('BEHAT_SCREENSHOT_DIR')) {
-      $this->screenshotDir = (string) getenv('BEHAT_SCREENSHOT_DIR');
+    if (getenv(ScreenshotContextInitializer::ENV_DIR)) {
+      $this->screenshotDir = (string) getenv(ScreenshotContextInitializer::ENV_DIR);
     }
     elseif (isset($parameters['screenshot_dir'])) {
       $this->screenshotDir = $parameters['screenshot_dir'];

@@ -115,6 +115,7 @@ use Behat\MinkExtension\Context\RawMinkContext;
 use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 
 {{USE_DECLARATION}}
 
@@ -135,7 +136,7 @@ class FeatureContextTest extends MinkContext implements Context {
     $this->screenshotInitParams($parameters);
 
     // Override any real host in the screenshot token.
-    putenv('BEHAT_SCREENSHOT_TOKEN_HOST=example.com');
+    putenv(ScreenshotContext::ENV_TOKEN_HOST . '=example.com');
     $this->javascriptBaseUrl = getenv('BEHAT_JAVASCRIPT_BASE_URL') ?: 'http://host.docker.internal:8888';
   }
 
