@@ -632,7 +632,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   Make filename for fail case.
    *
    * @return string
-   *   Unique filename.
+   *   Filename with its tokens replaced.
    *
    * @throws \InvalidArgumentException
    */
@@ -694,7 +694,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    *   After scenario scope.
    *
    * @return string
-   *   Unique animated GIF filename grouped with the scenario step files.
+   *   Animated GIF filename grouped with the scenario step files.
    *
    * @throws \InvalidArgumentException
    */
