@@ -11,17 +11,12 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\ArrayNode;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\PrototypedArrayNode;
-use Symfony\Component\Yaml\Yaml;
 
 /**
- * Test the reference configuration in behat.dist.yml and behat.dist.php.
+ * Test the reference configuration in behat.dist.php.
  */
 #[CoversNothing]
 class BehatDistConfigTest extends TestCase {
-
-  public function testFormatsMatch(): void {
-    $this->assertSame(static::loadYamlConfig(), static::loadPhpConfig());
-  }
 
   public function testSetsEveryOption(): void {
     $tree_builder = new TreeBuilder('root');
@@ -57,40 +52,24 @@ class BehatDistConfigTest extends TestCase {
   }
 
   /**
-   * Load the configuration in behat.dist.yml.
-   *
-   * @return array<mixed>
-   *   The configuration as an array.
-   */
-  protected static function loadYamlConfig(): array {
-    $config = Yaml::parseFile(dirname(__DIR__, 3) . '/behat.dist.yml');
-
-    if (!is_array($config)) {
-      self::fail('behat.dist.yml does not hold a Behat configuration.');
-    }
-
-    return $config;
-  }
-
-  /**
-   * Get the settings behat.dist.yml passes to the extension.
+   * Get the settings behat.dist.php passes to the extension.
    *
    * @return array<mixed>
    *   The extension settings, keyed by option name.
    */
   protected static function getExtensionSettings(): array {
-    $settings = static::loadYamlConfig();
+    $settings = static::loadPhpConfig();
 
     foreach (['default', 'extensions', BehatScreenshotExtension::class] as $key) {
       if (!is_array($settings) || !isset($settings[$key])) {
-        self::fail(sprintf('behat.dist.yml has no "%s" key on the path to the extension settings.', $key));
+        self::fail(sprintf('behat.dist.php has no "%s" key on the path to the extension settings.', $key));
       }
 
       $settings = $settings[$key];
     }
 
     if (!is_array($settings)) {
-      self::fail('behat.dist.yml does not hold the extension settings as a map.');
+      self::fail('behat.dist.php does not hold the extension settings as a map.');
     }
 
     return $settings;

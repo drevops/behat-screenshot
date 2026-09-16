@@ -19,9 +19,6 @@ indent_size = 4
 [*.{yml,yaml}]
 indent_size = 2
 
-[*.yml.dist]
-indent_size = 2
-
 [*.xml]
 indent_size = 4
 

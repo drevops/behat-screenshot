@@ -53,7 +53,7 @@ The suite runs in strict mode, so a step without a matching definition fails the
 
 ### Behat 4
 
-The suite is configured in `behat.yml` and `behat.php`, which hold the same configuration: Behat 3 reads the YAML and Behat 4 reads the PHP, so a change to the suite goes in both. The `@behatcli` scenarios write a `behat.php` of their own for each inner run.
+The suite is configured in `behat.php`, which both Behat majors read, so a change to the suite goes in that one file. The `@behatcli` scenarios write a `behat.php` of their own for each inner run.
 
 `dmore/behat-chrome-extension` 1.x requires Behat 3, so remove it before switching and skip the `@headless` scenarios:
 
@@ -93,7 +93,7 @@ The report is printed and written to `.logs/profile/animation-assembly.txt`.
 1. Add the node to `BehatScreenshotExtension::configure()`. The node holds the option's default, written as a literal, and the values it accepts.
 2. Add a promoted property to `ScreenshotConfig` and map the key to it in `ScreenshotConfig::fromArray()`.
 3. Read the property through `getScreenshotConfig()` where `ScreenshotContext` uses it.
-4. Document the option in the options table in `README.md` and add it to both `behat.dist.yml` and `behat.dist.php`.
+4. Document the option in the options table in `README.md` and add it to `behat.dist.php`.
 5. If an environment variable overrides the option, declare a public `ENV_*` constant for it on `ScreenshotContextInitializer`, named after the variable without its `BEHAT_SCREENSHOT_` prefix, apply it in `applyEnvironmentOverrides()`, and mention the variable in the option's row in `README.md`.
 
-`ScreenshotConfigTest` fails until the new key and property have a dataset in `dataProviderFromArrayMapsKeyToProperty()`, and that dataset fails unless `fromArray()` maps the key to the property. A new top-level option also changes the option count that `BehatScreenshotExtensionTest` asserts. `BehatDistConfigTest` fails until `behat.dist.yml` sets the new option and `behat.dist.php` holds the same configuration. `EnvironmentVariableNamingTest` fails when a class passes `getenv()` anything other than one of its own `ENV_*` constants, and until the class's dataset lists the new variable.
+`ScreenshotConfigTest` fails until the new key and property have a dataset in `dataProviderFromArrayMapsKeyToProperty()`, and that dataset fails unless `fromArray()` maps the key to the property. A new top-level option also changes the option count that `BehatScreenshotExtensionTest` asserts. `BehatDistConfigTest` fails until `behat.dist.php` sets the new option. `EnvironmentVariableNamingTest` fails when a class passes `getenv()` anything other than one of its own `ENV_*` constants, and until the class's dataset lists the new variable.

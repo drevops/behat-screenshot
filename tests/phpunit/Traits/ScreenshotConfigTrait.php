@@ -21,7 +21,7 @@ trait ScreenshotConfigTrait {
    * Create screenshot configuration from the extension's configuration tree.
    *
    * @param array<string,mixed> $config
-   *   Configuration keyed as in behat.yml.
+   *   Configuration keyed as in the Behat configuration.
    *
    * @return \DrevOps\BehatScreenshotExtension\ScreenshotConfig
    *   Screenshot configuration with the tree's defaults applied.
@@ -34,7 +34,7 @@ trait ScreenshotConfigTrait {
    * Process configuration through the extension's configuration tree.
    *
    * @param array<string,mixed> $config
-   *   Configuration keyed as in behat.yml.
+   *   Configuration keyed as in the Behat configuration.
    *
    * @return array<mixed>
    *   Processed configuration with the tree's defaults applied.

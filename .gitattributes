@@ -5,7 +5,6 @@
 /.github                              export-ignore
 /.gitignore                           export-ignore
 /behat.php                            export-ignore
-/behat.yml                            export-ignore
 /docker-compose.override.default.yml  export-ignore
 /docker-compose.yml                   export-ignore
 /docs                                 export-ignore
