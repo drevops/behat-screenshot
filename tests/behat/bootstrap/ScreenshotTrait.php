@@ -20,7 +20,7 @@ trait ScreenshotTrait {
    * @param array<string> $parameters
    *   Array of parameters from config.
    */
-  public function screenshotInitParams(array $parameters): void {
+  protected function screenshotInitParams(array $parameters): void {
     if (getenv('BEHAT_SCREENSHOT_DIR')) {
       $this->screenshotDir = (string) getenv('BEHAT_SCREENSHOT_DIR');
     }

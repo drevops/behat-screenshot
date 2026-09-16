@@ -80,7 +80,7 @@ trait BehatCliTrait {
    * @return string
    *   Path to written file.
    */
-  public function behatCliWriteFeatureContextFile(array $traits = []): string {
+  protected function behatCliWriteFeatureContextFile(array $traits = []): string {
     $tokens = [
       '{{USE_DECLARATION}}' => '',
       '{{USE_IN_CLASS}}' => '',
