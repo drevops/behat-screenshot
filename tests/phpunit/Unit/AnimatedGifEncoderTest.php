@@ -413,8 +413,8 @@ class AnimatedGifEncoderTest extends TestCase {
     $this->assertColorNear([255, 0, 0], $this->pixelColor($gif, 40, 50));
   }
 
-  #[DataProvider('dataProviderConstrainKeepsTheTransparentColour')]
-  public function testConstrainKeepsTheTransparentColour(bool $is_truecolor): void {
+  #[DataProvider('dataProviderConstrainKeepsTheTransparentColor')]
+  public function testConstrainKeepsTheTransparentColor(bool $is_truecolor): void {
     $image = $this->createTransparentImage(40, 30, $is_truecolor);
     $transparent_index = imagecolortransparent($image);
 
@@ -432,7 +432,7 @@ class AnimatedGifEncoderTest extends TestCase {
     $this->assertNotSame($transparent_index, imagecolorat($cropped, 39, 0));
   }
 
-  public static function dataProviderConstrainKeepsTheTransparentColour(): array {
+  public static function dataProviderConstrainKeepsTheTransparentColor(): array {
     return [
       'truecolor image' => [TRUE],
       'palette image' => [FALSE],
