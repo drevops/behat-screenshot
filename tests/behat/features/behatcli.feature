@@ -35,24 +35,33 @@ Feature: Behat CLI context
         }
       }
       """
-    And a file named "behat.yml" with:
+    And behat configuration:
       """
-      default:
-        suites:
-          default:
-            contexts:
-              - FeatureContextTest
-              - DrevOps\BehatPhpServer\PhpServerContext:
-                  webroot: '%paths.base%/tests/behat/fixtures'
-                  host: 0.0.0.0
-        extensions:
-          Behat\MinkExtension\ServiceContainer\MinkExtension:
-            base_url: http://0.0.0.0:8888
-            sessions:
-              browserkit_http:
-                browserkit_http: ~
-              selenium2:
-                selenium2: ~
+      <?php
+
+      declare(strict_types=1);
+
+      use Behat\Config\Config;
+      use Behat\Config\Extension;
+      use Behat\Config\Profile;
+      use Behat\Config\Suite;
+      use Behat\MinkExtension\ServiceContainer\MinkExtension;
+      use DrevOps\BehatPhpServer\PhpServerContext;
+
+      $suite = (new Suite('default'))
+        ->addContext('FeatureContextTest')
+        ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0']);
+
+      $mink = new Extension(MinkExtension::class, [
+        'base_url' => 'http://0.0.0.0:8888',
+        'sessions' => ['browserkit_http' => ['browserkit_http' => NULL]],
+      ]);
+
+      $profile = (new Profile('default'))
+        ->withSuite($suite)
+        ->withExtension($mink);
+
+      return (new Config())->withProfile($profile);
       """
     And a file named "tests/behat/fixtures/screenshot.html" with:
       """

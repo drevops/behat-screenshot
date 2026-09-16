@@ -9,7 +9,7 @@
 # Code coverage and test logs.
 /.logs
 
-# Screenshots captured by the default behat.yml.dist configuration.
+# Screenshots captured by the example configuration.
 /screenshots
 
 # Temporary AI agent and developer artifacts (plans, scratch output, reports).

@@ -20,7 +20,7 @@ use Symfony\Component\Finder\Finder;
 trait BehatCliTrait {
 
   /**
-   * Write the feature context and the configuration loader for the inner run.
+   * Write the feature context used by the inner run.
    */
   #[BeforeScenario('@behatcli')]
   public function behatCliBeforeScenario(): void {
@@ -28,7 +28,6 @@ trait BehatCliTrait {
       'tests/behat/bootstrap/ScreenshotTrait.php' => 'ScreenshotTrait',
     ];
     $this->behatCliWriteFeatureContextFile($traits);
-    $this->behatCliWriteConfigLoader();
   }
 
   /**
@@ -70,16 +69,6 @@ trait BehatCliTrait {
     foreach ($finder->in($src)->files() as $file) {
       $filesystem->copy($file->getRealPath(), $dst . DIRECTORY_SEPARATOR . $file->getFilename());
     }
-  }
-
-  /**
-   * Copy the project's behat.php into the working directory.
-   *
-   * Behat 4 reads PHP configuration only, and behat.php loads the behat.yml
-   * written next to it. Behat 3 reads that behat.yml directly.
-   */
-  protected function behatCliWriteConfigLoader(): void {
-    $this->createFile($this->workingDir . DIRECTORY_SEPARATOR . 'behat.php', file_get_contents(__DIR__ . '/../../../behat.php'));
   }
 
   /**
@@ -256,97 +245,12 @@ EOL;
   }
 
   /**
-   * Write the given content as the Behat configuration.
+   * Write the given content as the Behat configuration of the inner run.
    */
-  #[Given('full behat configuration:')]
-  public function behatCliWriteFullBehatYml(PyStringNode $content): void {
-    $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
+  #[Given('behat configuration:')]
+  public function behatCliWriteBehatConfig(PyStringNode $content): void {
+    $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.php';
     $this->createFile($filename, (string) $content);
-
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'Behat Config');
-    }
-  }
-
-  /**
-   * Write a Behat configuration with the test and PHP server contexts.
-   */
-  #[Given('some behat configuration')]
-  public function behatCliWriteBehatYml(): void {
-    $content = <<<'EOL'
-default:
-  suites:
-    default:
-      contexts:
-        - FeatureContextTest:
-          - screenshot_dir: '%paths.base%/screenshots'
-        - DrevOps\BehatPhpServer\PhpServerContext:
-            webroot: '%paths.base%/tests/behat/fixtures'
-            host: 0.0.0.0
-  extensions:
-    Behat\MinkExtension\ServiceContainer\MinkExtension:
-      base_url: http://0.0.0.0:8888
-      sessions:
-        browserkit_http:
-          browserkit_http: ~
-        selenium2:
-          selenium2: ~
-EOL;
-
-    $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
-    $this->createFile($filename, $content);
-
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'Behat Config');
-    }
-  }
-
-  /**
-   * Write a Behat configuration with the screenshot context and extension.
-   */
-  #[Given('screenshot context behat configuration with value:')]
-  public function behatCliWriteScreenshotContextBehatYml(PyStringNode $value): void {
-    $content = <<<'EOL'
-default:
-  suites:
-    default:
-      contexts:
-        - FeatureContextTest:
-          - screenshot_dir: '%paths.base%/screenshots'
-        - DrevOps\BehatPhpServer\PhpServerContext:
-            webroot: '%paths.base%/tests/behat/fixtures'
-            host: 0.0.0.0
-        - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
-  extensions:
-    Behat\MinkExtension\ServiceContainer\MinkExtension:
-      base_url: http://0.0.0.0:8888
-      browser_name: chrome
-      javascript_session: selenium2
-      sessions:
-        browserkit_http:
-          browserkit_http: ~
-        selenium2:
-          selenium2:
-            wd_host: "http://localhost:4444/wd/hub"
-            capabilities:
-              browser: chrome
-              extra_capabilities:
-                "goog:chromeOptions":
-                  args:
-                    - '--disable-gpu'            # Disables hardware acceleration required in containers and cloud-based instances (like CI runners) where GPU is not available.
-                    # Options to increase stability and speed.
-                    - '--disable-extensions'     # Disables all installed Chrome extensions. Useful in testing environments to avoid interference from extensions.
-                    - '--disable-infobars'       # Hides the infobar that Chrome displays for various notifications, like warnings when opening multiple tabs.
-                    - '--disable-popup-blocking' # Disables the popup blocker, allowing all popups to appear. Useful in testing scenarios where popups are expected.
-                    - '--disable-translate'      # Disables the built-in translation feature, preventing Chrome from offering to translate pages.
-                    - '--no-first-run'           # Skips the initial setup screen that Chrome typically shows when running for the first time.
-                    - '--test-type'              # Disables certain security features and UI components that are unnecessary for automated testing, making Chrome more suitable for test environments.
-
-EOL;
-
-    $content .= PHP_EOL . '    ' . trim((string) $value);
-    $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
-    $this->createFile($filename, $content);
 
     if (static::behatCliIsDebug()) {
       static::behatCliPrintFileContents($filename, 'Behat Config');
@@ -373,34 +277,6 @@ EOL;
     $src = __DIR__ . '/../fixtures/screenshot_short.html';
 
     $this->createFile($this->workingDir . '/' . $filename, file_get_contents($src));
-  }
-
-  /**
-   * Write a test context and register it after the screenshot context.
-   */
-  #[Given('screenshot test context:')]
-  public function behatCliWriteScreenshotTestContext(PyStringNode $content): void {
-    $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/bootstrap/FullscreenTestContext.php';
-    $this->createFile($filename, $content);
-
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'FullscreenTestContext');
-    }
-
-    $behat_yml_path = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.yml';
-
-    if (!file_exists($behat_yml_path)) {
-      return;
-    }
-
-    $behat_yml = file_get_contents($behat_yml_path);
-
-    if (str_contains($behat_yml, 'FullscreenTestContext')) {
-      return;
-    }
-
-    $behat_yml = str_replace('ScreenshotContext', "ScreenshotContext\n        - FullscreenTestContext", $behat_yml);
-    file_put_contents($behat_yml_path, $behat_yml);
   }
 
   /**

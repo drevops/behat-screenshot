@@ -14,10 +14,10 @@ use Symfony\Component\Config\Definition\PrototypedArrayNode;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Test the reference configuration in behat.yml.dist and behat.dist.php.
+ * Test the example configuration in examples/behat.yml and examples/behat.php.
  */
 #[CoversNothing]
-class BehatDistConfigTest extends TestCase {
+class ExampleConfigTest extends TestCase {
 
   public function testFormatsMatch(): void {
     $this->assertSame(static::loadYamlConfig(), static::loadPhpConfig());
@@ -41,39 +41,39 @@ class BehatDistConfigTest extends TestCase {
   }
 
   /**
-   * Load the configuration that behat.dist.php returns.
+   * Load the configuration that examples/behat.php returns.
    *
    * @return array<mixed>
    *   The configuration as an array.
    */
   protected static function loadPhpConfig(): array {
-    $config = require dirname(__DIR__, 3) . '/behat.dist.php';
+    $config = require dirname(__DIR__, 3) . '/examples/behat.php';
 
     if (!$config instanceof Config) {
-      self::fail('behat.dist.php does not return a Behat configuration.');
+      self::fail('examples/behat.php does not return a Behat configuration.');
     }
 
     return $config->toArray();
   }
 
   /**
-   * Load the configuration in behat.yml.dist.
+   * Load the configuration in examples/behat.yml.
    *
    * @return array<mixed>
    *   The configuration as an array.
    */
   protected static function loadYamlConfig(): array {
-    $config = Yaml::parseFile(dirname(__DIR__, 3) . '/behat.yml.dist');
+    $config = Yaml::parseFile(dirname(__DIR__, 3) . '/examples/behat.yml');
 
     if (!is_array($config)) {
-      self::fail('behat.yml.dist does not hold a Behat configuration.');
+      self::fail('examples/behat.yml does not hold a Behat configuration.');
     }
 
     return $config;
   }
 
   /**
-   * Get the settings behat.yml.dist passes to the extension.
+   * Get the settings examples/behat.yml passes to the extension.
    *
    * @return array<mixed>
    *   The extension settings, keyed by option name.
@@ -83,14 +83,14 @@ class BehatDistConfigTest extends TestCase {
 
     foreach (['default', 'extensions', BehatScreenshotExtension::class] as $key) {
       if (!is_array($settings) || !isset($settings[$key])) {
-        self::fail(sprintf('behat.yml.dist has no "%s" key on the path to the extension settings.', $key));
+        self::fail(sprintf('examples/behat.yml has no "%s" key on the path to the extension settings.', $key));
       }
 
       $settings = $settings[$key];
     }
 
     if (!is_array($settings)) {
-      self::fail('behat.yml.dist does not hold the extension settings as a map.');
+      self::fail('examples/behat.yml does not hold the extension settings as a map.');
     }
 
     return $settings;

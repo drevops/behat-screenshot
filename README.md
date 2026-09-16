@@ -123,7 +123,7 @@ $profile = (new Profile('default'))
 return (new Config())->withProfile($profile);
 ```
 
-The option names are the same in both formats, so the [options](#options) table covers either one. [`behat.yml.dist`](behat.yml.dist) and [`behat.dist.php`](behat.dist.php) set every option.
+The option names are the same in both formats, so the [options](#options) table covers either one. [`examples/behat.yml`](examples/behat.yml) and [`examples/behat.php`](examples/behat.php) set every option.
 
 In your feature:
 
