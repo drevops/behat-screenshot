@@ -56,23 +56,23 @@ trait BehatCliTrait {
    */
   protected function behatCliCopyScreenshots(AfterScenarioScope $scope): void {
     $context = $scope->getEnvironment()->getContext(ScreenshotContext::class);
-    $src = $this->workingDir . DIRECTORY_SEPARATOR . 'screenshots';
+    $source_dir = $this->workingDir . DIRECTORY_SEPARATOR . 'screenshots';
 
-    if (!$context instanceof ScreenshotContext || !is_dir($src)) {
+    if (!$context instanceof ScreenshotContext || !is_dir($source_dir)) {
       return;
     }
 
-    $dst = $context->getScreenshotConfig()->dir . '/behatcli_screenshots';
+    $destination_dir = $context->getScreenshotConfig()->dir . '/behatcli_screenshots';
 
-    if (!is_readable($dst)) {
-      mkdir($dst, 0777, TRUE);
+    if (!is_readable($destination_dir)) {
+      mkdir($destination_dir, 0777, TRUE);
     }
 
     $finder = Finder::create();
     $filesystem = new Filesystem();
 
-    foreach ($finder->in($src)->files() as $file) {
-      $filesystem->copy($file->getRealPath(), $dst . DIRECTORY_SEPARATOR . $file->getFilename());
+    foreach ($finder->in($source_dir)->files() as $file) {
+      $filesystem->copy($file->getRealPath(), $destination_dir . DIRECTORY_SEPARATOR . $file->getFilename());
     }
   }
 
@@ -212,7 +212,7 @@ EOL;
     $this->createFile($filename, $content);
 
     if (self::behatCliIsDebug()) {
-      self::behatCliPrintFileContents($filename, 'FeatureContextTest.php');
+      self::behatCliPrintFileContent($filename, 'FeatureContextTest.php');
     }
 
     return $filename;
@@ -227,8 +227,8 @@ EOL;
 
     $content_lines = explode(PHP_EOL, $content);
 
-    foreach ($content_lines as $k => $content_line) {
-      $content_lines[$k] = str_repeat(' ', 4) . trim($content_line);
+    foreach ($content_lines as $index => $content_line) {
+      $content_lines[$index] = str_repeat(' ', 4) . trim($content_line);
     }
 
     $content = implode(PHP_EOL, $content_lines);
@@ -253,7 +253,7 @@ EOL;
     $this->createFile($filename, $content);
 
     if (self::behatCliIsDebug()) {
-      self::behatCliPrintFileContents($filename, 'Feature Stub');
+      self::behatCliPrintFileContent($filename, 'Feature Stub');
     }
   }
 
@@ -266,7 +266,7 @@ EOL;
     $this->createFile($filename, (string) $content);
 
     if (self::behatCliIsDebug()) {
-      self::behatCliPrintFileContents($filename, 'Behat Config');
+      self::behatCliPrintFileContent($filename, 'Behat Config');
     }
   }
 
@@ -328,7 +328,7 @@ EOL;
   /**
    * Helper to print file contents.
    */
-  protected static function behatCliPrintFileContents(string $filename, string $title = ''): void {
+  protected static function behatCliPrintFileContent(string $filename, string $title = ''): void {
     if (!is_readable($filename)) {
       throw new \RuntimeException(sprintf('Unable to access file "%s".', $filename));
     }
