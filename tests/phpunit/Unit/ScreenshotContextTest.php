@@ -234,9 +234,9 @@ class ScreenshotContextTest extends TestCase {
   }
 
   #[DataProvider('dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig')]
-  public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(bool $passed, bool $should_capture_on_failed, bool $should_capture_on_every_step, bool $has_screenshots_tag, bool $is_animated, bool $should_always_capture_fullscreen, array $expected_configs): void {
+  public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(bool $is_passed, bool $should_capture_on_failed, bool $should_capture_on_every_step, bool $has_screenshots_tag, bool $is_animated, bool $should_always_capture_fullscreen, array $expected_configs): void {
     $result = $this->createStub(StepResult::class);
-    $result->method('isPassed')->willReturn($passed);
+    $result->method('isPassed')->willReturn($is_passed);
     $scope = new AfterStepScope($this->createStub(Environment::class), $this->createStub(FeatureNode::class), $this->createStub(StepNode::class), $result);
 
     $configs = [];
@@ -307,21 +307,21 @@ class ScreenshotContextTest extends TestCase {
 
   #[DataProvider('dataProviderCaptureScreenshotWritesContentAndSetsLastScreenshotContent')]
   public function testCaptureScreenshotWritesContentAndSetsLastScreenshotContent(
-    bool $page_loaded,
-    bool $image_supported,
+    bool $is_page_loaded,
+    bool $is_image_supported,
     array $expected_writes,
     ?string $expected_content,
   ): void {
     $driver = $this->createStub(Selenium2Driver::class);
 
-    if ($page_loaded) {
+    if ($is_page_loaded) {
       $driver->method('getContent')->willReturn('test-html-content');
     }
     else {
       $driver->method('getContent')->willThrowException(new DriverException('Test Exception.'));
     }
 
-    if ($image_supported) {
+    if ($is_image_supported) {
       $driver->method('getScreenshot')->willReturn('test-png-content');
     }
     else {
