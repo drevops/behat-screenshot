@@ -1,18 +1,15 @@
 # Ignore files for distribution archives.
 
-/.editorconfig                        export-ignore
-/.gitattributes                       export-ignore
-/.github                              export-ignore
-/.gitignore                           export-ignore
-/behat.php                            export-ignore
-/docker-compose.override.default.yml  export-ignore
-/docker-compose.yml                   export-ignore
-/docs                                 export-ignore
-/gherkinlint.json                     export-ignore
-/phpcs.xml                            export-ignore
-/phpmd.xml                            export-ignore
-/phpstan.neon                         export-ignore
-/phpunit.xml                          export-ignore
-/rector.php                           export-ignore
-/renovate.json                        export-ignore
-/tests                                export-ignore
+/.editorconfig     export-ignore
+/.gitattributes    export-ignore
+/.github           export-ignore
+/.gitignore        export-ignore
+/behat.php         export-ignore
+/docs              export-ignore
+/gherkinlint.json  export-ignore
+/phpcs.xml         export-ignore
+/phpstan.neon      export-ignore
+/phpunit.xml       export-ignore
+/rector.php        export-ignore
+/renovate.json     export-ignore
+/tests             export-ignore
