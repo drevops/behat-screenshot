@@ -58,6 +58,11 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected const DEFAULT_STEPS = [25, 50, 100];
 
+  /**
+   * Environment variable replacing the profiled step counts.
+   */
+  public const ENV_PROFILE_STEPS = 'BEHAT_SCREENSHOT_PROFILE_STEPS';
+
   public function testAnimationAssemblyProducesGifForEveryProfiledScenario(): void {
     $steps = $this->stepCounts();
 
@@ -214,7 +219,7 @@ class AnimationAssemblyProfileTest extends TestCase {
    *   Step counts.
    */
   protected function stepCounts(): array {
-    $configured = getenv('BEHAT_SCREENSHOT_PROFILE_STEPS');
+    $configured = getenv(self::ENV_PROFILE_STEPS);
 
     if (!is_string($configured) || trim($configured) === '') {
       return self::DEFAULT_STEPS;

@@ -20,6 +20,11 @@ use Symfony\Component\Finder\Finder;
 trait BehatCliTrait {
 
   /**
+   * Environment variable enabling debug output of the inner run.
+   */
+  public const ENV_CLI_DEBUG = 'BEHAT_CLI_DEBUG';
+
+  /**
    * Write the feature context used by the inner run.
    */
   #[BeforeScenario('@behatcli')]
@@ -123,6 +128,11 @@ class FeatureContextTest extends MinkContext implements Context {
   {{USE_IN_CLASS}}
 
   /**
+   * Environment variable replacing the base URL of JavaScript scenarios.
+   */
+  public const ENV_JAVASCRIPT_BASE_URL = 'BEHAT_JAVASCRIPT_BASE_URL';
+
+  /**
    * Base URL for JavaScript scenarios.
    */
   protected string $javascriptBaseUrl;
@@ -137,7 +147,7 @@ class FeatureContextTest extends MinkContext implements Context {
 
     // Override any real host in the screenshot token.
     putenv(ScreenshotContext::ENV_TOKEN_HOST . '=example.com');
-    $this->javascriptBaseUrl = getenv('BEHAT_JAVASCRIPT_BASE_URL') ?: 'http://host.docker.internal:8888';
+    $this->javascriptBaseUrl = getenv(self::ENV_JAVASCRIPT_BASE_URL) ?: 'http://host.docker.internal:8888';
   }
 
   /**
@@ -340,7 +350,7 @@ EOL;
    *   not set.
    */
   protected static function behatCliIsDebug(): string|false {
-    return getenv('BEHAT_CLI_DEBUG');
+    return getenv(self::ENV_CLI_DEBUG);
   }
 
   /**
