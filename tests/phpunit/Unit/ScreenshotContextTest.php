@@ -54,7 +54,12 @@ class ScreenshotContextTest extends TestCase {
 
       $method = $callee->getReflection()->getName();
       $phase = lcfirst($callee->getName());
-      $this->assertTrue(str_starts_with($method, $phase), sprintf('Hook method %s() does not start with its phase %s.', $method, $phase));
+
+      if ($phase === '') {
+        $this->fail(sprintf('Hook method %s() is registered without a phase.', $method));
+      }
+
+      $this->assertStringStartsWith($phase, $method, sprintf('Hook method %s() does not start with its phase %s.', $method, $phase));
       $hooks[] = $method . ' ' . $callee;
     }
 
