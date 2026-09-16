@@ -83,7 +83,7 @@ class BehatDistConfigTest extends TestCase {
    * @param string $prefix
    *   Prefix of the parent option, ending with a dot.
    *
-   * @return array<int, string>
+   * @return array<int,string>
    *   Option names, with a nested option joined to its parent by a dot.
    */
   protected static function getNodeOptionNames(ArrayNode $node, string $prefix = ''): array {
@@ -109,7 +109,7 @@ class BehatDistConfigTest extends TestCase {
    * @param string $prefix
    *   Prefix of the parent option, ending with a dot.
    *
-   * @return array<int, string>
+   * @return array<int,string>
    *   Option names, with a nested option joined to its parent by a dot.
    */
   protected static function getSettingOptionNames(array $settings, string $prefix = ''): array {

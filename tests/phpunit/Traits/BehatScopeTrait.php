@@ -24,9 +24,9 @@ trait BehatScopeTrait {
   /**
    * Create a before scenario scope whose nodes carry the given tags.
    *
-   * @param array<int, string> $scenario_tags
+   * @param array<int,string> $scenario_tags
    *   Tags of the scenario, as the Gherkin parser returns them.
-   * @param array<int, string> $feature_tags
+   * @param array<int,string> $feature_tags
    *   Tags of the feature, as the Gherkin parser returns them.
    *
    * @return \Behat\Behat\Hook\Scope\BeforeScenarioScope
