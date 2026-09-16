@@ -27,7 +27,7 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 - Declare each configuration default as a literal in its `BehatScreenshotExtension::configure()` node, and name each environment variable a class reads with a public `ENV_*` constant on that class, formed from the variable name without its `BEHAT_SCREENSHOT_` prefix and read with `getenv(self::ENV_*)`
 - Declare hooks and step definitions with PHP attributes such as `#[BeforeScenario]` and `#[When('I save screenshot')]`, never with docblock annotations, which Behat 4 doesn't read
 - Read tags through `ScreenshotContext::isTagged()` or a hook filter string such as `#[BeforeScenario('@javascript')]`, never through `hasTag()`, which misses a tag reported with its leading `@`
-- Name Behat extensions by their full class name in every configuration, keep the suite configuration in `behat.php`, which both Behat majors read, and keep `examples/behat.yml` and `examples/behat.php` identical
+- Name Behat extensions by their full class name in every configuration, keep the suite configuration in `behat.yml` and `behat.php` in step, and keep `behat.dist.yml` and `behat.dist.php` identical
 - Maintain proper docblock annotations
 
 ### PHPUnit Configuration

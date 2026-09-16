@@ -42,7 +42,7 @@ composer require --dev drevops/behat-screenshot
 
 | Behat        | PHP     | Configuration file                                             |
 |--------------|---------|----------------------------------------------------------------|
-| `^3.33.0`    | `>=8.3` | `behat.yml`, `behat.yml.dist`, `behat.php` or `behat.dist.php` |
+| `^3.33.0`    | `>=8.3` | `behat.yml`, `behat.dist.yml`, `behat.php` or `behat.dist.php` |
 | `^4.0@alpha` | `>=8.3` | `behat.php` or `behat.dist.php`                                |
 
 Behat 4 is still an alpha, so Composer keeps installing Behat 3 until your project opts in. To opt in, require Behat 4 together with the Mink extension release that supports it:
@@ -123,7 +123,7 @@ $profile = (new Profile('default'))
 return (new Config())->withProfile($profile);
 ```
 
-The option names are the same in both formats, so the [options](#options) table covers either one. [`examples/behat.yml`](examples/behat.yml) and [`examples/behat.php`](examples/behat.php) set every option.
+The option names are the same in both formats, so the [options](#options) table covers either one. [`behat.dist.yml`](behat.dist.yml) and [`behat.dist.php`](behat.dist.php) set every option.
 
 In your feature:
 
