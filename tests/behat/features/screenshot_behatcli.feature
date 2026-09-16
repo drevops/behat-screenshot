@@ -711,7 +711,7 @@ Feature: Screenshot context
     # Assert that the file from the previous run is not present.
     And behat cli file wildcard "screenshots_custom/*.failed_stub.feature_6.html" should not exist
 
-  Scenario: Test Screenshot context with 'info_types' set to 'true' will output current URL to screenshot files
+  Scenario: Test Screenshot context with 'info_types' listing every type will output the URL, feature, step and datetime to screenshot files
     Given screenshot fixture
     And behat configuration:
       """
@@ -774,7 +774,7 @@ Feature: Screenshot context
       Datetime:
       """
 
-  Scenario: Test Screenshot context with 'info_types' set to 'false' will not output current URL to screenshot files
+  Scenario: Test Screenshot context with 'info_types' not set will not output current URL to screenshot files
     Given screenshot fixture
     And behat configuration:
       """
