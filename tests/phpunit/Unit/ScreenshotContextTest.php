@@ -602,7 +602,7 @@ class ScreenshotContextTest extends TestCase {
     $result = self::callProtectedMethod($screenshot_context, 'makeFilename', ['png', 12345678, NULL, FALSE]);
     $this->assertIsString($result);
 
-    // The Tokenizer collapses each run of characters other than word
+    // The {url} token collapses each run of characters other than word
     // characters and hyphens into a single underscore.
     $this->assertStringContainsString('example_org', $result);
     $this->assertStringNotContainsString('localhost', $result);
