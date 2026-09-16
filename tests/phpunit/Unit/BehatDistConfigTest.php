@@ -6,10 +6,10 @@ namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use Behat\Config\Config;
 use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\ArrayNode;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\PrototypedArrayNode;
 
 /**
@@ -18,10 +18,10 @@ use Symfony\Component\Config\Definition\PrototypedArrayNode;
 #[CoversNothing]
 class BehatDistConfigTest extends TestCase {
 
+  use ScreenshotConfigTrait;
+
   public function testSetsEveryOption(): void {
-    $tree_builder = new TreeBuilder('root');
-    (new BehatScreenshotExtension())->configure($tree_builder->getRootNode());
-    $tree = $tree_builder->buildTree();
+    $tree = self::buildScreenshotConfigTree();
 
     if (!$tree instanceof ArrayNode) {
       $this->fail('The extension configuration tree is not an array node.');
