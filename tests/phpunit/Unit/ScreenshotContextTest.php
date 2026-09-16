@@ -11,11 +11,8 @@ use Behat\Behat\Definition\Call\RuntimeDefinition;
 use Behat\Behat\Definition\Context\Attribute\DefinitionAttributeReader;
 use Behat\Behat\Hook\Context\Attribute\HookAttributeReader;
 use Behat\Behat\Hook\Scope\AfterStepScope;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
-use Behat\Behat\Tester\Result\StepResult;
 use Behat\Gherkin\Node\FeatureNode;
-use Behat\Gherkin\Node\ScenarioInterface;
 use Behat\Gherkin\Node\StepNode;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Exception\DriverException;
@@ -27,6 +24,7 @@ use Behat\Testwork\Hook\Call\RuntimeHook;
 use Behat\Testwork\Suite\GenericSuite;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
+use DrevOps\BehatScreenshotExtension\Tests\Traits\BehatScopeTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\EnvironmentVariableTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ReflectionTrait;
 use DrevOps\BehatScreenshotExtension\Tests\Traits\ScreenshotConfigTrait;
@@ -41,6 +39,7 @@ use Symfony\Component\Filesystem\Filesystem;
 #[CoversClass(ScreenshotContext::class)]
 class ScreenshotContextTest extends TestCase {
 
+  use BehatScopeTrait;
   use EnvironmentVariableTrait;
   use ReflectionTrait;
   use ScreenshotConfigTrait;
@@ -170,15 +169,10 @@ class ScreenshotContextTest extends TestCase {
   }
 
   public function testHookThrowsWhenScreenshotConfigIsNotSet(): void {
-    $feature_node = $this->createStub(FeatureNode::class);
-    $feature_node->method('getTags')->willReturn([]);
-    $scenario = $this->createStub(ScenarioInterface::class);
-    $scenario->method('getTags')->willReturn([]);
-
     $this->expectException(\RuntimeException::class);
     $this->expectExceptionMessage(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension extension in the Behat configuration.', ScreenshotContext::class));
 
-    (new ScreenshotContext())->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($this->createStub(Environment::class), $feature_node, $scenario));
+    (new ScreenshotContext())->beforeScenarioCheckScreenshotsTag($this->createBeforeScenarioScope());
   }
 
   #[DataProvider('dataProviderIsTaggedMatchesTagWithOrWithoutPrefix')]
@@ -204,9 +198,6 @@ class ScreenshotContextTest extends TestCase {
   }
 
   public function testBeforeScenarioInitPropagatesDriverStartException(): void {
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $scenario = $this->createStub(ScenarioInterface::class);
     $session = $this->createStub(Session::class);
     $driver = $this->createStub(Selenium2Driver::class);
     $driver->method('start')->willThrowException(new \RuntimeException('Test Exception.'));
@@ -217,7 +208,7 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);
     $screenshot_context->method('getSession')->willReturn($session);
 
-    $scope = new BeforeScenarioScope($env, $feature_node, $scenario);
+    $scope = $this->createBeforeScenarioScope();
     $screenshot_context->beforeScenarioInit($scope);
   }
 
@@ -235,9 +226,7 @@ class ScreenshotContextTest extends TestCase {
 
   #[DataProvider('dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig')]
   public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(bool $is_passed, bool $should_capture_on_failed, bool $should_capture_on_every_step, bool $has_screenshots_tag, bool $is_animated, bool $should_always_capture_fullscreen, array $expected_configs): void {
-    $result = $this->createStub(StepResult::class);
-    $result->method('isPassed')->willReturn($is_passed);
-    $scope = new AfterStepScope($this->createStub(Environment::class), $this->createStub(FeatureNode::class), $this->createStub(StepNode::class), $result);
+    $scope = $this->createAfterStepScope($is_passed);
 
     $configs = [];
     $record_config = static function (array $config) use (&$configs): void {
