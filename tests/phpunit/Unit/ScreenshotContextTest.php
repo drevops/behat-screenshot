@@ -210,7 +210,7 @@ class ScreenshotContextTest extends TestCase {
 
     $this->expectException(\RuntimeException::class);
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession'])->getStub();
     $screenshot_context->method('getSession')->willReturn($session);
 
     $scope = $this->createBeforeScenarioScope();
@@ -463,10 +463,7 @@ class ScreenshotContextTest extends TestCase {
     string $filename_pattern_failed,
     string $expected,
   ): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getBeforeStepScope',
-      'getSession',
-    ]);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getBeforeStepScope', 'getSession'])->getStub();
     $session = $this->createStub(Session::class);
 
     if ($url instanceof \Exception) {
@@ -582,7 +579,7 @@ class ScreenshotContextTest extends TestCase {
     $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willReturn('http://localhost:8080/test-page');
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'getBeforeStepScope']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession', 'getBeforeStepScope'])->getStub();
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
 

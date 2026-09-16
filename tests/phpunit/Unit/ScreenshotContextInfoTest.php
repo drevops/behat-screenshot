@@ -104,7 +104,7 @@ class ScreenshotContextInfoTest extends TestCase {
     $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willThrowException(new \Exception('URL not available'));
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession'])->getStub();
     $screenshot_context->method('getSession')->willReturn($session);
 
     $screenshot_context->beforeStepInit($scope);

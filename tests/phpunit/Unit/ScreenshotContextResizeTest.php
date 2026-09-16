@@ -23,10 +23,7 @@ class ScreenshotContextResizeTest extends TestCase {
   use ScreenshotConfigTrait;
 
   public function testGetScreenshotFullscreenWithResizeResizesThenRestoresWindow(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getSession',
-      'getScreenshot',
-    ]);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession', 'getScreenshot'])->getStub();
 
     $session = $this->createMock(Session::class);
     $driver = $this->createStub(Selenium2Driver::class);
@@ -71,10 +68,7 @@ class ScreenshotContextResizeTest extends TestCase {
   }
 
   public function testGetScreenshotFullscreenWithResizeSkipsResizeOnInvalidDimensions(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getSession',
-      'getScreenshot',
-    ]);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession', 'getScreenshot'])->getStub();
 
     $session = $this->createMock(Session::class);
     $driver = $this->createStub(Selenium2Driver::class);
@@ -103,9 +97,7 @@ class ScreenshotContextResizeTest extends TestCase {
   }
 
   public function testGetScreenshotFullscreenDelegatesToResizeAlgorithm(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getScreenshotFullscreenWithResize',
-    ]);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getScreenshotFullscreenWithResize'])->getStub();
 
     $screenshot_context->method('getScreenshotFullscreenWithResize')
       ->willReturn('test-resize-screenshot-content');

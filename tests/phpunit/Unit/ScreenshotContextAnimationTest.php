@@ -267,7 +267,7 @@ class ScreenshotContextAnimationTest extends TestCase {
   }
 
   public function testMakeAnimationFilenameCombinesTimestampFeatureAndLine(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getCurrentTime'])->getStub();
     $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
 
     $scope = $this->createAfterScenarioScope('path/to/login.feature', 7);
@@ -277,7 +277,7 @@ class ScreenshotContextAnimationTest extends TestCase {
   }
 
   public function testMakeAnimationFilenameMatchesDefaultStepFilenamePattern(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getCurrentTime'])->getStub();
     $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
 
     $step_pattern = str_replace(['{step_line}', '{ext}'], ['7', 'gif'], self::createScreenshotConfig()->filenamePattern);
@@ -290,7 +290,7 @@ class ScreenshotContextAnimationTest extends TestCase {
   }
 
   public function testMakeAnimationFilenameIgnoresCustomFilenamePattern(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getCurrentTime']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getCurrentTime'])->getStub();
     $screenshot_context->method('getCurrentTime')->willReturn(1700000000);
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['filename_pattern' => '{feature_file}_{step_line}.{ext}']));
 
