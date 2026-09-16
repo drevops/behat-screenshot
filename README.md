@@ -40,41 +40,82 @@
 composer require --dev drevops/behat-screenshot
 ```
 
+| Behat        | PHP     | Configuration file              |
+|--------------|---------|---------------------------------|
+| `^3.33.0`    | `>=8.3` | `behat.php` or `behat.dist.php` |
+| `^4.0@alpha` | `>=8.3` | `behat.php` or `behat.dist.php` |
+
+Behat 4 is still an alpha, so Composer keeps installing Behat 3 until your project opts in. To opt in, require Behat 4 together with the Mink extension release that supports it:
+
+```shell
+composer require --dev \
+  behat/behat:^4.0@alpha \
+  friends-of-behat/mink-extension:^3.0@alpha \
+  drevops/behat-screenshot
+```
+
 ## Usage
 
-Example `behat.yml` with default parameters:
+Behat reads `behat.php`, or `behat.dist.php` when there is no `behat.php`.
 
-```yaml
-default:
-  suites:
-    default:
-      contexts:
-        - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
-        - FeatureContext
-  extensions:
-    DrevOps\BehatScreenshotExtension: ~
+Example `behat.php` with default parameters:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Behat\Config\Config;
+use Behat\Config\Extension;
+use Behat\Config\Profile;
+use Behat\Config\Suite;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
+use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
+
+$suite = (new Suite('default'))
+  ->withContexts(ScreenshotContext::class, 'FeatureContext');
+
+$profile = (new Profile('default'))
+  ->withSuite($suite)
+  ->withExtension(new Extension(BehatScreenshotExtension::class));
+
+return (new Config())->withProfile($profile);
 ```
 
 or with parameters:
 
-```yaml
-default:
-  suites:
-    default:
-      contexts:
-        - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
-        - FeatureContext
-  extensions:
-    DrevOps\BehatScreenshotExtension:
-      dir: '%paths.base%/screenshots'
-      on_failed: true
-      purge: false
-      always_fullscreen: false
-      failed_prefix: 'failed_'
-      filename_pattern: '{datetime:U}.{feature_file}.feature_{step_line}.{ext}'
-      filename_pattern_failed:
-        '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}'
+```php
+<?php
+
+declare(strict_types=1);
+
+use Behat\Config\Config;
+use Behat\Config\Extension;
+use Behat\Config\Profile;
+use Behat\Config\Suite;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
+use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
+
+$suite = (new Suite('default'))
+  ->withContexts(ScreenshotContext::class, 'FeatureContext');
+
+$extension = new Extension(BehatScreenshotExtension::class, [
+  'dir' => '%paths.base%/screenshots',
+  'on_failed' => TRUE,
+  'purge' => FALSE,
+  'always_fullscreen' => FALSE,
+]);
+
+$profile = (new Profile('default'))
+  ->withSuite($suite)
+  ->withExtension($extension);
+
+return (new Config())->withProfile($profile);
 ```
+
+The extension is registered by its full class name. Behat 3 also accepts the short `DrevOps\BehatScreenshotExtension` key, but Behat 4 doesn't, so the full name works on both.
+
+The [options](#options) table below describes every option, and [`behat.dist.php`](behat.dist.php) sets all of them.
 
 In your feature:
 
@@ -108,11 +149,10 @@ Then I save fullscreen screenshot with name "my_screenshot"
 
 To always capture fullscreen screenshots, even without explicitly using the `fullscreen` keyword, set the `always_fullscreen` configuration option to `true`:
 
-```yaml
-default:
-  extensions:
-    DrevOps\BehatScreenshotExtension:
-      always_fullscreen: true
+```php
+$extension = new Extension(BehatScreenshotExtension::class, [
+  'always_fullscreen' => TRUE,
+]);
 ```
 
 ### Capturing screenshots after every step
@@ -121,11 +161,10 @@ To automatically capture a screenshot after every step, you can either:
 
 1. **Enable globally** in configuration:
 
-```yaml
-default:
-  extensions:
-    DrevOps\BehatScreenshotExtension:
-      on_every_step: true
+```php
+$extension = new Extension(BehatScreenshotExtension::class, [
+  'on_every_step' => TRUE,
+]);
 ```
 
 2. **Enable per-scenario** using the `@screenshots` tag:
@@ -149,13 +188,13 @@ To record an animated GIF of a scenario from its per-step screenshots, you can e
 
 1. **Enable globally** in configuration:
 
-```yaml
-default:
-  extensions:
-    DrevOps\BehatScreenshotExtension:
-      animation:
-        enabled: true
-        frame_delay: 500
+```php
+$extension = new Extension(BehatScreenshotExtension::class, [
+  'animation' => [
+    'enabled' => TRUE,
+    'frame_delay' => 500,
+  ],
+]);
 ```
 
 2. **Enable per-scenario** using the `@screenshots:animated` tag:
@@ -213,13 +252,13 @@ Skipping animation does not disable the per-step screenshots requested by `on_ev
 
 With `always_fullscreen: true` every frame is as tall as the page it captured, so one long page - an admin listing, a search result set - produces very large frames and a correspondingly large GIF. Cap them with `max_width` and `max_height`:
 
-```yaml
-default:
-  extensions:
-    DrevOps\BehatScreenshotExtension:
-      animation:
-        enabled: true
-        max_height: 2000
+```php
+$extension = new Extension(BehatScreenshotExtension::class, [
+  'animation' => [
+    'enabled' => TRUE,
+    'max_height' => 2000,
+  ],
+]);
 ```
 
 Frames larger than the cap are cropped to it before being encoded, keeping the top-left of the page; frames already within it are untouched. Each axis is capped on its own, so a `max_height` alone never changes a frame's width - the retained area keeps its captured resolution and every frame in the animation still shares the same width. Both caps default to `0`, which leaves the frame size unbounded. The per-step PNG screenshots are always written at full size, so capping affects the animation only.
@@ -270,11 +309,10 @@ By default, the `purge` option is disabled, so screenshots from previous test ru
 
 To clear the directory at the start of each test run, enable the `purge` option in the configuration.
 
-```yaml
-default:
-  extensions:
-    DrevOps\BehatScreenshotExtension:
-      purge: true
+```php
+$extension = new Extension(BehatScreenshotExtension::class, [
+  'purge' => TRUE,
+]);
 ```
 
 Alternatively, you can use the `BEHAT_SCREENSHOT_PURGE` environment variable to enable the auto-purge feature for a specific test run.
@@ -287,15 +325,10 @@ BEHAT_SCREENSHOT_PURGE=1 vendor/bin/behat
 
 The `info_types` option controls which built-in information is added to screenshots, and nothing is added unless it is set. The order of the types is the order of the information displayed on the screenshot.
 
-```yaml
-default:
-  extensions:
-    DrevOps\BehatScreenshotExtension:
-      info_types:
-        - url
-        - feature
-        - step
-        - datetime
+```php
+$extension = new Extension(BehatScreenshotExtension::class, [
+  'info_types' => ['url', 'feature', 'step', 'datetime'],
+]);
 ```
 
 With all four types enabled, the information is prepended to the captured HTML:
@@ -315,9 +348,7 @@ Datetime: 2025-01-19 00:01:10
 Custom entries can be added from your own context class with `appendInfo()`. They are rendered alongside the entries produced by `info_types`, and are rendered whether or not `info_types` is set.
 
 ```php
-/**
- * @BeforeScenario
- */
+#[\Behat\Hook\BeforeScenario]
 public function beforeScenarioAddInfo(BeforeScenarioScope $scope): void {
   $environment = $scope->getEnvironment();
   if ($environment instanceof InitializedContextEnvironment) {
@@ -332,7 +363,7 @@ public function beforeScenarioAddInfo(BeforeScenarioScope $scope): void {
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, linting, unit and BDD tests, the animated GIF assembly profiler, and adding a configuration option.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, linting, unit and BDD tests, running the suites on Behat 4, the animated GIF assembly profiler, and adding a configuration option.
 
 ---
 _This repository was created using the [Scaffold](https://getscaffold.dev/) project template_

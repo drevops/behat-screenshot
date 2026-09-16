@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Hook\BeforeScenario;
 use Behat\MinkExtension\Context\MinkContext;
 use Behat\MinkExtension\Context\RawMinkContext;
 
@@ -35,13 +36,12 @@ class FeatureContext extends MinkContext implements Context {
 
   /**
    * Update base URL for JavaScript scenarios.
-   *
-   * @BeforeScenario
    */
+  #[BeforeScenario('@javascript')]
   public function beforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
     $environment = $scope->getEnvironment();
 
-    if (!$scope->getScenario()->hasTag('javascript') || !$environment instanceof InitializedContextEnvironment) {
+    if (!$environment instanceof InitializedContextEnvironment) {
       return;
     }
 

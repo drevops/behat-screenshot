@@ -289,12 +289,12 @@ class AnimationAssemblyProfileTest extends TestCase {
    *   Before scenario scope.
    */
   protected function createBeforeScenarioScope(): BeforeScenarioScope {
-    $feature_node = $this->createMock(FeatureNode::class);
-    $feature_node->method('hasTag')->willReturn(FALSE);
-    $scenario = $this->createMock(ScenarioInterface::class);
-    $scenario->method('hasTag')->willReturn(FALSE);
+    $feature_node = $this->createStub(FeatureNode::class);
+    $feature_node->method('getTags')->willReturn([]);
+    $scenario = $this->createStub(ScenarioInterface::class);
+    $scenario->method('getTags')->willReturn([]);
 
-    return new BeforeScenarioScope($this->createMock(Environment::class), $feature_node, $scenario);
+    return new BeforeScenarioScope($this->createStub(Environment::class), $feature_node, $scenario);
   }
 
 }

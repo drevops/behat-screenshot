@@ -9,7 +9,34 @@ Feature: Behat CLI Trait context
 
   Background:
 
-    Given some behat configuration
+    Given behat configuration:
+      """
+      <?php
+
+      declare(strict_types=1);
+
+      use Behat\Config\Config;
+      use Behat\Config\Extension;
+      use Behat\Config\Profile;
+      use Behat\Config\Suite;
+      use Behat\MinkExtension\ServiceContainer\MinkExtension;
+      use DrevOps\BehatPhpServer\PhpServerContext;
+
+      $suite = (new Suite('default'))
+        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0']);
+
+      $mink = new Extension(MinkExtension::class, [
+        'base_url' => 'http://0.0.0.0:8888',
+        'sessions' => ['browserkit_http' => ['browserkit_http' => NULL]],
+      ]);
+
+      $profile = (new Profile('default'))
+        ->withSuite($suite)
+        ->withExtension($mink);
+
+      return (new Config())->withProfile($profile);
+      """
     And screenshot fixture
 
   Scenario: Test passes

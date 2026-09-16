@@ -38,7 +38,7 @@ class ScreenshotContextInitializer implements ContextInitializer {
    *
    * @param array<mixed> $config
    *   Configuration processed by the extension's configuration tree, keyed as
-   *   in behat.yml.
+   *   in the Behat configuration.
    *
    * @codeCoverageIgnore
    */

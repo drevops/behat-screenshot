@@ -13,41 +13,55 @@ Feature: Behat CLI context
       <?php
        use Behat\Behat\Context\Context;
        use Behat\MinkExtension\Context\MinkContext;
+       use Behat\Step\Given;
+       use Behat\Step\When;
        class FeatureContextTest extends MinkContext implements Context {
        /**
         * Go to the phpserver test page.
-        *
-        * @Given /^(?:|I )am on (?:|the )phpserver test page$/
-        * @When /^(?:|I )go to (?:|the )phpserver test page$/
         */
+        #[Given('/^(?:|I )am on (?:|the )phpserver test page$/')]
+        #[When('/^(?:|I )go to (?:|the )phpserver test page$/')]
         public function goToPhpServerTestPage()
         {
             $this->getSession()->visit('http://0.0.0.0:8888/screenshot.html');
         }
 
         /**
-         * @Given I throw test exception with message :message
+         * Throw an exception with the given message.
          */
+        #[Given('I throw test exception with message :message')]
         public function throwTestException($message) {
           throw new \RuntimeException($message);
         }
       }
       """
-    And a file named "behat.yml" with:
+    And behat configuration:
       """
-      default:
-        suites:
-          default:
-            contexts:
-              - FeatureContextTest
-              - DrevOps\BehatPhpServer\PhpServerContext:
-                  webroot: '%paths.base%/tests/behat/fixtures'
-                  host: 0.0.0.0
-        extensions:
-          Behat\MinkExtension:
-            browserkit_http: ~
-            selenium2: ~
-            base_url: http://0.0.0.0:8888
+      <?php
+
+      declare(strict_types=1);
+
+      use Behat\Config\Config;
+      use Behat\Config\Extension;
+      use Behat\Config\Profile;
+      use Behat\Config\Suite;
+      use Behat\MinkExtension\ServiceContainer\MinkExtension;
+      use DrevOps\BehatPhpServer\PhpServerContext;
+
+      $suite = (new Suite('default'))
+        ->addContext('FeatureContextTest')
+        ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0']);
+
+      $mink = new Extension(MinkExtension::class, [
+        'base_url' => 'http://0.0.0.0:8888',
+        'sessions' => ['browserkit_http' => ['browserkit_http' => NULL]],
+      ]);
+
+      $profile = (new Profile('default'))
+        ->withSuite($suite)
+        ->withExtension($mink);
+
+      return (new Config())->withProfile($profile);
       """
     And a file named "tests/behat/fixtures/screenshot.html" with:
       """
