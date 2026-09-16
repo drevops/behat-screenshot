@@ -150,8 +150,7 @@ class FeatureContextTest extends MinkContext implements Context {
 }
 EOL;
 
-    $content = strtr($content, $tokens);
-    $content = preg_replace('/\{\{[^\}]+\}\}/', '', $content);
+    $content = self::behatCliRenderTemplate($content, $tokens);
 
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/bootstrap/FeatureContextTest.php';
     $this->createFile($filename, $content);
@@ -191,8 +190,7 @@ Feature: Stub feature
 {{SCENARIO_CONTENT}}
 EOL;
 
-    $content = strtr($content, $tokens);
-    $content = preg_replace('/\{\{[^\}]+\}\}/', '', $content);
+    $content = self::behatCliRenderTemplate($content, $tokens);
 
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/stub.feature';
     $this->createFile($filename, $content);
@@ -220,10 +218,7 @@ EOL;
    */
   #[Given('screenshot fixture')]
   public function behatCliWriteScreenshotFixture(): void {
-    $filename = 'tests/behat/fixtures/screenshot.html';
-    $src = __DIR__ . '/../fixtures/screenshot.html';
-
-    $this->createFile($this->workingDir . '/' . $filename, file_get_contents($src));
+    $this->behatCliWriteFixture('screenshot.html');
   }
 
   /**
@@ -231,10 +226,17 @@ EOL;
    */
   #[Given('short screenshot fixture')]
   public function behatCliWriteScreenshotShortFixture(): void {
-    $filename = 'tests/behat/fixtures/screenshot.html';
-    $src = __DIR__ . '/../fixtures/screenshot_short.html';
+    $this->behatCliWriteFixture('screenshot_short.html');
+  }
 
-    $this->createFile($this->workingDir . '/' . $filename, file_get_contents($src));
+  /**
+   * Copy a fixture page into the working directory as the screenshot page.
+   *
+   * @param string $fixture
+   *   Fixture filename under tests/behat/fixtures.
+   */
+  protected function behatCliWriteFixture(string $fixture): void {
+    $this->createFile($this->workingDir . '/tests/behat/fixtures/screenshot.html', file_get_contents(__DIR__ . '/../fixtures/' . $fixture));
   }
 
   /**
@@ -299,6 +301,21 @@ EOL;
   }
 
   /**
+   * Render a template, dropping the tokens that have no value.
+   *
+   * @param string $template
+   *   Template with {{TOKEN}} placeholders.
+   * @param array<string,string> $tokens
+   *   Replacements keyed by placeholder.
+   *
+   * @return string
+   *   Rendered template.
+   */
+  protected static function behatCliRenderTemplate(string $template, array $tokens): string {
+    return (string) preg_replace('/\{\{[^\}]+\}\}/', '', strtr($template, $tokens));
+  }
+
+  /**
    * Checks whether a file wildcard at provided path exists.
    *
    * @param string $wildcard
@@ -326,19 +343,7 @@ EOL;
    */
   #[Then('/^behat screenshot file matching "([^"]*)" should contain:$/')]
   public function behatCliAssertFileShouldContain(string $wildcard, PyStringNode $text): void {
-    $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
-    $matches = glob($wildcard);
-
-    if (empty($matches)) {
-      throw new \Exception(sprintf("Unable to find screenshot file matching wildcard '%s'.", $wildcard));
-    }
-
-    $path = $matches[0];
-    $file_content = trim(file_get_contents($path));
-
-    if ("\n" !== PHP_EOL) {
-      $file_content = str_replace(PHP_EOL, "\n", $file_content);
-    }
+    $file_content = $this->behatCliReadFileMatching($this->workingDir . DIRECTORY_SEPARATOR . $wildcard);
 
     Assert::assertStringContainsString($this->getExpectedOutput($text), $file_content);
   }
@@ -353,21 +358,34 @@ EOL;
    */
   #[Then('/^behat screenshot file matching "([^"]*)" should not contain:$/')]
   public function behatCliAssertFileShouldNotContain(string $wildcard, PyStringNode $text): void {
-    $wildcard = $this->workingDir . DIRECTORY_SEPARATOR . $wildcard;
+    $file_content = $this->behatCliReadFileMatching($this->workingDir . DIRECTORY_SEPARATOR . $wildcard);
+
+    Assert::assertStringNotContainsString($this->getExpectedOutput($text), $file_content);
+  }
+
+  /**
+   * Read the first file matching a wildcard, with its line endings normalised.
+   *
+   * @param string $wildcard
+   *   Absolute filename with a wildcard.
+   *
+   * @return string
+   *   Trimmed file content with "\n" line endings.
+   */
+  protected function behatCliReadFileMatching(string $wildcard): string {
     $matches = glob($wildcard);
 
     if (empty($matches)) {
       throw new \Exception(sprintf("Unable to find screenshot file matching wildcard '%s'.", $wildcard));
     }
 
-    $path = $matches[0];
-    $file_content = trim(file_get_contents($path));
+    $file_content = trim((string) file_get_contents($matches[0]));
 
     if ("\n" !== PHP_EOL) {
-      $file_content = str_replace(PHP_EOL, "\n", $file_content);
+      return str_replace(PHP_EOL, "\n", $file_content);
     }
 
-    Assert::assertStringNotContainsString($this->getExpectedOutput($text), $file_content);
+    return $file_content;
   }
 
   /**
