@@ -19,7 +19,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -70,7 +70,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -114,7 +114,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -162,7 +162,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -208,7 +208,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -258,7 +258,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -305,7 +305,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -351,7 +351,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -398,7 +398,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -446,7 +446,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -495,7 +495,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -553,7 +553,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -611,7 +611,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -670,7 +670,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -729,7 +729,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -792,7 +792,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -842,7 +842,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -890,7 +890,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -938,7 +938,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -1015,7 +1015,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -1092,7 +1092,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -1166,7 +1166,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -1241,7 +1241,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -1317,7 +1317,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 
@@ -1398,7 +1398,7 @@ Feature: Screenshot context
       use DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0'])
         ->addContext(ScreenshotContext::class);
 

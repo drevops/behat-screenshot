@@ -23,7 +23,7 @@ Feature: Behat CLI Trait context
       use DrevOps\BehatPhpServer\PhpServerContext;
 
       $suite = (new Suite('default'))
-        ->addContext('FeatureContextTest', [['screenshot_dir' => '%paths.base%/screenshots']])
+        ->addContext('FeatureContextTest')
         ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0']);
 
       $mink = new Extension(MinkExtension::class, [

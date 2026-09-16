@@ -17,7 +17,7 @@ use DVDoug\Behat\CodeCoverage\Extension as CodeCoverageExtension;
 
 $suite = (new Suite('default'))
   ->withPaths('%paths.base%/tests/behat/features')
-  ->addContext('FeatureContext', [['screenshot_dir' => '%paths.base%/.logs/screenshots']])
+  ->addContext('FeatureContext')
   ->addContext('BehatCliContext')
   ->addContext(ScreenshotContext::class)
   ->addContext(PhpServerContext::class, ['webroot' => '%paths.base%/tests/behat/fixtures', 'host' => '0.0.0.0']);
