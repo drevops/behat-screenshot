@@ -42,7 +42,7 @@ composer require --dev drevops/behat-screenshot
 
 | Behat        | PHP     | Configuration file                                             |
 |--------------|---------|----------------------------------------------------------------|
-| `^3.32.0`    | `>=8.3` | `behat.yml`, `behat.yml.dist`, `behat.php` or `behat.dist.php` |
+| `^3.33.0`    | `>=8.3` | `behat.yml`, `behat.yml.dist`, `behat.php` or `behat.dist.php` |
 | `^4.0@alpha` | `>=8.3` | `behat.php` or `behat.dist.php`                                |
 
 Behat 4 is still an alpha, so Composer keeps installing Behat 3 until your project opts in. To opt in, require Behat 4 together with the Mink extension release that supports it:
