@@ -211,8 +211,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   /**
    * Check whether a node carries a tag.
    *
-   * The Gherkin "legacy" parsing mode strips the leading "@" from tag names
-   * and the "gherkin-32" mode keeps it, so both forms match.
+   * A tag is reported with or without its leading "@", so both forms match.
    *
    * @param \Behat\Gherkin\Node\TaggedNodeInterface $node
    *   Feature, scenario or example node.

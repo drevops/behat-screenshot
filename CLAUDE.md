@@ -26,7 +26,7 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 - Create collaborators with side effects, such as `Filesystem`, `Finder` and `AnimatedGifEncoder`, in a protected `create*()` method that returns the new instance, and read the clock through `getCurrentTime()`; create value objects (`ScreenshotConfig`, a container `Definition`) and exceptions inline
 - Declare each configuration default as a literal in its `BehatScreenshotExtension::configure()` node, and name each environment variable a class reads with a public `ENV_*` constant on that class, formed from the variable name without its `BEHAT_SCREENSHOT_` prefix and read with `getenv(self::ENV_*)`
 - Declare hooks and step definitions with PHP attributes such as `#[BeforeScenario]` and `#[When('I save screenshot')]`, never with docblock annotations, which Behat 4 doesn't read
-- Read tags through `ScreenshotContext::isTagged()` or a hook filter string such as `#[BeforeScenario('@javascript')]`, never through `hasTag()`, which misses tags that keep their leading `@` in the `gherkin-32` parsing mode
+- Read tags through `ScreenshotContext::isTagged()` or a hook filter string such as `#[BeforeScenario('@javascript')]`, never through `hasTag()`, which misses a tag reported with its leading `@`
 - Name Behat extensions by their full class name in every configuration, keep the suite configuration in `behat.yml`, which `behat.php` loads for Behat 4, and keep `behat.yml.dist` and `behat.dist.php` identical
 - Maintain proper docblock annotations
 

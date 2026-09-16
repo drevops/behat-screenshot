@@ -66,7 +66,7 @@ composer test-bdd -- --tags=~@headless
 
 To switch back, restore `dmore/behat-chrome-extension` in `composer.json` and run `composer update --with=behat/behat:^3`.
 
-Behat 4 doesn't read docblock annotations, so hooks and step definitions are declared with PHP attributes such as `#[BeforeScenario]` and `#[When('I save screenshot')]`. It also parses feature files in the `gherkin-32` mode, which keeps the leading `@` on tag names, so tags are read through `ScreenshotContext::isTagged()` or a hook filter such as `#[BeforeScenario('@javascript')]` rather than `hasTag()`.
+Behat 4 doesn't read docblock annotations, so hooks and step definitions are declared with PHP attributes such as `#[BeforeScenario]` and `#[When('I save screenshot')]`. It also reports tag names with their leading `@`, so tags are read through `ScreenshotContext::isTagged()` or a hook filter such as `#[BeforeScenario('@javascript')]` rather than `hasTag()`.
 
 ### Continuous integration
 
