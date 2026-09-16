@@ -416,7 +416,7 @@ class AnimatedGifEncoderTest extends TestCase {
   #[DataProvider('dataProviderConstrainKeepsTheTransparentColour')]
   public function testConstrainKeepsTheTransparentColour(bool $is_truecolor): void {
     $image = $this->createTransparentImage(40, 30, $is_truecolor);
-    $transparent = imagecolortransparent($image);
+    $transparent_index = imagecolortransparent($image);
 
     // imagegif() drops a truecolor image's transparent colour when GD is built
     // with libimagequant, so the crop is checked on the image itself.
@@ -427,9 +427,9 @@ class AnimatedGifEncoderTest extends TestCase {
     }
 
     $this->assertSame([40, 20], [imagesx($cropped), imagesy($cropped)]);
-    $this->assertSame($transparent, imagecolortransparent($cropped));
-    $this->assertSame($transparent, imagecolorat($cropped, 0, 0));
-    $this->assertNotSame($transparent, imagecolorat($cropped, 39, 0));
+    $this->assertSame($transparent_index, imagecolortransparent($cropped));
+    $this->assertSame($transparent_index, imagecolorat($cropped, 0, 0));
+    $this->assertNotSame($transparent_index, imagecolorat($cropped, 39, 0));
   }
 
   public static function dataProviderConstrainKeepsTheTransparentColour(): array {
@@ -672,9 +672,9 @@ class AnimatedGifEncoderTest extends TestCase {
       return FALSE;
     }
 
-    $transparent = imagecolortransparent($image);
+    $transparent_index = imagecolortransparent($image);
 
-    return $transparent !== -1 && imagecolorat($image, $x, $y) === $transparent;
+    return $transparent_index !== -1 && imagecolorat($image, $x, $y) === $transparent_index;
   }
 
   /**

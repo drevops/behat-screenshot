@@ -261,12 +261,12 @@ class AnimatedGifEncoder implements \Countable {
     }
 
     imagealphablending($cropped, FALSE);
-    $transparent = imagecolortransparent($image);
+    $transparent_index = imagecolortransparent($image);
 
     // imagecopy() skips transparent pixels, so they keep the fill colour.
-    if ($transparent !== -1) {
-      imagefilledrectangle($cropped, 0, 0, $bounded_width - 1, $bounded_height - 1, $transparent);
-      imagecolortransparent($cropped, $transparent);
+    if ($transparent_index !== -1) {
+      imagefilledrectangle($cropped, 0, 0, $bounded_width - 1, $bounded_height - 1, $transparent_index);
+      imagecolortransparent($cropped, $transparent_index);
     }
 
     imagecopy($cropped, $image, 0, 0, 0, 0, $bounded_width, $bounded_height);
