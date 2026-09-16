@@ -27,7 +27,7 @@ class AnimationArtifactsTest extends TestCase {
   use ReflectionTrait;
 
   /**
-   * Frame sizes standing in for a scenario that visits pages of every length.
+   * Frame sizes of a simulated scenario that visits pages of mixed height.
    *
    * @var array<int,array<int,int>>
    */

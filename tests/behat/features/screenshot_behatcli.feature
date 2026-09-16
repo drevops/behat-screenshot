@@ -1377,8 +1377,6 @@ Feature: Screenshot context
 
   # Test for a headless browser using behat-chrome/behat-chrome-extension driver.
   # @see https://gitlab.com/behat-chrome/behat-chrome-extension
-  # Install Chromium with brew: `brew install --cask chromium`
-  # Launch chrome: "$(brew --prefix)/bin/chromium" --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222
   # Note: this test does not use the Docker container. See CONTRIBUTING.md for more information.
   @headless
   Scenario: Test Screenshot context using behat-chrome/behat-chrome-extension
@@ -1444,7 +1442,7 @@ Feature: Screenshot context
     Then it should pass
     And behat cli file wildcard "screenshots/*.stub.feature_7.html" should exist
 
-    # Using `@skip-base-url-rewrite` to avoid the base_url rewrite used in
+    # The `@skip-base-url-rewrite` tag skips the base_url rewrite used in
     # non-headless browser tests.
     And scenario steps tagged with "@phpserver @javascript @skip-base-url-rewrite":
       """

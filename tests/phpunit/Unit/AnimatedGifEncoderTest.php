@@ -141,7 +141,6 @@ class AnimatedGifEncoderTest extends TestCase {
   }
 
   public function testEncodeDoesNotInflatePixelsWhenOneFrameIsMuchTaller(): void {
-    // A long scenario in which a single step captured a very tall page.
     $frames = [];
 
     for ($step = 0; $step < 120; $step++) {

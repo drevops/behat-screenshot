@@ -255,7 +255,7 @@ class AnimationAssemblyProfileTest extends TestCase {
   }
 
   /**
-   * Write the report where CI collects it.
+   * Write the report to the profile log directory.
    *
    * @param string $report
    *   Report content.
