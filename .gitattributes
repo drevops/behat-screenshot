@@ -1,12 +1,15 @@
 # Ignore files for distribution archives.
 
+/.claude           export-ignore
 /.editorconfig     export-ignore
 /.gitattributes    export-ignore
 /.github           export-ignore
 /.gitignore        export-ignore
+/CLAUDE.md         export-ignore
 /behat.php         export-ignore
 /docs              export-ignore
 /gherkinlint.json  export-ignore
+/logo.png          export-ignore
 /phpcs.xml         export-ignore
 /phpstan.neon      export-ignore
 /phpunit.xml       export-ignore

@@ -51,10 +51,10 @@ trait BehatScopeTrait {
    *   After step scope.
    */
   protected function createAfterStepScope(bool $passed = TRUE): AfterStepScope {
-    $step_result = $this->createMock(StepResult::class);
+    $step_result = $this->createStub(StepResult::class);
     $step_result->method('isPassed')->willReturn($passed);
 
-    return new AfterStepScope($this->createMock(Environment::class), $this->createMock(FeatureNode::class), $this->createMock(StepNode::class), $step_result);
+    return new AfterStepScope($this->createStub(Environment::class), $this->createStub(FeatureNode::class), $this->createStub(StepNode::class), $step_result);
   }
 
   /**
@@ -69,12 +69,12 @@ trait BehatScopeTrait {
    *   After scenario scope.
    */
   protected function createAfterScenarioScope(?string $feature_file = NULL, int $scenario_line = 0): AfterScenarioScope {
-    $feature_node = $this->createMock(FeatureNode::class);
+    $feature_node = $this->createStub(FeatureNode::class);
     $feature_node->method('getFile')->willReturn($feature_file);
-    $scenario = $this->createMock(ScenarioInterface::class);
+    $scenario = $this->createStub(ScenarioInterface::class);
     $scenario->method('getLine')->willReturn($scenario_line);
 
-    return new AfterScenarioScope($this->createMock(Environment::class), $feature_node, $scenario, $this->createMock(TestResult::class));
+    return new AfterScenarioScope($this->createStub(Environment::class), $feature_node, $scenario, $this->createStub(TestResult::class));
   }
 
 }

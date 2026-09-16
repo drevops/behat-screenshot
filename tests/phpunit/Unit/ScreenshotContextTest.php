@@ -204,12 +204,11 @@ class ScreenshotContextTest extends TestCase {
   }
 
   public function testBeforeScenarioInitPropagatesDriverStartException(): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $scenario = $this->createMock(ScenarioInterface::class);
-    $scenario->method('hasTag')->with('javascript')->willReturn(TRUE);
-    $session = $this->createMock(Session::class);
-    $driver = $this->createMock(Selenium2Driver::class);
+    $env = $this->createStub(Environment::class);
+    $feature_node = $this->createStub(FeatureNode::class);
+    $scenario = $this->createStub(ScenarioInterface::class);
+    $session = $this->createStub(Session::class);
+    $driver = $this->createStub(Selenium2Driver::class);
     $driver->method('start')->willThrowException(new \RuntimeException('Test Exception.'));
     $session->method('getDriver')->willReturn($driver);
 
@@ -223,9 +222,9 @@ class ScreenshotContextTest extends TestCase {
   }
 
   public function testBeforeStepInitStoresScopeForLaterRetrieval(): void {
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $step_node = $this->createMock(StepNode::class);
+    $env = $this->createStub(Environment::class);
+    $feature_node = $this->createStub(FeatureNode::class);
+    $step_node = $this->createStub(StepNode::class);
 
     $feature_node->method('getFile')->willReturn(TRUE);
     $screenshot_context = new ScreenshotContext();
@@ -276,8 +275,8 @@ class ScreenshotContextTest extends TestCase {
 
   public function testIsaveSizedScreenshotIgnoresUnsupportedResize(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'captureScreenshot']);
-    $session = $this->createMock(Session::class);
-    $exception = new UnsupportedDriverActionException('Not supported', $this->createMock(Selenium2Driver::class));
+    $session = $this->createStub(Session::class);
+    $exception = new UnsupportedDriverActionException('Not supported', $this->createStub(Selenium2Driver::class));
     $session->method('resizeWindow')->willThrowException($exception);
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->expects($this->once())->method('captureScreenshot');
@@ -455,7 +454,7 @@ class ScreenshotContextTest extends TestCase {
       'getBeforeStepScope',
       'getSession',
     ]);
-    $session = $this->createMock(Session::class);
+    $session = $this->createStub(Session::class);
 
     if ($url instanceof \Exception) {
       $session->method('getCurrentUrl')->willThrowException($url);
@@ -465,9 +464,9 @@ class ScreenshotContextTest extends TestCase {
     }
 
     $screenshot_context->method('getSession')->willReturn($session);
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
-    $step_node = $this->createMock(StepNode::class);
+    $env = $this->createStub(Environment::class);
+    $feature_node = $this->createStub(FeatureNode::class);
+    $step_node = $this->createStub(StepNode::class);
     $step_node->method('getText')->willReturn($step_text);
     $step_node->method('getLine')->willReturn($step_line);
     $feature_node->method('getFile')->willReturn($feature_file);
@@ -559,15 +558,15 @@ class ScreenshotContextTest extends TestCase {
   public function testMakeFilenameReplacesUrlHostFromEnvironment(): void {
     $this->setEnvironmentVariable(ScreenshotContext::ENV_TOKEN_HOST, 'example.org');
 
-    $env = $this->createMock(Environment::class);
-    $feature_node = $this->createMock(FeatureNode::class);
+    $env = $this->createStub(Environment::class);
+    $feature_node = $this->createStub(FeatureNode::class);
     $feature_node->method('getFile')->willReturn('test-feature-file');
-    $step_node = $this->createMock(StepNode::class);
+    $step_node = $this->createStub(StepNode::class);
     $step_node->method('getText')->willReturn('test-step');
     $step_node->method('getLine')->willReturn(123);
     $scope = new BeforeStepScope($env, $feature_node, $step_node);
 
-    $session = $this->createMock(Session::class);
+    $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willReturn('http://localhost:8080/test-page');
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'getBeforeStepScope']);

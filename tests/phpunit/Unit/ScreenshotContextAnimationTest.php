@@ -241,7 +241,7 @@ class ScreenshotContextAnimationTest extends TestCase {
   }
 
   public function testAfterScenarioAnimateReleasesEncoderWhenRenderFails(): void {
-    $encoder = $this->createMock(AnimatedGifEncoder::class);
+    $encoder = $this->createStub(AnimatedGifEncoder::class);
     $encoder->method('count')->willReturn(1);
     $encoder->method('render')->willThrowException(new \RuntimeException('render failed'));
 

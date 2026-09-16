@@ -29,7 +29,7 @@ class ScreenshotContextResizeTest extends TestCase {
     ]);
 
     $session = $this->createMock(Session::class);
-    $driver = $this->createMock(Selenium2Driver::class);
+    $driver = $this->createStub(Selenium2Driver::class);
 
     $session->method('evaluateScript')
       ->willReturnOnConsecutiveCalls(
@@ -81,7 +81,7 @@ class ScreenshotContextResizeTest extends TestCase {
     ]);
 
     $session = $this->createMock(Session::class);
-    $driver = $this->createMock(Selenium2Driver::class);
+    $driver = $this->createStub(Selenium2Driver::class);
 
     $session->method('evaluateScript')
       ->willReturnOnConsecutiveCalls(
