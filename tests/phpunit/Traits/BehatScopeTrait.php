@@ -51,10 +51,10 @@ trait BehatScopeTrait {
    *   After step scope.
    */
   protected function createAfterStepScope(bool $passed = TRUE): AfterStepScope {
-    $result = $this->createMock(StepResult::class);
-    $result->method('isPassed')->willReturn($passed);
+    $step_result = $this->createMock(StepResult::class);
+    $step_result->method('isPassed')->willReturn($passed);
 
-    return new AfterStepScope($this->createMock(Environment::class), $this->createMock(FeatureNode::class), $this->createMock(StepNode::class), $result);
+    return new AfterStepScope($this->createMock(Environment::class), $this->createMock(FeatureNode::class), $this->createMock(StepNode::class), $step_result);
   }
 
   /**

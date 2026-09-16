@@ -427,9 +427,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $filename_html = $this->makeFilename('html', $timestamp, $filename, $is_failed);
     $this->writeScreenshotContent($filename_html, $content);
 
-    // Drivers that do not support screenshots, including the Goutte driver
-    // shipped with Behat, throw an exception. For such drivers, the screenshot
-    // is stored as an HTML page (without referenced assets).
+    // A driver without screenshot support throws instead of capturing, leaving
+    // the HTML file written above as the only record of the page, without its
+    // referenced assets.
     try {
       $content = $is_fullscreen ? $this->getScreenshotFullscreen() : $this->getScreenshot();
     }
