@@ -393,7 +393,12 @@ class ScreenshotContextTest extends TestCase {
 
   #[DataProvider('dataProviderWriteScreenshotContentCreatesDirectoryAndWritesFile')]
   public function testWriteScreenshotContentCreatesDirectoryAndWritesFile(string $filename, string $content): void {
-    $dir = sys_get_temp_dir();
+    $dir = dirname(__DIR__, 3) . '/.logs/unit';
+
+    if (!is_dir($dir) && !mkdir($dir, 0755, TRUE) && !is_dir($dir)) {
+      throw new \RuntimeException(sprintf('Unable to create the directory %s.', $dir));
+    }
+
     $filesystem = $this->createMock(Filesystem::class);
     $filesystem->expects($this->once())->method('mkdir')->with($dir, 0755);
 
