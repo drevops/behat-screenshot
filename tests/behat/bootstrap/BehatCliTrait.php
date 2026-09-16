@@ -289,8 +289,8 @@ EOL;
   public function behatCliAssertFailWithError(PyStringNode $message): void {
     $this->itShouldFail('fail');
     Assert::assertStringContainsString(trim((string) $message), $this->getOutput());
-    // Enforce \Exception for all assertion exceptions. Non-assertion
-    // exceptions should be thrown as \RuntimeException.
+    // An assertion failure throws an exception class other than
+    // \RuntimeException, which is reserved for non-assertion errors.
     Assert::assertStringContainsString('Exception)', $this->getOutput());
     Assert::assertStringNotContainsString('(RuntimeException)', $this->getOutput());
   }
@@ -302,8 +302,8 @@ EOL;
   public function behatCliAssertFailWithException(PyStringNode $message): void {
     $this->itShouldFail('fail');
     Assert::assertStringContainsString(trim((string) $message), $this->getOutput());
-    // Enforce \RuntimeException for all non-assertion exceptions. Assertion
-    // exceptions should be thrown as \Exception.
+    // A non-assertion error throws \RuntimeException, while assertion
+    // failures throw other exception classes.
     Assert::assertStringContainsString('(RuntimeException)', $this->getOutput());
   }
 
