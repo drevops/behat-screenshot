@@ -299,6 +299,7 @@ In the URL tokens, every character other than a letter, digit, underscore or hyp
 | `{url_query}`      | Query                                                                           | `myquery_1`                                                  |
 | `{url_fragment}`   | Fragment                                                                        | `somefragment`                                               |
 | `{feature_file}`   | The filename of the `.feature` file currently being executed, without extension | `my_example.feature` -> `my_example`                         |
+| `{feature}`        | Alias of `{feature_file}`                                                       | `my_example.feature` -> `my_example`                         |
 | `{step_line}`      | Step line number                                                                | `1`, `10`, `100`                                             |
 | `{step_line:%03d}` | Step line number with leading zeros. Modifiers are from `sprintf()`.            | `001`, `010`, `100`                                          |
 | `{step_name}`      | Step name without `Given/When/Then`, with spaces replaced by underscores and double quotes removed | `I_am_on_the_test_page`                   |
