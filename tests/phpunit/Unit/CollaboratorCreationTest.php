@@ -39,7 +39,7 @@ class CollaboratorCreationTest extends TestCase {
 
     foreach ($this->readCreatedClasses($reflection) as [$line, $created_class]) {
       // Exceptions and value objects have no side effects to substitute.
-      if (is_a($created_class, \Throwable::class, TRUE) || in_array($created_class, static::VALUE_CLASSES, TRUE)) {
+      if (is_a($created_class, \Throwable::class, TRUE) || in_array($created_class, self::VALUE_CLASSES, TRUE)) {
         continue;
       }
 

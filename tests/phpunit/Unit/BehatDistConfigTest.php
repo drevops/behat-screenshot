@@ -27,8 +27,8 @@ class BehatDistConfigTest extends TestCase {
       $this->fail('The extension configuration tree is not an array node.');
     }
 
-    $expected = static::getNodeOptionNames($tree);
-    $actual = static::getSettingOptionNames(static::getExtensionSettings());
+    $expected = self::getNodeOptionNames($tree);
+    $actual = self::getSettingOptionNames(self::getExtensionSettings());
     sort($expected);
     sort($actual);
 
@@ -58,7 +58,7 @@ class BehatDistConfigTest extends TestCase {
    *   The extension settings, keyed by option name.
    */
   protected static function getExtensionSettings(): array {
-    $settings = static::loadPhpConfig();
+    $settings = self::loadPhpConfig();
 
     foreach (['default', 'extensions', BehatScreenshotExtension::class] as $key) {
       if (!is_array($settings) || !isset($settings[$key])) {
@@ -91,7 +91,7 @@ class BehatDistConfigTest extends TestCase {
 
     foreach ($node->getChildren() as $name => $child) {
       if ($child instanceof ArrayNode && !$child instanceof PrototypedArrayNode) {
-        $names = [...$names, ...static::getNodeOptionNames($child, $prefix . $name . '.')];
+        $names = [...$names, ...self::getNodeOptionNames($child, $prefix . $name . '.')];
         continue;
       }
 
@@ -117,7 +117,7 @@ class BehatDistConfigTest extends TestCase {
 
     foreach ($settings as $name => $value) {
       if (is_array($value) && !array_is_list($value)) {
-        $names = [...$names, ...static::getSettingOptionNames($value, $prefix . $name . '.')];
+        $names = [...$names, ...self::getSettingOptionNames($value, $prefix . $name . '.')];
         continue;
       }
 

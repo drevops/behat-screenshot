@@ -37,7 +37,7 @@ trait BehatCliTrait {
   public function behatCliAfterScenarioPrintOutput(AfterScenarioScope $scope): void {
     $this->behatCliCopyScreenshots($scope);
 
-    if (static::behatCliIsDebug()) {
+    if (self::behatCliIsDebug()) {
       print '-------------------- OUTPUT START --------------------' . PHP_EOL;
       print PHP_EOL;
       print $this->getOutput();
@@ -200,8 +200,8 @@ EOL;
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/bootstrap/FeatureContextTest.php';
     $this->createFile($filename, $content);
 
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'FeatureContextTest.php');
+    if (self::behatCliIsDebug()) {
+      self::behatCliPrintFileContents($filename, 'FeatureContextTest.php');
     }
 
     return $filename;
@@ -241,8 +241,8 @@ EOL;
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'features/stub.feature';
     $this->createFile($filename, $content);
 
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'Feature Stub');
+    if (self::behatCliIsDebug()) {
+      self::behatCliPrintFileContents($filename, 'Feature Stub');
     }
   }
 
@@ -254,8 +254,8 @@ EOL;
     $filename = $this->workingDir . DIRECTORY_SEPARATOR . 'behat.php';
     $this->createFile($filename, (string) $content);
 
-    if (static::behatCliIsDebug()) {
-      static::behatCliPrintFileContents($filename, 'Behat Config');
+    if (self::behatCliIsDebug()) {
+      self::behatCliPrintFileContents($filename, 'Behat Config');
     }
   }
 
