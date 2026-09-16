@@ -26,6 +26,12 @@
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
+use Behat\Hook\AfterSuite;
+use Behat\Hook\BeforeScenario;
+use Behat\Hook\BeforeSuite;
+use Behat\Step\Given;
+use Behat\Step\Then;
+use Behat\Step\When;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
@@ -71,10 +77,9 @@ class BehatCliContext implements Context {
 
   /**
    * Cleans test folders in the temporary directory.
-   *
-   * @BeforeSuite
-   * @AfterSuite
    */
+  #[BeforeSuite]
+  #[AfterSuite]
   public static function cleanTestFolders():void {
     if (is_dir($dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'behat')) {
       self::clearDirectory($dir);
@@ -83,9 +88,8 @@ class BehatCliContext implements Context {
 
   /**
    * Prepares test folders in the temporary directory.
-   *
-   * @BeforeScenario
    */
+  #[BeforeScenario]
   public function prepareTestFolders() {
     $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'behat' . DIRECTORY_SEPARATOR .
       md5(microtime() . rand(0, 10000));
@@ -104,11 +108,10 @@ class BehatCliContext implements Context {
   /**
    * Creates a file with specified name and context in current workdir.
    *
-   * @Given /^(?:there is )?a file named "([^"]*)" with:$/
-   *
    * @param string $filename name of the file (relative path)
    * @param PyStringNode $content PyString string instance
    */
+  #[Given('/^(?:there is )?a file named "([^"]*)" with:$/')]
   public function aFileNamedWith($filename, PyStringNode $content) {
     $content = strtr((string) $content, ["'''" => '"""']);
     $this->createFile($this->workingDir . '/' . $filename, $content);
@@ -117,19 +120,17 @@ class BehatCliContext implements Context {
   /**
    * Creates a empty file with specified name in current workdir.
    *
-   * @Given /^(?:there is )?a file named "([^"]*)"$/
-   *
    * @param string $filename name of the file (relative path)
    */
+  #[Given('/^(?:there is )?a file named "([^"]*)"$/')]
   public function aFileNamed($filename) {
     $this->createFile($this->workingDir . '/' . $filename, '');
   }
 
   /**
    * Creates a noop feature context in current workdir.
-   *
-   * @Given /^(?:there is )?a some feature context$/
    */
+  #[Given('/^(?:there is )?a some feature context$/')]
   public function aNoopFeatureContext() {
     $filename = 'features/bootstrap/FeatureContext.php';
     $content = <<<'EOL'
@@ -146,9 +147,8 @@ EOL;
 
   /**
    * Creates a noop feature in current workdir.
-   *
-   * @Given /^(?:there is )?a some feature scenarios/
    */
+  #[Given('/^(?:there is )?a some feature scenarios/')]
   public function aNoopFeature() {
     $filename = 'features/bootstrap/FeatureContext.php';
     $content = <<<'EOL'
@@ -162,10 +162,9 @@ EOL;
   /**
    * Moves user to the specified path.
    *
-   * @Given /^I am in the "([^"]*)" path$/
-   *
    * @param string $path
    */
+  #[Given('/^I am in the "([^"]*)" path$/')]
   public function iAmInThePath($path) {
     $this->moveToNewPath($path);
   }
@@ -173,19 +172,17 @@ EOL;
   /**
    * Checks whether a file at provided path exists.
    *
-   * @Given /^file "([^"]*)" should exist$/
-   *
    * @param string $path
    */
+  #[Given('/^file "([^"]*)" should exist$/')]
   public function fileShouldExist($path) {
     Assert::assertFileExists($this->workingDir . DIRECTORY_SEPARATOR . $path);
   }
 
   /**
    * Sets specified ENV variable
-   *
-   * @When /^the "([^"]*)" environment variable is set to "([^"]*)"$/
    */
+  #[When('/^the "([^"]*)" environment variable is set to "([^"]*)"$/')]
   public function iSetEnvironmentVariable($name, $value) {
     $this->env = [$name => (string) $value];
   }
@@ -193,10 +190,9 @@ EOL;
   /**
    * Sets the BEHAT_PARAMS env variable
    *
-   * @When /^"BEHAT_PARAMS" environment variable is set to:$/
-   *
    * @param PyStringNode $value
    */
+  #[When('/^"BEHAT_PARAMS" environment variable is set to:$/')]
   public function iSetBehatParamsEnvironmentVariable(PyStringNode $value) {
     $this->env = ['BEHAT_PARAMS' => (string) $value];
   }
@@ -204,10 +200,9 @@ EOL;
   /**
    * Runs behat command with provided parameters
    *
-   * @When /^I run "behat(?: ((?:\"|[^"])*))?"$/
-   *
    * @param string $argumentsString
    */
+  #[When('/^I run "behat(?: ((?:\"|[^"])*))?"$/')]
   public function iRunBehat($argumentsString = '') {
     $argumentsString = strtr($argumentsString, ['\'' => '"']);
 
@@ -243,11 +238,10 @@ EOL;
   /**
    * Runs behat command with provided parameters in interactive mode
    *
-   * @When /^I answer "([^"]+)" when running "behat(?: ((?:\"|[^"])*))?"$/
-   *
    * @param string $answerString
    * @param string $argumentsString
    */
+  #[When('/^I answer "([^"]+)" when running "behat(?: ((?:\"|[^"])*))?"$/')]
   public function iRunBehatInteractively($answerString, $argumentsString) {
     $this->env['SHELL_INTERACTIVE'] = TRUE;
 
@@ -259,9 +253,8 @@ EOL;
 
   /**
    * Runs behat command in debug mode
-   *
-   * @When /^I run behat in debug mode$/
    */
+  #[When('/^I run behat in debug mode$/')]
   public function iRunBehatInDebugMode() {
     $this->options = '';
     $this->iRunBehat('--debug');
@@ -270,11 +263,10 @@ EOL;
   /**
    * Checks whether previously ran command passes|fails with provided output.
    *
-   * @Then /^it should (fail|pass) with:$/
-   *
    * @param string $success "fail" or "pass"
    * @param PyStringNode $text PyString text instance
    */
+  #[Then('/^it should (fail|pass) with:$/')]
   public function itShouldPassWith($success, PyStringNode $text) {
     $this->itShouldFail($success);
     $this->theOutputShouldContain($text);
@@ -283,10 +275,9 @@ EOL;
   /**
    * Checks whether previously runned command passes|failes with no output.
    *
-   * @Then /^it should (fail|pass) with no output$/
-   *
    * @param string $success "fail" or "pass"
    */
+  #[Then('/^it should (fail|pass) with no output$/')]
   public function itShouldPassWithNoOutput($success) {
     $this->itShouldFail($success);
     Assert::assertEmpty($this->getOutput());
@@ -295,11 +286,10 @@ EOL;
   /**
    * Checks whether specified file exists and contains specified string.
    *
-   * @Then /^"([^"]*)" file should contain:$/
-   *
    * @param string $path file path
    * @param PyStringNode $text file content
    */
+  #[Then('/^"([^"]*)" file should contain:$/')]
   public function fileShouldContain($path, PyStringNode $text) {
     $path = $this->workingDir . '/' . $path;
     Assert::assertFileExists($path);
@@ -316,11 +306,10 @@ EOL;
   /**
    * Checks whether specified content and structure of the xml is correct without worrying about layout.
    *
-   * @Then /^"([^"]*)" file xml should be like:$/
-   *
    * @param string $path file path
    * @param PyStringNode $text file content
    */
+  #[Then('/^"([^"]*)" file xml should be like:$/')]
   public function fileXmlShouldBeLike($path, PyStringNode $text) {
     $path = $this->workingDir . '/' . $path;
     Assert::assertFileExists($path);
@@ -343,10 +332,9 @@ EOL;
   /**
    * Checks whether last command output contains provided string.
    *
-   * @Then the output should contain:
-   *
    * @param PyStringNode $text PyString text instance
    */
+  #[Then('the output should contain:')]
   public function theOutputShouldContain(PyStringNode $text) {
     Assert::assertStringContainsString($this->getExpectedOutput($text), $this->getOutput());
   }
@@ -391,10 +379,9 @@ EOL;
   /**
    * Checks whether previously ran command failed|passed.
    *
-   * @Then /^it should (fail|pass)$/
-   *
    * @param string $success "fail" or "pass"
    */
+  #[Then('/^it should (fail|pass)$/')]
   public function itShouldFail($success) {
     if ('fail' === $success) {
       if (0 === $this->getExitCode()) {
@@ -415,11 +402,10 @@ EOL;
   /**
    * Checks whether the file is valid according to an XML schema.
    *
-   * @Then /^the file "([^"]+)" should be a valid document according to "([^"]+)"$/
-   *
    * @param string $xmlFile
    * @param string $schemaPath relative to features/bootstrap/schema
    */
+  #[Then('/^the file "([^"]+)" should be a valid document according to "([^"]+)"$/')]
   public function xmlShouldBeValid($xmlFile, $schemaPath) {
     $dom = new DomDocument();
     $dom->load($this->workingDir . '/' . $xmlFile);

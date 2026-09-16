@@ -13,21 +13,23 @@ Feature: Behat CLI context
       <?php
        use Behat\Behat\Context\Context;
        use Behat\MinkExtension\Context\MinkContext;
+       use Behat\Step\Given;
+       use Behat\Step\When;
        class FeatureContextTest extends MinkContext implements Context {
        /**
         * Go to the phpserver test page.
-        *
-        * @Given /^(?:|I )am on (?:|the )phpserver test page$/
-        * @When /^(?:|I )go to (?:|the )phpserver test page$/
         */
+        #[Given('/^(?:|I )am on (?:|the )phpserver test page$/')]
+        #[When('/^(?:|I )go to (?:|the )phpserver test page$/')]
         public function goToPhpServerTestPage()
         {
             $this->getSession()->visit('http://0.0.0.0:8888/screenshot.html');
         }
 
         /**
-         * @Given I throw test exception with message :message
+         * Throw an exception with the given message.
          */
+        #[Given('I throw test exception with message :message')]
         public function throwTestException($message) {
           throw new \RuntimeException($message);
         }
@@ -44,10 +46,13 @@ Feature: Behat CLI context
                   webroot: '%paths.base%/tests/behat/fixtures'
                   host: 0.0.0.0
         extensions:
-          Behat\MinkExtension:
-            browserkit_http: ~
-            selenium2: ~
+          Behat\MinkExtension\ServiceContainer\MinkExtension:
             base_url: http://0.0.0.0:8888
+            sessions:
+              browserkit_http:
+                browserkit_http: ~
+              selenium2:
+                selenium2: ~
       """
     And a file named "tests/behat/fixtures/screenshot.html" with:
       """

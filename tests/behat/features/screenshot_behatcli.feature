@@ -5,7 +5,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             on_failed: true
             purge: true
@@ -25,7 +25,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension: ~
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension: ~
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -41,7 +41,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             filename_pattern: "{datetime:U}.{feature_file}.feature_{step_line:%03d}.{ext}"
       """
     And scenario steps tagged with "@phpserver":
@@ -58,7 +58,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension: ~
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension: ~
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -76,7 +76,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
       """
     And scenario steps tagged with "@phpserver":
@@ -95,7 +95,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             on_failed: true
       """
     And scenario steps tagged with "@phpserver":
@@ -111,7 +111,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             on_failed: true
       """
     And scenario steps tagged with "@phpserver":
@@ -126,7 +126,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             on_failed: false
       """
     And scenario steps tagged with "@phpserver":
@@ -142,7 +142,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             on_failed: true
             filename_pattern_failed: "{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line:%03d}.{ext}"
       """
@@ -159,7 +159,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             on_failed: false
             filename_pattern_failed: "{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line:%03d}.{ext}"
       """
@@ -177,7 +177,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             purge: false
       """
     And scenario steps tagged with "@phpserver":
@@ -204,7 +204,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             purge: true
       """
     And scenario steps tagged with "@phpserver":
@@ -231,7 +231,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             purge: false
       """
     And scenario steps tagged with "@phpserver":
@@ -259,7 +259,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension: ~
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension: ~
       """
     And scenario steps tagged with "@phpserver":
       """
@@ -290,7 +290,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             purge: true
             info_types:
               - url
@@ -326,7 +326,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             purge: true
       """
     And scenario steps tagged with "@phpserver":
@@ -341,12 +341,45 @@ Feature: Screenshot context
       Current URL: http://0.0.0.0:8888/screenshot.html
       """
 
+  Scenario: Test Screenshot context with the '@screenshots' tag captures a screenshot after every step
+    Given screenshot fixture
+    And screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
+            purge: true
+      """
+    And scenario steps tagged with "@phpserver @screenshots":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 200
+      """
+    When I run "behat --no-colors --strict"
+    Then it should pass
+    And behat cli file wildcard "screenshots/*.stub.feature_5.html" should exist
+    And behat cli file wildcard "screenshots/*.stub.feature_6.html" should exist
+
+  Scenario: Test Screenshot context without the '@screenshots' tag captures no screenshot after a passed step
+    Given screenshot fixture
+    And screenshot context behat configuration with value:
+      """
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
+            purge: true
+      """
+    And scenario steps tagged with "@phpserver":
+      """
+      When I am on the phpserver test page
+      And the response status code should be 200
+      """
+    When I run "behat --no-colors --strict"
+    Then it should pass
+    And behat cli file wildcard "screenshots" should not exist
+
   @selenium
   Scenario: Test Screenshot context with JS and all parameters defined in behat.yml
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             on_failed: true
             purge: true
@@ -367,7 +400,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             on_failed: true
             purge: true
@@ -388,7 +421,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             purge: true
       """
@@ -406,7 +439,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             purge: true
             animation:
@@ -426,7 +459,7 @@ Feature: Screenshot context
     Given screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             purge: true
       """
@@ -446,7 +479,7 @@ Feature: Screenshot context
     Given short screenshot fixture
     And screenshot context behat configuration with value:
       """
-      DrevOps\BehatScreenshotExtension:
+      DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             on_failed: true
             purge: true
@@ -484,7 +517,7 @@ Feature: Screenshot context
               - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
         extensions:
           DMore\ChromeExtension\Behat\ServiceContainer\ChromeExtension: ~
-          Behat\MinkExtension:
+          Behat\MinkExtension\ServiceContainer\MinkExtension:
             browser_name: chrome
             base_url: http://127.0.0.1:8888
             sessions:
@@ -495,7 +528,7 @@ Feature: Screenshot context
                   download_path: /download
                   validate_certificate: false
 
-          DrevOps\BehatScreenshotExtension:
+          DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
             dir: "%paths.base%/screenshots"
             on_failed: true
             purge: true

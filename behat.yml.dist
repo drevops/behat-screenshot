@@ -5,7 +5,7 @@ default:
         - FeatureContext
         - DrevOps\BehatScreenshotExtension\Context\ScreenshotContext
   extensions:
-    DrevOps\BehatScreenshotExtension:
+    DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension:
       dir: '%paths.base%/screenshots'
       on_failed: true
       on_every_step: false # Capture screenshot after every step

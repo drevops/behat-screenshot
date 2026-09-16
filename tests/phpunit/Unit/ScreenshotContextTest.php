@@ -6,9 +6,10 @@ namespace DrevOps\BehatScreenshotExtension\Tests\Unit;
 
 use Behat\Behat\Context\Annotation\DocBlockHelper;
 use Behat\Behat\Context\Environment\UninitializedContextEnvironment;
-use Behat\Behat\Context\Reader\AnnotatedContextReader;
-use Behat\Behat\Definition\Context\Annotation\DefinitionAnnotationReader;
-use Behat\Behat\Hook\Context\Annotation\HookAnnotationReader;
+use Behat\Behat\Context\Reader\AttributeContextReader;
+use Behat\Behat\Definition\Call\RuntimeDefinition;
+use Behat\Behat\Definition\Context\Attribute\DefinitionAttributeReader;
+use Behat\Behat\Hook\Context\Attribute\HookAttributeReader;
 use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeStepScope;
@@ -70,6 +71,67 @@ class ScreenshotContextTest extends TestCase {
     ], $hooks);
   }
 
+  public function testBehatRegistersStepDefinitions(): void {
+    $definitions = [];
+
+    foreach ($this->readBehatCallees() as $callee) {
+      if ($callee instanceof RuntimeDefinition) {
+        $definitions[] = $callee->getReflection()->getName() . ' ' . $callee;
+      }
+    }
+
+    sort($definitions);
+
+    $this->assertSame([
+      'iSaveFullscreenScreenshot Then save fullscreen screenshot',
+      'iSaveFullscreenScreenshot When I save fullscreen screenshot',
+      'iSaveFullscreenScreenshotWithName Then save fullscreen screenshot with name :filename',
+      'iSaveFullscreenScreenshotWithName When I save fullscreen screenshot with name :filename',
+      'iSaveScreenshot Then save screenshot',
+      'iSaveScreenshot When I save screenshot',
+      'iSaveScreenshotWithName Then save screenshot with name :filename',
+      'iSaveScreenshotWithName When I save screenshot with name :filename',
+      'iSaveSizedScreenshot Then save :width x :height screenshot',
+      'iSaveSizedScreenshot When I save :width x :height screenshot',
+    ], $definitions);
+  }
+
+  public function testBehatRegistersOverridingMethodsWithoutAttributes(): void {
+    $subclass = new class() extends ScreenshotContext {
+
+      #[\Override]
+      public function afterStepCaptureScreenshot(AfterStepScope $scope): void {
+        $this->captureScreenshot();
+      }
+
+      #[\Override]
+      public function iSaveScreenshot(): void {
+        $this->captureScreenshot(['fullscreen' => TRUE]);
+      }
+
+    };
+
+    $this->assertSame($this->describeBehatCallees(ScreenshotContext::class), $this->describeBehatCallees($subclass::class));
+  }
+
+  public function testDeclaresNoBehatAnnotations(): void {
+    $annotations = [];
+
+    foreach ((new \ReflectionClass(ScreenshotContext::class))->getMethods() as $method) {
+      if ($method->getDeclaringClass()->getName() !== ScreenshotContext::class) {
+        continue;
+      }
+
+      preg_match_all('/^\s*\*\s*(@(?:given|when|then|transform|(?:before|after)(?:suite|feature|scenario|step))\b.*)$/im', (string) $method->getDocComment(), $matches);
+
+      if (!empty($matches[1])) {
+        $annotations[$method->getName()] = $matches[1];
+      }
+    }
+
+    $this->assertSame([], $annotations);
+  }
+
   public function testPublicMethodsAreDeclaredByInterfaceOrRegisteredWithBehat(): void {
     $interface_methods = array_map(static fn(\ReflectionMethod $method): string => $method->getName(), (new \ReflectionClass(ScreenshotAwareContextInterface::class))->getMethods());
     sort($interface_methods);
@@ -109,14 +171,36 @@ class ScreenshotContextTest extends TestCase {
 
   public function testHookThrowsWhenScreenshotConfigIsNotSet(): void {
     $feature_node = $this->createStub(FeatureNode::class);
-    $feature_node->method('hasTag')->willReturn(FALSE);
+    $feature_node->method('getTags')->willReturn([]);
     $scenario = $this->createStub(ScenarioInterface::class);
-    $scenario->method('hasTag')->willReturn(FALSE);
+    $scenario->method('getTags')->willReturn([]);
 
     $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension extension in behat.yml.', ScreenshotContext::class));
+    $this->expectExceptionMessage(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension extension in the Behat configuration.', ScreenshotContext::class));
 
     (new ScreenshotContext())->beforeScenarioCheckScreenshotsTag(new BeforeScenarioScope($this->createStub(Environment::class), $feature_node, $scenario));
+  }
+
+  #[DataProvider('dataProviderIsTaggedMatchesTagWithOrWithoutPrefix')]
+  public function testIsTaggedMatchesTagWithOrWithoutPrefix(array $node_tags, string $tag, bool $expected): void {
+    $node = $this->createStub(FeatureNode::class);
+    $node->method('getTags')->willReturn($node_tags);
+
+    $this->assertSame($expected, self::callProtectedMethod(new ScreenshotContext(), 'isTagged', [$node, $tag]));
+  }
+
+  public static function dataProviderIsTaggedMatchesTagWithOrWithoutPrefix(): array {
+    return [
+      'no tags' => [[], 'screenshots', FALSE],
+      'tag without prefix' => [['screenshots'], 'screenshots', TRUE],
+      'tag with prefix' => [['@screenshots'], 'screenshots', TRUE],
+      'tag among other tags' => [['@smoke', '@screenshots', '@api'], 'screenshots', TRUE],
+      'tag with colons and prefix' => [['@screenshots:animated:skip'], 'screenshots:animated:skip', TRUE],
+      'different tag' => [['@javascript'], 'screenshots', FALSE],
+      'longer tag starting with the name' => [['@screenshots:animated'], 'screenshots', FALSE],
+      'longer tag ending with the name' => [['@no-screenshots'], 'screenshots', FALSE],
+      'name in a different case' => [['@Screenshots'], 'screenshots', FALSE],
+    ];
   }
 
   public function testBeforeScenarioInitPropagatesDriverStartException(): void {
@@ -502,17 +586,43 @@ class ScreenshotContextTest extends TestCase {
   }
 
   /**
-   * Read the hooks and step definitions Behat registers for ScreenshotContext.
+   * Read the hooks and step definitions Behat registers for a context.
+   *
+   * @param class-string<\DrevOps\BehatScreenshotExtension\Context\ScreenshotContext> $class
+   *   Context class to read.
    *
    * @return array<int,\Behat\Testwork\Call\Callee>
    *   Hook and step definition callees.
    */
-  protected function readBehatCallees(): array {
-    $reader = new AnnotatedContextReader(new DocBlockHelper());
-    $reader->registerAnnotationReader(new HookAnnotationReader());
-    $reader->registerAnnotationReader(new DefinitionAnnotationReader());
+  protected function readBehatCallees(string $class = ScreenshotContext::class): array {
+    $reader = new AttributeContextReader();
+    $reader->registerAttributeReader(new HookAttributeReader(new DocBlockHelper()));
+    $reader->registerAttributeReader(new DefinitionAttributeReader(new DocBlockHelper()));
 
-    return $reader->readContextCallees(new UninitializedContextEnvironment(new GenericSuite('default', [])), ScreenshotContext::class);
+    return $reader->readContextCallees(new UninitializedContextEnvironment(new GenericSuite('default', [])), $class);
+  }
+
+  /**
+   * Describe the hooks and step definitions Behat registers for a context.
+   *
+   * @param class-string<\DrevOps\BehatScreenshotExtension\Context\ScreenshotContext> $class
+   *   Context class to read.
+   *
+   * @return array<int,string>
+   *   Method names followed by their hook or step definition, sorted.
+   */
+  protected function describeBehatCallees(string $class): array {
+    $descriptions = [];
+
+    foreach ($this->readBehatCallees($class) as $callee) {
+      if ($callee instanceof RuntimeHook || $callee instanceof RuntimeDefinition) {
+        $descriptions[] = $callee->getReflection()->getName() . ' ' . $callee;
+      }
+    }
+
+    sort($descriptions);
+
+    return $descriptions;
   }
 
 }

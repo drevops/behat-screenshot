@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Behat\Step\Given;
+
 /**
  * Additional screenshot helpers.
  */
@@ -32,12 +34,11 @@ trait ScreenshotTrait {
 
   /**
    * Go to the screenshot test page.
-   *
-   * @Given /^(?:|I )am on (?:|the )screenshot test page$/
-   * @Given /^(?:|I )go to (?:|the )screenshot test page$/
-   * @Given /^(?:|I )am on (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/
-   * @Given /^(?:|I )go to (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/
    */
+  #[Given('/^(?:|I )am on (?:|the )screenshot test page$/')]
+  #[Given('/^(?:|I )go to (?:|the )screenshot test page$/')]
+  #[Given('/^(?:|I )am on (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/')]
+  #[Given('/^(?:|I )go to (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/')]
   public function screenshotGoToTestPage(string $query = '', string $fragment = ''): void {
     $path = 'screenshot.html';
 
@@ -57,9 +58,8 @@ trait ScreenshotTrait {
    *
    * @param string $wildcard
    *   Filename with a wildcard.
-   *
-   * @Given /^file wildcard "([^"]*)" should exist$/
    */
+  #[Given('/^file wildcard "([^"]*)" should exist$/')]
   public function screenshotAssertFileShouldExist(string $wildcard): void {
     $wildcard = $this->screenshotDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -74,9 +74,8 @@ trait ScreenshotTrait {
    *
    * @param string $wildcard
    *   Filename with a wildcard.
-   *
-   * @Given /^file wildcard "([^"]*)" should not exist$/
    */
+  #[Given('/^file wildcard "([^"]*)" should not exist$/')]
   public function screenshotAssertFileShouldNotExist(string $wildcard): void {
     $wildcard = $this->screenshotDir . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
@@ -88,9 +87,8 @@ trait ScreenshotTrait {
 
   /**
    * Remove all files from screenshot directory.
-   *
-   * @Given I remove all files from screenshot directory
    */
+  #[Given('I remove all files from screenshot directory')]
   public function screenshotEmptyDirectory(): void {
     $files = glob($this->screenshotDir . DIRECTORY_SEPARATOR . '*');
 
