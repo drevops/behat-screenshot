@@ -49,7 +49,14 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceExtTokenUsesExtOrDefaultsToHtml')]
-  public function testReplaceExtTokenUsesExtOrDefaultsToHtml(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
+  public function testReplaceExtTokenUsesExtOrDefaultsToHtml(
+    string $token,
+    string $name,
+    ?string $qualifier,
+    ?string $format,
+    array $data,
+    string $expected,
+  ): void {
     $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceExtToken', [$token, $name, $qualifier, $format, $data]);
     $this->assertSame($expected, $replacement);
   }
@@ -64,7 +71,14 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceStepTokenResolvesLineQualifierOrStepName')]
-  public function testReplaceStepTokenResolvesLineQualifierOrStepName(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
+  public function testReplaceStepTokenResolvesLineQualifierOrStepName(
+    string $token,
+    string $name,
+    ?string $qualifier,
+    ?string $format,
+    array $data,
+    string $expected,
+  ): void {
     $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceStepToken', [$token, $name, $qualifier, $format, $data]);
     $this->assertSame($expected, $replacement);
   }
@@ -87,7 +101,15 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceDatetimeTokenFormatsAndValidatesTimestamp')]
-  public function testReplaceDatetimeTokenFormatsAndValidatesTimestamp(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected, ?string $exception = NULL): void {
+  public function testReplaceDatetimeTokenFormatsAndValidatesTimestamp(
+    string $token,
+    string $name,
+    ?string $qualifier,
+    ?string $format,
+    array $data,
+    string $expected,
+    ?string $exception = NULL,
+  ): void {
     if ($exception) {
       $this->expectException(\InvalidArgumentException::class);
       $this->expectExceptionMessage($exception);
@@ -101,12 +123,14 @@ class TokenizerTest extends TestCase {
   }
 
   public static function dataProviderReplaceDatetimeTokenFormatsAndValidatesTimestamp(): array {
+    $timestamp = strtotime('Tuesday, 12 March 2024 00:00:00');
+
     return [
       'no timestamp leaves token' => ['{datetime}', 'datetime', NULL, NULL, [], '{datetime}'],
-      'unix timestamp format' => ['{datetime}', 'datetime', NULL, 'U', ['timestamp' => strtotime('Tuesday, 12 March 2024 00:00:00')], '1710201600'],
-      'date format' => ['{datetime}', 'datetime', NULL, 'Y-m-d', ['timestamp' => strtotime('Tuesday, 12 March 2024 00:00:00')], '2024-03-12'],
-      'date and time format' => ['{datetime}', 'datetime', NULL, 'Y-m-d H:i:s', ['timestamp' => strtotime('Tuesday, 12 March 2024 00:00:00')], '2024-03-12 00:00:00'],
-      'default format' => ['{datetime}', 'datetime', NULL, NULL, ['timestamp' => strtotime('Tuesday, 12 March 2024 00:00:00')], '20240312_000000'],
+      'unix timestamp format' => ['{datetime}', 'datetime', NULL, 'U', ['timestamp' => $timestamp], '1710201600'],
+      'date format' => ['{datetime}', 'datetime', NULL, 'Y-m-d', ['timestamp' => $timestamp], '2024-03-12'],
+      'date and time format' => ['{datetime}', 'datetime', NULL, 'Y-m-d H:i:s', ['timestamp' => $timestamp], '2024-03-12 00:00:00'],
+      'default format' => ['{datetime}', 'datetime', NULL, NULL, ['timestamp' => $timestamp], '20240312_000000'],
       'numeric string timestamp' => ['{datetime}', 'datetime', NULL, NULL, ['timestamp' => '2'], '19700101_000002'],
       'non-numeric string throws' => ['{datetime}', 'datetime', NULL, NULL, ['timestamp' => 'foo'], '0', 'Timestamp must be greater than 0.'],
       'array timestamp throws' => ['{datetime}', 'datetime', NULL, NULL, ['timestamp' => ['foo']], '', 'Timestamp must be numeric.'],
@@ -114,7 +138,14 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceFeatureTokenUsesFeatureFileBasename')]
-  public function testReplaceFeatureTokenUsesFeatureFileBasename(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
+  public function testReplaceFeatureTokenUsesFeatureFileBasename(
+    string $token,
+    string $name,
+    ?string $qualifier,
+    ?string $format,
+    array $data,
+    string $expected,
+  ): void {
     $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceFeatureToken', [$token, $name, $qualifier, $format, $data]);
     $this->assertSame($expected, $replacement);
   }
@@ -130,7 +161,14 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceFailedPrefixTokenResolvesOnlyWhenPrefixSet')]
-  public function testReplaceFailedPrefixTokenResolvesOnlyWhenPrefixSet(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
+  public function testReplaceFailedPrefixTokenResolvesOnlyWhenPrefixSet(
+    string $token,
+    string $name,
+    ?string $qualifier,
+    ?string $format,
+    array $data,
+    string $expected,
+  ): void {
     $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceFailedPrefixToken', [$token, $name, $qualifier, $format, $data]);
     $this->assertSame($expected, $replacement);
   }
@@ -144,41 +182,50 @@ class TokenizerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderReplaceUrlTokenResolvesUrlPartsByQualifier')]
-  public function testReplaceUrlTokenResolvesUrlPartsByQualifier(string $token, string $name, ?string $qualifier, ?string $format, array $data, string $expected): void {
+  public function testReplaceUrlTokenResolvesUrlPartsByQualifier(
+    string $token,
+    string $name,
+    ?string $qualifier,
+    ?string $format,
+    array $data,
+    string $expected,
+  ): void {
     $replacement = self::callProtectedMethod(Tokenizer::class, 'replaceUrlToken', [$token, $name, $qualifier, $format, $data]);
     $this->assertSame($expected, $replacement);
   }
 
   public static function dataProviderReplaceUrlTokenResolvesUrlPartsByQualifier(): array {
+    $url = 'http://e.com/path?f1=f1-v1#frag';
+
     return [
       'no url leaves token' => ['{url}', 'url', NULL, NULL, [], '{url}'],
-      'full url sanitized' => ['{url}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      'full url sanitized' => ['{url}', 'url', NULL, NULL, ['url' => $url], 'http_e_com_path_f1_f1-v1_frag'],
 
-      'relative as format has no effect' => ['{url}', 'url', NULL, 'relative', ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      'relative as format has no effect' => ['{url}', 'url', NULL, 'relative', ['url' => $url], 'http_e_com_path_f1_f1-v1_frag'],
       'unparseable url leaves token' => ['{url}', 'url', NULL, NULL, ['url' => 'http:///e.com/path?f1=f1-v1#frag'], '{url}'],
 
-      'relative qualifier' => ['{url_relative}', 'url', 'relative', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], urlencode('path_f1_f1-v1_frag')],
-      'relative token without qualifier' => ['{url_relative}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      'relative qualifier' => ['{url_relative}', 'url', 'relative', NULL, ['url' => $url], urlencode('path_f1_f1-v1_frag')],
+      'relative token without qualifier' => ['{url_relative}', 'url', NULL, NULL, ['url' => $url], 'http_e_com_path_f1_f1-v1_frag'],
       'relative token, no url' => ['{url_relative}', 'url', NULL, NULL, [], '{url_relative}'],
 
-      'origin qualifier' => ['{url_origin}', 'url', 'origin', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com'],
-      'origin token without qualifier' => ['{url_origin}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      'origin qualifier' => ['{url_origin}', 'url', 'origin', NULL, ['url' => $url], 'http_e_com'],
+      'origin token without qualifier' => ['{url_origin}', 'url', NULL, NULL, ['url' => $url], 'http_e_com_path_f1_f1-v1_frag'],
       'origin token, no url' => ['{url_origin}', 'url', NULL, NULL, [], '{url_origin}'],
 
-      'domain qualifier' => ['{url_domain}', 'url', 'domain', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'e_com'],
-      'domain token without qualifier' => ['{url_domain}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      'domain qualifier' => ['{url_domain}', 'url', 'domain', NULL, ['url' => $url], 'e_com'],
+      'domain token without qualifier' => ['{url_domain}', 'url', NULL, NULL, ['url' => $url], 'http_e_com_path_f1_f1-v1_frag'],
       'domain token, no url' => ['{url_domain}', 'url', NULL, NULL, [], '{url_domain}'],
 
-      'path qualifier' => ['{url_path}', 'url', 'path', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'path'],
-      'path token without qualifier' => ['{url_path}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      'path qualifier' => ['{url_path}', 'url', 'path', NULL, ['url' => $url], 'path'],
+      'path token without qualifier' => ['{url_path}', 'url', NULL, NULL, ['url' => $url], 'http_e_com_path_f1_f1-v1_frag'],
       'path token, no url' => ['{url_path}', 'url', NULL, NULL, [], '{url_path}'],
 
-      'query qualifier' => ['{url_query}', 'url', 'query', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'f1_f1-v1'],
-      'query token without qualifier' => ['{url_query}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      'query qualifier' => ['{url_query}', 'url', 'query', NULL, ['url' => $url], 'f1_f1-v1'],
+      'query token without qualifier' => ['{url_query}', 'url', NULL, NULL, ['url' => $url], 'http_e_com_path_f1_f1-v1_frag'],
       'query token, no url' => ['{url_query}', 'url', NULL, NULL, [], '{url_query}'],
 
-      'fragment qualifier' => ['{url_fragment}', 'url', 'fragment', NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'frag'],
-      'fragment token without qualifier' => ['{url_fragment}', 'url', NULL, NULL, ['url' => 'http://e.com/path?f1=f1-v1#frag'], 'http_e_com_path_f1_f1-v1_frag'],
+      'fragment qualifier' => ['{url_fragment}', 'url', 'fragment', NULL, ['url' => $url], 'frag'],
+      'fragment token without qualifier' => ['{url_fragment}', 'url', NULL, NULL, ['url' => $url], 'http_e_com_path_f1_f1-v1_frag'],
       'fragment token, no url' => ['{url_fragment}', 'url', NULL, NULL, [], '{url_fragment}'],
     ];
   }
@@ -201,11 +248,7 @@ class TokenizerTest extends TestCase {
     ];
 
     return [
-      'no tokens' => [
-        'somestring',
-        $data,
-        'somestring',
-      ],
+      'no tokens' => ['somestring', $data, 'somestring'],
       'tokens without step name' => [
         '{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}',
         $data,
@@ -221,21 +264,9 @@ class TokenizerTest extends TestCase {
         $data,
         '20240312_045703.foo-failed_foo-file.feature_6_Foo_step_name.png',
       ],
-      'feature token alias' => [
-        '{feature}.{feature_file}.{ext}',
-        $data,
-        'foo-file.foo-file.png',
-      ],
-      'url token' => [
-        '{url}.{ext}',
-        $data,
-        'http_example_com_foo_foo_foo-value_hello-fragment.png',
-      ],
-      'unknown token kept' => [
-        '{nontoken}.{ext}',
-        $data,
-        '{nontoken}.png',
-      ],
+      'feature token alias' => ['{feature}.{feature_file}.{ext}', $data, 'foo-file.foo-file.png'],
+      'url token' => ['{url}.{ext}', $data, 'http_example_com_foo_foo_foo-value_hello-fragment.png'],
+      'unknown token kept' => ['{nontoken}.{ext}', $data, '{nontoken}.png'],
       'token inside step name' => [
         '{step_name}.{ext}',
         ['step_name' => 'Visit {url} page', 'url' => 'http://example.com/foo', 'ext' => 'png'] + $data,
@@ -243,17 +274,9 @@ class TokenizerTest extends TestCase {
       ],
       // An unknown token inside a step name is kept unchanged rather than
       // looped over.
-      'unknown token inside step name' => [
-        '{step_name}.{ext}',
-        ['step_name' => 'Visit {nontoken} page'] + $data,
-        'Visit_{nontoken}_page.png',
-      ],
+      'unknown token inside step name' => ['{step_name}.{ext}', ['step_name' => 'Visit {nontoken} page'] + $data, 'Visit_{nontoken}_page.png'],
       // A step name that refers to itself expands once and then terminates.
-      'self-referential step name' => [
-        '{step_name}.{ext}',
-        ['step_name' => 'Loop {step_name} end'] + $data,
-        'Loop_{step_name}_end.png',
-      ],
+      'self-referential step name' => ['{step_name}.{ext}', ['step_name' => 'Loop {step_name} end'] + $data, 'Loop_{step_name}_end.png'],
     ];
   }
 

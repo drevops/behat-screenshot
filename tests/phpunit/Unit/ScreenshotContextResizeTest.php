@@ -23,43 +23,19 @@ class ScreenshotContextResizeTest extends TestCase {
   use ScreenshotConfigTrait;
 
   public function testGetScreenshotFullscreenWithResizeResizesThenRestoresWindow(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getSession',
-      'getScreenshot',
-    ]);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession', 'getScreenshot'])->getStub();
 
     $session = $this->createMock(Session::class);
     $driver = $this->createStub(Selenium2Driver::class);
 
-    $session->method('evaluateScript')
-      ->willReturnOnConsecutiveCalls(
-        [
-          'width' => 1440,
-          'height' => 900,
-        ],
-        [
-          'scrollWidth' => 1440,
-          'scrollHeight' => 2000,
-        ]
-      );
+    $session->method('evaluateScript')->willReturnOnConsecutiveCalls(['width' => 1440, 'height' => 900], ['scrollWidth' => 1440, 'scrollHeight' => 2000]);
 
-    $session->expects($this->exactly(2))
-      ->method('resizeWindow')
-      ->willReturnCallback(function ($width, $height, $name): void {
-        static $call_count = 0;
-        $call_count++;
+    $resizes = [];
+    $record_resize = static function (int $width, int $height, ?string $name) use (&$resizes): void {
+      $resizes[] = [$width, $height, $name];
+    };
 
-        if ($call_count === 1) {
-          $this->assertSame(1440, $width);
-          $this->assertSame(2200, $height);
-          $this->assertSame('current', $name);
-        }
-        elseif ($call_count === 2) {
-          $this->assertSame(1440, $width);
-          $this->assertSame(900, $height);
-          $this->assertSame('current', $name);
-        }
-      });
+    $session->expects($this->exactly(2))->method('resizeWindow')->willReturnCallback($record_resize);
 
     $session->method('getDriver')->willReturn($driver);
     $screenshot_context->method('getSession')->willReturn($session);
@@ -68,28 +44,16 @@ class ScreenshotContextResizeTest extends TestCase {
 
     $result = self::callProtectedMethod($screenshot_context, 'getScreenshotFullscreenWithResize');
     $this->assertSame('test-screenshot-content', $result);
+    $this->assertSame([[1440, 2200, 'current'], [1440, 900, 'current']], $resizes);
   }
 
   public function testGetScreenshotFullscreenWithResizeSkipsResizeOnInvalidDimensions(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getSession',
-      'getScreenshot',
-    ]);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession', 'getScreenshot'])->getStub();
 
     $session = $this->createMock(Session::class);
     $driver = $this->createStub(Selenium2Driver::class);
 
-    $session->method('evaluateScript')
-      ->willReturnOnConsecutiveCalls(
-        [
-          'width' => 1440,
-          'height' => 900,
-        ],
-        [
-          'scrollWidth' => 0,
-          'scrollHeight' => 0,
-        ]
-      );
+    $session->method('evaluateScript')->willReturnOnConsecutiveCalls(['width' => 1440, 'height' => 900], ['scrollWidth' => 0, 'scrollHeight' => 0]);
 
     $session->expects($this->never())->method('resizeWindow');
 
@@ -103,18 +67,19 @@ class ScreenshotContextResizeTest extends TestCase {
   }
 
   public function testGetScreenshotFullscreenDelegatesToResizeAlgorithm(): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getScreenshotFullscreenWithResize',
-    ]);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getScreenshotFullscreenWithResize'])->getStub();
 
-    $screenshot_context->method('getScreenshotFullscreenWithResize')
-      ->willReturn('test-resize-screenshot-content');
+    $screenshot_context->method('getScreenshotFullscreenWithResize')->willReturn('test-resize-screenshot-content');
 
     $this->assertSame('test-resize-screenshot-content', $screenshot_context->getScreenshotFullscreen());
   }
 
   #[DataProvider('dataProviderCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured')]
-  public function testCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured(bool $should_always_capture_fullscreen, array $config, string $expected_png_content): void {
+  public function testCaptureScreenshotCapturesFullscreenWhenRequestedOrConfigured(
+    bool $should_always_capture_fullscreen,
+    array $config,
+    string $expected_png_content,
+  ): void {
     $driver = $this->createStub(Selenium2Driver::class);
     $driver->method('getContent')->willReturn('test-html-content');
 
@@ -126,7 +91,13 @@ class ScreenshotContextResizeTest extends TestCase {
       $writes[] = [$filename, $content];
     };
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'makeFilename', 'getScreenshot', 'getScreenshotFullscreen', 'writeScreenshotContent']);
+    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
+      'getSession',
+      'makeFilename',
+      'getScreenshot',
+      'getScreenshotFullscreen',
+      'writeScreenshotContent',
+    ]);
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('makeFilename')->willReturnCallback(static fn(string $ext): string => 'test.' . $ext);
     $screenshot_context->method('getScreenshot')->willReturn('test-png-content');
@@ -147,6 +118,7 @@ class ScreenshotContextResizeTest extends TestCase {
       'not requested, configured' => [TRUE, [], 'test-fullscreen-png-content'],
       'requested, configured' => [TRUE, ['is_fullscreen' => TRUE], 'test-fullscreen-png-content'],
       'declined, configured' => [TRUE, ['is_fullscreen' => FALSE], 'test-fullscreen-png-content'],
+      'non-scalar request ignored' => [FALSE, ['is_fullscreen' => [TRUE]], 'test-png-content'],
     ];
   }
 

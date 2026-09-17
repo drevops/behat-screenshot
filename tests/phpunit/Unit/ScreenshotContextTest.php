@@ -11,15 +11,12 @@ use Behat\Behat\Definition\Call\RuntimeDefinition;
 use Behat\Behat\Definition\Context\Attribute\DefinitionAttributeReader;
 use Behat\Behat\Hook\Context\Attribute\HookAttributeReader;
 use Behat\Behat\Hook\Scope\AfterStepScope;
-use Behat\Behat\Hook\Scope\BeforeStepScope;
 use Behat\Gherkin\Node\FeatureNode;
-use Behat\Gherkin\Node\StepNode;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Behat\Mink\Session;
 use Behat\Testwork\Call\Callee;
-use Behat\Testwork\Environment\Environment;
 use Behat\Testwork\Hook\Call\RuntimeHook;
 use Behat\Testwork\Suite\GenericSuite;
 use DrevOps\BehatScreenshotExtension\Context\ScreenshotAwareContextInterface;
@@ -120,13 +117,14 @@ class ScreenshotContextTest extends TestCase {
 
   public function testDeclaresNoBehatAnnotations(): void {
     $annotations = [];
+    $annotation_pattern = '/^\s*\*\s*(@(?:given|when|then|transform|(?:before|after)(?:suite|feature|scenario|step))\b.*)$/im';
 
     foreach ((new \ReflectionClass(ScreenshotContext::class))->getMethods() as $method) {
       if ($method->getDeclaringClass()->getName() !== ScreenshotContext::class) {
         continue;
       }
 
-      preg_match_all('/^\s*\*\s*(@(?:given|when|then|transform|(?:before|after)(?:suite|feature|scenario|step))\b.*)$/im', (string) $method->getDocComment(), $matches);
+      preg_match_all($annotation_pattern, (string) $method->getDocComment(), $matches);
 
       if (!empty($matches[1])) {
         $annotations[$method->getName()] = $matches[1];
@@ -137,7 +135,8 @@ class ScreenshotContextTest extends TestCase {
   }
 
   public function testPublicMethodsAreDeclaredByInterfaceOrRegisteredWithBehat(): void {
-    $interface_methods = array_map(static fn(\ReflectionMethod $method): string => $method->getName(), (new \ReflectionClass(ScreenshotAwareContextInterface::class))->getMethods());
+    $interface_reflection = new \ReflectionClass(ScreenshotAwareContextInterface::class);
+    $interface_methods = array_map(static fn(\ReflectionMethod $method): string => $method->getName(), $interface_reflection->getMethods());
     sort($interface_methods);
 
     $this->assertSame([
@@ -161,7 +160,15 @@ class ScreenshotContextTest extends TestCase {
       }
 
       $name = $method->getName();
-      $this->assertTrue(in_array($name, $interface_methods, TRUE) || in_array($name, $callee_methods, TRUE), sprintf('Public method %s() is neither declared by %s nor registered with Behat as a hook or step definition.', $name, ScreenshotAwareContextInterface::class));
+      $is_registered = in_array($name, $interface_methods, TRUE) || in_array($name, $callee_methods, TRUE);
+      $this->assertTrue(
+        $is_registered,
+        sprintf(
+          'Public method %s() is neither declared by %s nor registered with Behat as a hook or step definition.',
+          $name,
+          ScreenshotAwareContextInterface::class,
+        ),
+      );
     }
   }
 
@@ -175,7 +182,11 @@ class ScreenshotContextTest extends TestCase {
 
   public function testHookThrowsWhenScreenshotConfigIsNotSet(): void {
     $this->expectException(\RuntimeException::class);
-    $this->expectExceptionMessage(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension extension in the Behat configuration.', ScreenshotContext::class));
+    $this->expectExceptionMessage(sprintf(
+      'Screenshot configuration has not been set on %s.'
+      . ' Enable the DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension extension in the Behat configuration.',
+      ScreenshotContext::class,
+    ));
 
     (new ScreenshotContext())->beforeScenarioCheckScreenshotsTag($this->createBeforeScenarioScope());
   }
@@ -210,7 +221,7 @@ class ScreenshotContextTest extends TestCase {
 
     $this->expectException(\RuntimeException::class);
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession'])->getStub();
     $screenshot_context->method('getSession')->willReturn($session);
 
     $scope = $this->createBeforeScenarioScope();
@@ -218,19 +229,22 @@ class ScreenshotContextTest extends TestCase {
   }
 
   public function testBeforeStepInitStoresScopeForLaterRetrieval(): void {
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $step_node = $this->createStub(StepNode::class);
-
-    $feature_node->method('getFile')->willReturn(TRUE);
     $screenshot_context = new ScreenshotContext();
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
+    $scope = $this->createBeforeStepScope();
     $screenshot_context->beforeStepInit($scope);
     $this->assertSame($scope, $screenshot_context->getBeforeStepScope());
   }
 
   #[DataProvider('dataProviderAfterStepHooksCaptureScreenshotFromStepResultAndConfig')]
-  public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(bool $is_passed, bool $should_capture_on_failed, bool $should_capture_on_every_step, bool $has_screenshots_tag, bool $is_animated, bool $should_always_capture_fullscreen, array $expected_configs): void {
+  public function testAfterStepHooksCaptureScreenshotFromStepResultAndConfig(
+    bool $is_passed,
+    bool $should_capture_on_failed,
+    bool $should_capture_on_every_step,
+    bool $has_screenshots_tag,
+    bool $is_animated,
+    bool $should_always_capture_fullscreen,
+    array $expected_configs,
+  ): void {
     $scope = $this->createAfterStepScope($is_passed);
 
     $configs = [];
@@ -240,7 +254,11 @@ class ScreenshotContextTest extends TestCase {
 
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
     $screenshot_context->expects($this->exactly(count($expected_configs)))->method('captureScreenshot')->willReturnCallback($record_config);
-    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['on_failed' => $should_capture_on_failed, 'always_fullscreen' => $should_always_capture_fullscreen, 'on_every_step' => $should_capture_on_every_step]));
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig([
+      'on_failed' => $should_capture_on_failed,
+      'always_fullscreen' => $should_always_capture_fullscreen,
+      'on_every_step' => $should_capture_on_every_step,
+    ]));
     self::setProtectedValue($screenshot_context, 'scenarioHasScreenshotsTag', $has_screenshots_tag);
     self::setProtectedValue($screenshot_context, 'scenarioIsAnimated', $is_animated);
 
@@ -285,17 +303,13 @@ class ScreenshotContextTest extends TestCase {
 
   public function testIsaveFullscreenScreenshotWithNamePassesNameAndFullscreen(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
-    $screenshot_context->expects($this->once())
-      ->method('captureScreenshot')
-      ->with(['filename' => 'test-fullscreen-name', 'is_fullscreen' => TRUE]);
+    $screenshot_context->expects($this->once())->method('captureScreenshot')->with(['filename' => 'test-fullscreen-name', 'is_fullscreen' => TRUE]);
     $screenshot_context->iSaveFullscreenScreenshotWithName('test-fullscreen-name');
   }
 
   public function testIsaveFullscreenScreenshotRequestsFullscreenCapture(): void {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['captureScreenshot']);
-    $screenshot_context->expects($this->once())
-      ->method('captureScreenshot')
-      ->with(['is_fullscreen' => TRUE]);
+    $screenshot_context->expects($this->once())->method('captureScreenshot')->with(['is_fullscreen' => TRUE]);
     $screenshot_context->iSaveFullscreenScreenshot();
   }
 
@@ -362,11 +376,6 @@ class ScreenshotContextTest extends TestCase {
     $session = $this->createStub(Session::class);
     $session->method('getDriver')->willReturn($driver);
 
-    $feature_node = $this->createStub(FeatureNode::class);
-    $feature_node->method('getFile')->willReturn('path/to/test.feature');
-    $step_node = $this->createStub(StepNode::class);
-    $step_node->method('getLine')->willReturn(12);
-
     $writes = [];
     $record_write = static function (string $filename, string $content) use (&$writes): void {
       $writes[] = [$filename, $content];
@@ -375,10 +384,10 @@ class ScreenshotContextTest extends TestCase {
     $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'getCurrentTime', 'writeScreenshotContent']);
     $screenshot_context->method('getSession')->willReturn($session);
     // The second value models a capture that crosses a second boundary.
-    $screenshot_context->method('getCurrentTime')->willReturn(1700000000, 1700000001);
+    $screenshot_context->method('getCurrentTime')->willReturnOnConsecutiveCalls(1700000000, 1700000001);
     $screenshot_context->expects($this->exactly(2))->method('writeScreenshotContent')->willReturnCallback($record_write);
     $screenshot_context->setScreenshotConfig(self::createScreenshotConfig());
-    $screenshot_context->beforeStepInit(new BeforeStepScope($this->createStub(Environment::class), $feature_node, $step_node));
+    $screenshot_context->beforeStepInit($this->createBeforeStepScope('path/to/test.feature', 12));
 
     $screenshot_context->captureScreenshot();
 
@@ -398,15 +407,26 @@ class ScreenshotContextTest extends TestCase {
 
   public static function dataProviderCaptureScreenshotRejectsUnsupportedConfigKeys(): array {
     return [
-      'unsupported key' => [['fullscreen' => TRUE], 'Unsupported screenshot configuration keys: fullscreen. Supported keys: filename, is_failed, is_fullscreen.'],
-      'unsupported keys among supported ones' => [['filename' => 'test', 'size' => 1, 'is_failed' => TRUE, 'mode' => 'test'], 'Unsupported screenshot configuration keys: size, mode. Supported keys: filename, is_failed, is_fullscreen.'],
+      'unsupported key' => [
+        ['fullscreen' => TRUE],
+        'Unsupported screenshot configuration keys: fullscreen. Supported keys: filename, is_failed, is_fullscreen.',
+      ],
+      'unsupported keys among supported ones' => [
+        ['filename' => 'test', 'size' => 1, 'is_failed' => TRUE, 'mode' => 'test'],
+        'Unsupported screenshot configuration keys: size, mode. Supported keys: filename, is_failed, is_fullscreen.',
+      ],
       'positional value' => [['test'], 'Unsupported screenshot configuration keys: 0. Supported keys: filename, is_failed, is_fullscreen.'],
     ];
   }
 
   #[DataProvider('dataProviderWriteScreenshotContentCreatesDirectoryAndWritesFile')]
   public function testWriteScreenshotContentCreatesDirectoryAndWritesFile(string $filename, string $content): void {
-    $dir = sys_get_temp_dir();
+    $dir = dirname(__DIR__, 3) . '/.logs/unit';
+
+    if (!is_dir($dir) && !mkdir($dir, 0755, TRUE) && !is_dir($dir)) {
+      throw new \RuntimeException(sprintf('Unable to create the directory %s.', $dir));
+    }
+
     $filesystem = $this->createMock(Filesystem::class);
     $filesystem->expects($this->once())->method('mkdir')->with($dir, 0755);
 
@@ -463,10 +483,7 @@ class ScreenshotContextTest extends TestCase {
     string $filename_pattern_failed,
     string $expected,
   ): void {
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, [
-      'getBeforeStepScope',
-      'getSession',
-    ]);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getBeforeStepScope', 'getSession'])->getStub();
     $session = $this->createStub(Session::class);
 
     if ($url instanceof \Exception) {
@@ -477,16 +494,13 @@ class ScreenshotContextTest extends TestCase {
     }
 
     $screenshot_context->method('getSession')->willReturn($session);
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $step_node = $this->createStub(StepNode::class);
-    $step_node->method('getText')->willReturn($step_text);
-    $step_node->method('getLine')->willReturn($step_line);
-    $feature_node->method('getFile')->willReturn($feature_file);
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
-    $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
+    $screenshot_context->method('getBeforeStepScope')->willReturn($this->createBeforeStepScope($feature_file, $step_line, $step_text));
 
-    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['failed_prefix' => $failed_prefix, 'filename_pattern' => $filename_pattern, 'filename_pattern_failed' => $filename_pattern_failed]));
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig([
+      'failed_prefix' => $failed_prefix,
+      'filename_pattern' => $filename_pattern,
+      'filename_pattern_failed' => $filename_pattern_failed,
+    ]));
 
     $filename_processed = self::callProtectedMethod($screenshot_context, 'makeFilename', [$ext, $timestamp, $filename, $is_failed]);
 
@@ -571,27 +585,24 @@ class ScreenshotContextTest extends TestCase {
   public function testMakeFilenameReplacesUrlHostFromEnvironment(): void {
     $this->setEnvironmentVariable(ScreenshotContext::ENV_TOKEN_HOST, 'example.org');
 
-    $env = $this->createStub(Environment::class);
-    $feature_node = $this->createStub(FeatureNode::class);
-    $feature_node->method('getFile')->willReturn('test-feature-file');
-    $step_node = $this->createStub(StepNode::class);
-    $step_node->method('getText')->willReturn('test-step');
-    $step_node->method('getLine')->willReturn(123);
-    $scope = new BeforeStepScope($env, $feature_node, $step_node);
+    $scope = $this->createBeforeStepScope('test-feature-file', 123, 'test-step');
 
     $session = $this->createStub(Session::class);
     $session->method('getCurrentUrl')->willReturn('http://localhost:8080/test-page');
 
-    $screenshot_context = $this->createPartialMock(ScreenshotContext::class, ['getSession', 'getBeforeStepScope']);
+    $screenshot_context = $this->getStubBuilder(ScreenshotContext::class)->onlyMethods(['getSession', 'getBeforeStepScope'])->getStub();
     $screenshot_context->method('getSession')->willReturn($session);
     $screenshot_context->method('getBeforeStepScope')->willReturn($scope);
 
-    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig(['filename_pattern' => '{url}.{ext}', 'filename_pattern_failed' => '{failed_prefix}{url}.{ext}']));
+    $screenshot_context->setScreenshotConfig(self::createScreenshotConfig([
+      'filename_pattern' => '{url}.{ext}',
+      'filename_pattern_failed' => '{failed_prefix}{url}.{ext}',
+    ]));
 
     $result = self::callProtectedMethod($screenshot_context, 'makeFilename', ['png', 12345678, NULL, FALSE]);
     $this->assertIsString($result);
 
-    // The Tokenizer collapses each run of characters other than word
+    // The {url} token collapses each run of characters other than word
     // characters and hyphens into a single underscore.
     $this->assertStringContainsString('example_org', $result);
     $this->assertStringNotContainsString('localhost', $result);

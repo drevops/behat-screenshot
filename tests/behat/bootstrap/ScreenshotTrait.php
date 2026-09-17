@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
+use Behat\Behat\Context\Environment\InitializedContextEnvironment;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Hook\BeforeScenario;
+use Behat\MinkExtension\Context\RawMinkContext;
 use Behat\Step\Given;
 use Behat\Step\Then;
-use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitializer;
+use Behat\Step\When;
+use DrevOps\BehatScreenshotExtension\Context\ScreenshotContext;
 
 /**
  * Additional screenshot helpers.
@@ -12,35 +17,59 @@ use DrevOps\BehatScreenshotExtension\Context\Initializer\ScreenshotContextInitia
 trait ScreenshotTrait {
 
   /**
+   * Environment variable replacing the base URL of JavaScript scenarios.
+   */
+  public const ENV_JAVASCRIPT_BASE_URL = 'BEHAT_JAVASCRIPT_BASE_URL';
+
+  /**
    * Screenshot directory.
    */
   protected string $screenshotDir;
 
   /**
-   * Init test parameters.
-   *
-   * @param array<string> $parameters
-   *   Array of parameters from config.
+   * Set the token host and take the directory from the screenshot context.
    */
-  protected function screenshotInitParams(array $parameters): void {
-    if (getenv(ScreenshotContextInitializer::ENV_DIR)) {
-      $this->screenshotDir = (string) getenv(ScreenshotContextInitializer::ENV_DIR);
+  #[BeforeScenario]
+  public function screenshotBeforeScenarioInit(BeforeScenarioScope $scope): void {
+    // Override any real host in the screenshot token.
+    putenv(ScreenshotContext::ENV_TOKEN_HOST . '=example.com');
+
+    $environment = $scope->getEnvironment();
+
+    if (!$environment instanceof InitializedContextEnvironment || !$environment->hasContextClass(ScreenshotContext::class)) {
+      return;
     }
-    elseif (isset($parameters['screenshot_dir'])) {
-      $this->screenshotDir = $parameters['screenshot_dir'];
+
+    $this->screenshotDir = $environment->getContext(ScreenshotContext::class)->getScreenshotConfig()->dir;
+  }
+
+  /**
+   * Update base URL for JavaScript scenarios.
+   */
+  #[BeforeScenario('@javascript&&~@skip-base-url-rewrite')]
+  public function screenshotBeforeScenarioUpdateBaseUrl(BeforeScenarioScope $scope): void {
+    $environment = $scope->getEnvironment();
+
+    if (!$environment instanceof InitializedContextEnvironment) {
+      return;
     }
-    else {
-      throw new \RuntimeException('Screenshots dir is not set.');
+
+    $base_url = getenv(self::ENV_JAVASCRIPT_BASE_URL) ?: 'http://host.docker.internal:8888';
+
+    foreach ($environment->getContexts() as $context) {
+      if ($context instanceof RawMinkContext) {
+        $context->setMinkParameter('base_url', $base_url);
+      }
     }
   }
 
   /**
-   * Go to the screenshot test page.
+   * Go to the phpserver test page.
    */
-  #[Given('/^(?:|I )am on (?:|the )screenshot test page$/')]
-  #[Given('/^(?:|I )go to (?:|the )screenshot test page$/')]
-  #[Given('/^(?:|I )am on (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/')]
-  #[Given('/^(?:|I )go to (?:|the )screenshot test page with query "([^"]+)" and fragment "([^"]+)"$/')]
+  #[Given('/^(?:|I )am on (?:|the )phpserver test page$/')]
+  #[Given('/^(?:|I )go to (?:|the )phpserver test page$/')]
+  #[Given('/^(?:|I )am on (?:|the )phpserver test page with query "([^"]+)" and fragment "([^"]+)"$/')]
+  #[Given('/^(?:|I )go to (?:|the )phpserver test page with query "([^"]+)" and fragment "([^"]+)"$/')]
   public function screenshotGoToTestPage(string $query = '', string $fragment = ''): void {
     $path = 'screenshot.html';
 
@@ -63,7 +92,7 @@ trait ScreenshotTrait {
    */
   #[Then('/^file wildcard "([^"]*)" should exist$/')]
   public function screenshotAssertFileShouldExist(string $wildcard): void {
-    $wildcard = $this->screenshotDir . DIRECTORY_SEPARATOR . $wildcard;
+    $wildcard = $this->screenshotGetDir() . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 
     if (empty($matches)) {
@@ -79,7 +108,7 @@ trait ScreenshotTrait {
    */
   #[Then('/^file wildcard "([^"]*)" should not exist$/')]
   public function screenshotAssertFileShouldNotExist(string $wildcard): void {
-    $wildcard = $this->screenshotDir . DIRECTORY_SEPARATOR . $wildcard;
+    $wildcard = $this->screenshotGetDir() . DIRECTORY_SEPARATOR . $wildcard;
     $matches = glob($wildcard);
 
     if (!empty($matches)) {
@@ -90,13 +119,30 @@ trait ScreenshotTrait {
   /**
    * Remove all files from screenshot directory.
    */
-  #[Given('I remove all files from screenshot directory')]
+  #[When('I remove all files from screenshot directory')]
   public function screenshotEmptyDirectory(): void {
-    $files = glob($this->screenshotDir . DIRECTORY_SEPARATOR . '*');
+    $files = glob($this->screenshotGetDir() . DIRECTORY_SEPARATOR . '*');
 
     if (!empty($files)) {
       array_map(unlink(...), $files);
     }
+  }
+
+  /**
+   * Get the screenshot directory.
+   *
+   * @return string
+   *   Screenshot directory.
+   *
+   * @throws \RuntimeException
+   *   When no screenshot context has set the directory.
+   */
+  protected function screenshotGetDir(): string {
+    if (!isset($this->screenshotDir)) {
+      throw new \RuntimeException('Screenshots dir is not set.');
+    }
+
+    return $this->screenshotDir;
   }
 
 }

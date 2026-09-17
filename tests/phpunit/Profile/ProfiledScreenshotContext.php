@@ -27,6 +27,7 @@ class ProfiledScreenshotContext extends ScreenshotContext {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   public function captureScreenshot(array $config = []): void {
     $this->lastScreenshotContent = $this->pending;
   }
@@ -34,6 +35,7 @@ class ProfiledScreenshotContext extends ScreenshotContext {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   public function writeScreenshotContent(string $filename, string $content): void {
     $this->gif = $content;
   }

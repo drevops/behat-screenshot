@@ -97,7 +97,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
   protected ScreenshotConfig $screenshotConfig;
 
   /**
-   * Whether the current scenario has the @screenshots tag.
+   * Whether the current scenario or its feature has the @screenshots tag.
    */
   protected bool $scenarioHasScreenshotsTag = FALSE;
 
@@ -142,7 +142,11 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function getScreenshotConfig(): ScreenshotConfig {
     if (!isset($this->screenshotConfig)) {
-      throw new \RuntimeException(sprintf('Screenshot configuration has not been set on %s. Enable the DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension extension in the Behat configuration.', static::class));
+      throw new \RuntimeException(sprintf(
+        'Screenshot configuration has not been set on %s.'
+        . ' Enable the DrevOps\BehatScreenshotExtension\ServiceContainer\BehatScreenshotExtension extension in the Behat configuration.',
+        static::class,
+      ));
     }
 
     return $this->screenshotConfig;
@@ -162,74 +166,6 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $this->scenarioHasScreenshotsTag = $this->isTagged($scenario, self::TAG_SCREENSHOTS) || $this->isTagged($feature, self::TAG_SCREENSHOTS);
     $this->scenarioIsAnimated = $this->resolveIsAnimated($scenario, $feature);
     $this->animationEncoder = NULL;
-  }
-
-  /**
-   * Resolve whether the current scenario should produce an animated GIF.
-   *
-   * The suite-wide environment variable overrides all tags and the
-   * configuration, so a run can disable animation without editing feature
-   * files or the configuration.
-   *
-   * Nodes are checked from the most specific to the least specific. A scenario
-   * tag overrides any feature tag, and a feature tag applies only when the
-   * scenario has neither tag.
-   *
-   * Within a node the skip tag takes precedence over the opt-in tag, so the
-   * result for a node with both tags is deterministic. The animation.enabled
-   * configuration applies only when no node is tagged.
-   *
-   * @param \Behat\Gherkin\Node\TaggedNodeInterface ...$nodes
-   *   Tagged nodes in order of decreasing specificity.
-   *
-   * @return bool
-   *   TRUE when the scenario should produce an animated GIF.
-   */
-  protected function resolveIsAnimated(TaggedNodeInterface ...$nodes): bool {
-    if ($this->isAnimationSkippedForSuite()) {
-      return FALSE;
-    }
-
-    foreach ($nodes as $node) {
-      if ($this->isTagged($node, self::TAG_SCREENSHOTS_ANIMATED_SKIP)) {
-        return FALSE;
-      }
-
-      if ($this->isTagged($node, self::TAG_SCREENSHOTS_ANIMATED)) {
-        return TRUE;
-      }
-    }
-
-    return $this->getScreenshotConfig()->shouldAnimate;
-  }
-
-  /**
-   * Check whether animation is disabled for the whole suite.
-   *
-   * @return bool
-   *   TRUE when the environment variable holds a truthy value.
-   */
-  protected function isAnimationSkippedForSuite(): bool {
-    return (bool) getenv(self::ENV_ANIMATION_SKIP);
-  }
-
-  /**
-   * Check whether a node carries a tag.
-   *
-   * A tag is reported with or without its leading "@", so both forms match.
-   *
-   * @param \Behat\Gherkin\Node\TaggedNodeInterface $node
-   *   Feature, scenario or example node.
-   * @param string $tag
-   *   Tag name without the leading "@".
-   *
-   * @return bool
-   *   TRUE when the node carries the tag.
-   */
-  protected function isTagged(TaggedNodeInterface $node, string $tag): bool {
-    $tags = array_map(static fn(string $node_tag): string => ltrim($node_tag, '@'), $node->getTags());
-
-    return in_array($tag, $tags, TRUE);
   }
 
   /**
@@ -294,34 +230,16 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   #[AfterStep]
   public function afterStepCaptureScreenshot(AfterStepScope $scope): void {
+    $is_capture_enabled = $this->getScreenshotConfig()->shouldCaptureOnEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated;
+
     // Failed steps are covered separately by on_failed to avoid duplicates.
-    if (($this->getScreenshotConfig()->shouldCaptureOnEveryStep || $this->scenarioHasScreenshotsTag || $this->scenarioIsAnimated) && $scope->getTestResult()->isPassed()) {
-      $this->captureScreenshot([
-        'is_fullscreen' => $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen,
-      ]);
+    if ($is_capture_enabled && $scope->getTestResult()->isPassed()) {
+      $this->captureScreenshot(['is_fullscreen' => $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen]);
 
       if ($this->scenarioIsAnimated && $this->lastScreenshotContent !== NULL) {
         $this->addAnimationFrame($this->lastScreenshotContent);
       }
     }
-  }
-
-  /**
-   * Add a captured screenshot to the current scenario's animation.
-   *
-   * @param string $content
-   *   Raw screenshot content.
-   */
-  protected function addAnimationFrame(string $content): void {
-    if (!$this->isAnimatedGifSupported()) {
-      return;
-    }
-
-    if (!$this->animationEncoder instanceof AnimatedGifEncoder) {
-      $this->animationEncoder = $this->createAnimatedGifEncoder();
-    }
-
-    $this->animationEncoder->addFrame($content);
   }
 
   /**
@@ -410,10 +328,15 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
     $unsupported_keys = array_diff(array_keys($config), self::CAPTURE_CONFIG_KEYS);
 
     if ($unsupported_keys !== []) {
-      throw new \InvalidArgumentException(sprintf('Unsupported screenshot configuration keys: %s. Supported keys: %s.', implode(', ', $unsupported_keys), implode(', ', self::CAPTURE_CONFIG_KEYS)));
+      throw new \InvalidArgumentException(sprintf(
+        'Unsupported screenshot configuration keys: %s. Supported keys: %s.',
+        implode(', ', $unsupported_keys),
+        implode(', ', self::CAPTURE_CONFIG_KEYS),
+      ));
     }
 
-    $is_fullscreen = (isset($config['is_fullscreen']) && $config['is_fullscreen']) || $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen;
+    $is_fullscreen_requested = isset($config['is_fullscreen']) && is_scalar($config['is_fullscreen']) && $config['is_fullscreen'];
+    $is_fullscreen = $is_fullscreen_requested || $this->getScreenshotConfig()->shouldAlwaysCaptureFullscreen;
 
     $filename = isset($config['filename']) && is_scalar($config['filename']) ? (string) $config['filename'] : NULL;
     $is_failed = isset($config['is_failed']) && is_scalar($config['is_failed']) && $config['is_failed'];
@@ -467,6 +390,132 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    */
   public function getScreenshotFullscreen(): string {
     return $this->getScreenshotFullscreenWithResize();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function writeScreenshotContent(string $filename, string $content): void {
+    $dir = $this->getScreenshotConfig()->dir;
+    $this->createFilesystem()->mkdir($dir, 0755);
+    $file_path = $dir . DIRECTORY_SEPARATOR . $filename;
+    $success = file_put_contents($file_path, $content);
+
+    if ($success === FALSE) {
+      // @codeCoverageIgnoreStart
+      throw new \RuntimeException(sprintf('Failed to save screenshot to %s. Check permissions and disk space.', $file_path));
+      // @codeCoverageIgnoreEnd
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getBeforeStepScope(): BeforeStepScope {
+    return $this->beforeStepScope;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function appendInfo(string $label, string $value): void {
+    $this->info[$label] = $value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function renderInfo(): string {
+    $this->compileInfo();
+
+    // Output plain text rather than HTML, so it can be used in any format.
+    return implode("\n", array_map(static fn(string $key, $value): string => sprintf('%s: %s', $key, $value), array_keys($this->info), $this->info));
+  }
+
+  /**
+   * Resolve whether the current scenario should produce an animated GIF.
+   *
+   * The suite-wide environment variable overrides all tags and the
+   * configuration, so a run can disable animation without editing feature
+   * files or the configuration.
+   *
+   * Nodes are checked from the most specific to the least specific. A scenario
+   * tag overrides any feature tag, and a feature tag applies only when the
+   * scenario has neither tag.
+   *
+   * Within a node the skip tag takes precedence over the opt-in tag, so the
+   * result for a node with both tags is deterministic. The animation.enabled
+   * configuration applies only when no node is tagged.
+   *
+   * @param \Behat\Gherkin\Node\TaggedNodeInterface ...$nodes
+   *   Tagged nodes in order of decreasing specificity.
+   *
+   * @return bool
+   *   TRUE when the scenario should produce an animated GIF.
+   */
+  protected function resolveIsAnimated(TaggedNodeInterface ...$nodes): bool {
+    if ($this->isAnimationSkippedForSuite()) {
+      return FALSE;
+    }
+
+    foreach ($nodes as $node) {
+      if ($this->isTagged($node, self::TAG_SCREENSHOTS_ANIMATED_SKIP)) {
+        return FALSE;
+      }
+
+      if ($this->isTagged($node, self::TAG_SCREENSHOTS_ANIMATED)) {
+        return TRUE;
+      }
+    }
+
+    return $this->getScreenshotConfig()->shouldAnimate;
+  }
+
+  /**
+   * Check whether animation is disabled for the whole suite.
+   *
+   * @return bool
+   *   TRUE when the environment variable holds a truthy value.
+   */
+  protected function isAnimationSkippedForSuite(): bool {
+    return (bool) getenv(self::ENV_ANIMATION_SKIP);
+  }
+
+  /**
+   * Check whether a node carries a tag.
+   *
+   * A tag is reported with or without its leading "@", so both forms match.
+   *
+   * @param \Behat\Gherkin\Node\TaggedNodeInterface $node
+   *   Feature, scenario or example node.
+   * @param string $tag
+   *   Tag name without the leading "@".
+   *
+   * @return bool
+   *   TRUE when the node carries the tag.
+   */
+  protected function isTagged(TaggedNodeInterface $node, string $tag): bool {
+    $tags = array_map(static fn(string $node_tag): string => ltrim($node_tag, '@'), $node->getTags());
+
+    return in_array($tag, $tags, TRUE);
+  }
+
+  /**
+   * Add a captured screenshot to the current scenario's animation.
+   *
+   * @param string $content
+   *   Raw screenshot content.
+   */
+  protected function addAnimationFrame(string $content): void {
+    if (!$this->isAnimatedGifSupported()) {
+      return;
+    }
+
+    if (!$this->animationEncoder instanceof AnimatedGifEncoder) {
+      $this->animationEncoder = $this->createAnimatedGifEncoder();
+    }
+
+    $this->animationEncoder->addFrame($content);
   }
 
   /**
@@ -540,53 +589,9 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
         $session->resizeWindow($original_width, $original_height, self::WINDOW_NAME_CURRENT);
       }
       catch (\Exception) {
-        // Restoration is best effort - errors are ignored.
+        // Restoration is best effort.
       }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function writeScreenshotContent(string $filename, string $content): void {
-    $dir = $this->getScreenshotConfig()->dir;
-    $this->createFilesystem()->mkdir($dir, 0755);
-    $file_path = $dir . DIRECTORY_SEPARATOR . $filename;
-    $success = file_put_contents($file_path, $content);
-
-    if ($success === FALSE) {
-      // @codeCoverageIgnoreStart
-      throw new \RuntimeException(sprintf('Failed to save screenshot to %s. Check permissions and disk space.', $file_path));
-      // @codeCoverageIgnoreEnd
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBeforeStepScope(): BeforeStepScope {
-    return $this->beforeStepScope;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function appendInfo(string $label, string $value): void {
-    $this->info[$label] = $value;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function renderInfo(): string {
-    $this->compileInfo();
-
-    // Output plain text rather than HTML, so it can be used in any format.
-    return implode("\n", array_map(
-      static fn(string $key, $value): string => sprintf('%s: %s', $key, $value),
-      array_keys($this->info),
-      $this->info,
-    ));
   }
 
   /**
@@ -710,10 +715,7 @@ class ScreenshotContext extends RawMinkContext implements ScreenshotAwareContext
    * @throws \InvalidArgumentException
    */
   protected function makeAnimationFilename(AfterScenarioScope $scope): string {
-    $data = [
-      'feature_file' => $scope->getFeature()->getFile(),
-      'timestamp' => $this->getCurrentTime(),
-    ];
+    $data = ['feature_file' => $scope->getFeature()->getFile(), 'timestamp' => $this->getCurrentTime()];
 
     return Tokenizer::replaceTokens('{datetime:U}.{feature_file}.feature_' . $scope->getScenario()->getLine() . '.gif', $data);
   }

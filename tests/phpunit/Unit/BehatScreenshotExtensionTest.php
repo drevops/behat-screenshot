@@ -38,7 +38,8 @@ class BehatScreenshotExtensionTest extends TestCase {
     $extension->load($container, $config);
 
     $this->assertSame($expected_config_key, $extension->getConfigKey());
-    $this->assertSame([$expected_config_key . '.screenshot_context_initializer'], array_keys($container->findTaggedServiceIds(ContextExtension::INITIALIZER_TAG)));
+    $initializer_ids = array_keys($container->findTaggedServiceIds(ContextExtension::INITIALIZER_TAG));
+    $this->assertSame([$expected_config_key . '.screenshot_context_initializer'], $initializer_ids);
   }
 
   public static function dataProviderGetConfigKeyAndLoadUseModId(): array {
@@ -96,8 +97,9 @@ class BehatScreenshotExtensionTest extends TestCase {
     $initializer = $container->get('drevops_behat_screenshot.screenshot_context_initializer');
     $this->assertInstanceOf(ScreenshotContextInitializer::class, $initializer);
 
+    $expected_config = self::createScreenshotConfig(['dir' => '/test/base/screenshots', 'info_types' => ['url']]);
     $context = $this->createMock(ScreenshotAwareContextInterface::class);
-    $context->expects($this->once())->method('setScreenshotConfig')->with(self::createScreenshotConfig(['dir' => '/test/base/screenshots', 'info_types' => ['url']]));
+    $context->expects($this->once())->method('setScreenshotConfig')->with($expected_config);
 
     $initializer->initializeContext($context);
   }

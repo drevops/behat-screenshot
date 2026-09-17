@@ -37,7 +37,16 @@ class ScreenshotContextInitializerTest extends TestCase {
   }
 
   #[DataProvider('dataProviderInitializeContextAppliesEnvironmentAndPurgesOnce')]
-  public function testInitializeContextAppliesEnvironmentAndPurgesOnce(bool $should_purge, ?string $env_purge, ?string $env_dir, bool $dir_exists, string $expected_dir, bool $expected_purge, int $expected_exists_calls, int $expected_remove_calls): void {
+  public function testInitializeContextAppliesEnvironmentAndPurgesOnce(
+    bool $should_purge,
+    ?string $env_purge,
+    ?string $env_dir,
+    bool $is_dir_present,
+    string $expected_dir,
+    bool $expected_purge,
+    int $expected_exists_calls,
+    int $expected_remove_calls,
+  ): void {
     $this->setEnvironmentVariable(ScreenshotContextInitializer::ENV_PURGE, $env_purge);
     $this->setEnvironmentVariable(ScreenshotContextInitializer::ENV_DIR, $env_dir);
 
@@ -51,7 +60,7 @@ class ScreenshotContextInitializerTest extends TestCase {
     $finder->expects($this->exactly($expected_remove_calls))->method('in')->with($expected_dir)->willReturnSelf();
 
     $filesystem = $this->createMock(Filesystem::class);
-    $filesystem->expects($this->exactly($expected_exists_calls))->method('exists')->with($expected_dir)->willReturn($dir_exists);
+    $filesystem->expects($this->exactly($expected_exists_calls))->method('exists')->with($expected_dir)->willReturn($is_dir_present);
     $filesystem->expects($this->exactly($expected_remove_calls))->method('remove')->with($finder);
 
     $initializer = $this->getStubBuilder(ScreenshotContextInitializer::class)

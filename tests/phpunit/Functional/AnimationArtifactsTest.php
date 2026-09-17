@@ -33,12 +33,7 @@ class AnimationArtifactsTest extends TestCase {
    *
    * @var array<int,array<int,int>>
    */
-  protected const FRAME_SIZES = [
-    [800, 400],
-    [800, 1200],
-    [800, 6000],
-    [800, 400],
-  ];
+  protected const FRAME_SIZES = [[800, 400], [800, 1200], [800, 6000], [800, 400]];
 
   /**
    * Height cap applied to the cropped variants.
@@ -66,40 +61,40 @@ class AnimationArtifactsTest extends TestCase {
   }
 
   public function testUncappedAnimationKeepsEveryFrameWhole(): void {
-    $frames = $this->scenarioFrames();
+    $frames = $this->createScenarioFrames();
 
     $gif = (new AnimatedGifEncoder())->encode($frames, 500);
     $this->write('uncapped.gif', $gif);
 
-    $this->assertSame([800, 6000], $this->canvasSize($gif));
-    $this->assertSame([[800, 400], [800, 1200], [800, 6000], [800, 400]], $this->frameSizes($gif));
+    $this->assertSame([800, 6000], $this->readCanvasSize($gif));
+    $this->assertSame([[800, 400], [800, 1200], [800, 6000], [800, 400]], $this->readFrameSizes($gif));
   }
 
   public function testHeightCappedAnimationCropsOnlyTheLongPages(): void {
-    $frames = $this->scenarioFrames();
+    $frames = $this->createScenarioFrames();
 
     $gif = (new AnimatedGifEncoder(0, self::MAX_HEIGHT))->encode($frames, 500);
     $this->write('cropped-height.gif', $gif);
     $this->writeConstrainedFrames('cropped-height', $frames, 0, self::MAX_HEIGHT);
 
-    $this->assertSame([800, self::MAX_HEIGHT], $this->canvasSize($gif));
-    $this->assertSame([[800, 400], [800, 1200], [800, self::MAX_HEIGHT], [800, 400]], $this->frameSizes($gif));
+    $this->assertSame([800, self::MAX_HEIGHT], $this->readCanvasSize($gif));
+    $this->assertSame([[800, 400], [800, 1200], [800, self::MAX_HEIGHT], [800, 400]], $this->readFrameSizes($gif));
   }
 
   public function testBothCapsCropEachAxisIndependently(): void {
-    $frames = $this->scenarioFrames();
+    $frames = $this->createScenarioFrames();
 
     $gif = (new AnimatedGifEncoder(self::MAX_WIDTH, self::MAX_HEIGHT))->encode($frames, 500);
     $this->write('cropped-both.gif', $gif);
     $this->writeConstrainedFrames('cropped-both', $frames, self::MAX_WIDTH, self::MAX_HEIGHT);
 
-    $this->assertSame([self::MAX_WIDTH, self::MAX_HEIGHT], $this->canvasSize($gif));
+    $this->assertSame([self::MAX_WIDTH, self::MAX_HEIGHT], $this->readCanvasSize($gif));
     $this->assertSame([
       [self::MAX_WIDTH, 400],
       [self::MAX_WIDTH, 1200],
       [self::MAX_WIDTH, self::MAX_HEIGHT],
       [self::MAX_WIDTH, 400],
-    ], $this->frameSizes($gif));
+    ], $this->readFrameSizes($gif));
   }
 
   public function testArtifactsAreAccompaniedByReadme(): void {
@@ -145,7 +140,7 @@ class AnimationArtifactsTest extends TestCase {
    * @return array<int,string>
    *   Binary PNG content for each frame.
    */
-  protected function scenarioFrames(): array {
+  protected function createScenarioFrames(): array {
     $frames = [];
 
     foreach (self::FRAME_SIZES as $step => $size) {

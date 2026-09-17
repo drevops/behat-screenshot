@@ -16,9 +16,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * Measure how long a scenario's animated GIF takes to assemble.
  *
- * Drives ScreenshotContext through the same hooks Behat calls, with the driver
- * replaced by prepared images. The steps and the AfterScenario handler that
- * builds the GIF are timed separately.
+ * Drives ScreenshotContext through its tag, capture and animation hooks, with
+ * the driver replaced by prepared images. The steps and the AfterScenario
+ * handler that builds the GIF are timed separately.
  *
  * Each run is measured twice: with every frame at viewport height, and with
  * one very long page among them. Comparing the two isolates the cost of a
@@ -58,8 +58,13 @@ class AnimationAssemblyProfileTest extends TestCase {
    */
   protected const DEFAULT_STEPS = [25, 50, 100];
 
+  /**
+   * Environment variable replacing the profiled step counts.
+   */
+  public const ENV_PROFILE_STEPS = 'BEHAT_SCREENSHOT_PROFILE_STEPS';
+
   public function testAnimationAssemblyProducesGifForEveryProfiledScenario(): void {
-    $steps = $this->stepCounts();
+    $steps = $this->readStepCounts();
 
     $report = [
       'Animated GIF assembly cost',
@@ -179,7 +184,7 @@ class AnimationAssemblyProfileTest extends TestCase {
       'total' => $steps_elapsed + $assembly_elapsed,
       'peak' => (memory_get_peak_usage() - $baseline) / 1048576,
       'captured' => $captured,
-      'encoded' => $this->encodedPixels($screenshot_context->gif),
+      'encoded' => $this->countEncodedPixels($screenshot_context->gif),
       'bytes' => strlen($screenshot_context->gif),
     ];
   }
@@ -213,8 +218,8 @@ class AnimationAssemblyProfileTest extends TestCase {
    * @return array<int,int>
    *   Step counts.
    */
-  protected function stepCounts(): array {
-    $configured = getenv('BEHAT_SCREENSHOT_PROFILE_STEPS');
+  protected function readStepCounts(): array {
+    $configured = getenv(self::ENV_PROFILE_STEPS);
 
     if (!is_string($configured) || trim($configured) === '') {
       return self::DEFAULT_STEPS;
