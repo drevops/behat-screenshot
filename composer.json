@@ -41,7 +41,7 @@
         "lullabot/mink-selenium2-driver": "^1.7.4",
         "lullabot/php-webdriver": "^2.0.7",
         "phpstan/phpstan": "^2.3.4",
-        "phpunit/phpunit": "^12.5.42",
+        "phpunit/phpunit": "^12.5.43",
         "rector/rector": "^2.8.3",
         "symfony/process": "^7.4.18 || ^8.0"
     },
