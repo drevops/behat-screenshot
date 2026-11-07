@@ -61,9 +61,9 @@ The suite runs in strict mode, so a step without a matching definition fails the
 
 ### Behat 4
 
-Both Behat majors read the suite configuration from `behat.php`, so suite changes go there. The `@behatcli` scenarios start a second Behat process with a `behat.php` that their steps write.
+Both Behat majors read the suite configuration from `behat.php`, so suite changes go there. The steps of the `@behatcli` scenarios write a `behat.php` and run a second Behat process with it.
 
-To run the suites on Behat 4:
+`composer.json` already allows the Mink extension 3.0 alpha that Behat 4 needs. To run the suites on Behat 4:
 
 ```shell
 composer update --with=behat/behat:^4
@@ -115,6 +115,6 @@ To add an option:
 These tests fail until the option is wired through:
 
 - `ScreenshotConfigTest` fails until `dataProviderFromArrayMapsKeyToProperty()` has a dataset for the new key and `fromArray()` maps the key.
-- `BehatScreenshotExtensionTest` asserts the count of top-level options, so update it for a new one.
+- `BehatScreenshotExtensionTest` asserts the count of top-level options, so raise that count for a new top-level option.
 - `BehatDistConfigTest` fails until `behat.dist.php` sets the new option.
-- `EnvironmentVariableNamingTest` fails when a class passes `getenv()` anything other than 1 of its own `ENV_*` constants. Add the new variable to that class's dataset.
+- `EnvironmentVariableNamingTest` fails when a class passes `getenv()` anything other than 1 of its own `ENV_*` constants. Add the new variable to the test's `ScreenshotContextInitializer` dataset.

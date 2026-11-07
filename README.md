@@ -183,7 +183,7 @@ To capture a screenshot after every passed step, turn capture on in either of th
     # Screenshots will be captured after each of these steps
   ```
 
-The `@screenshots` tag only turns capture on, so it has no effect when `on_every_step` is `TRUE`.
+The `@screenshots` tag can turn capture on but not off, so it has no effect when `on_every_step` is `TRUE`.
 
 Per-step capture covers passed steps only. A failed step gets only the `on_failed` screenshot.
 
@@ -215,7 +215,7 @@ To record an animated GIF of a scenario, turn animation on in either of these pl
 
 The extension captures a screenshot after every passed step of an animated scenario. When the scenario finishes, the extension combines those screenshots into 1 GIF. `frame_delay` sets the delay between frames, in milliseconds.
 
-The GIF is named `{datetime:U}.{feature_file}.feature_<scenario line>.gif`. That's the default `filename_pattern` with the scenario's line in place of `{step_line}`, so the GIF name matches the scenario's per-step screenshot names. A custom `filename_pattern` changes the per-step filenames only.
+The GIF is named `{datetime:U}.{feature_file}.feature_<scenario line>.gif`. That's the default `filename_pattern` with the scenario's line in place of `{step_line}`, so the GIF name follows the format of the per-step screenshot names. A custom `filename_pattern` leaves the GIF name unchanged.
 
 Animation requires the `gd` PHP extension and a driver that captures PNG screenshots, such as the Selenium driver in a `@javascript` scenario. Without `gd`, the extension still writes the per-step screenshots and skips the GIF.
 
