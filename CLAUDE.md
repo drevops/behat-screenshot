@@ -37,7 +37,7 @@ See `CONTRIBUTING.md` for the BDD test suite and the animation profiler.
 
 ### Continuous Integration
 
-- `.github/workflows/test.yml` runs PHP 8.3, 8.4 and 8.5 against Behat 3 and Behat 4 with `normal` and `lowest` dependencies; Behat 4 jobs remove `dmore/behat-chrome-extension` and skip the `@headless` scenarios
+- `.github/workflows/test.yml` runs PHP 8.3, 8.4 and 8.5 against Behat 3 and Behat 4 with `normal` and `lowest` dependencies
 - Jobs are named `PHP <version>, Behat <major>, Deps <dependencies>`, and the `main` branch ruleset requires every job by that name, so a change to the matrix or the job name needs the same change to the ruleset
 
 ## Code Structure
