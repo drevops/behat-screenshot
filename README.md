@@ -1,6 +1,6 @@
 <div align="center">
   <a href="" rel="noopener">
-  <img width=150px height=150px src="logo.png" alt="Behat screenshot logo"></a>
+  <img width="420" src="logo.png" alt="Behat screenshot logo"></a>
 </div>
 
 <h1 align="center">Behat extension to create screenshots</h1>
