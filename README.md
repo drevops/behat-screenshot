@@ -61,7 +61,7 @@ composer require --dev \
 
 ## Usage
 
-Behat reads `behat.php`, or `behat.dist.php` when there is no `behat.php`. `ScreenshotContext` captures through Mink, so add these settings to a profile that already registers `MinkExtension` with a driver session. To use the default options, add `ScreenshotContext` to your suite and register the extension:
+Behat 4 reads `behat.php`, or `behat.dist.php` when there is no `behat.php`. Behat 3 reads the same files, but a YAML configuration such as `behat.yml` takes precedence over them. On a Behat 3 project that keeps a YAML configuration, add the same settings to its profile. `ScreenshotContext` captures through Mink, so add these settings to a profile that already registers `MinkExtension` with a driver session. To use the default options, add `ScreenshotContext` to your suite and register the extension:
 
 ```php
 <?php
