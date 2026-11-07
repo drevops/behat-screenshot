@@ -22,43 +22,46 @@
 
 ---
 
+Behat Screenshot is a Behat extension that saves the page your test is on as an HTML file and a PNG image. With a driver that can't capture images, such as BrowserKit, it writes the HTML file only.
+
 ## Features
 
-* Captures a screenshot using the `I save screenshot` step.
-* Captures fullscreen screenshots with the `I save fullscreen screenshot` step.
-* Automatically captures a screenshot when a test fails.
-* Supports both HTML and PNG screenshots.
-* Supports Selenium and Headless drivers.
-* Configurable screenshot directory.
-* Optionally purges the screenshot directory at the start of each test run.
-* Adds additional information to screenshots.
+* Captures a screenshot with the `I save screenshot` step.
+* Captures the whole page with the `I save fullscreen screenshot` step.
+* Captures a screenshot when a step fails.
+* Captures a screenshot after every step, for the suite or for tagged scenarios.
+* Works with Selenium and headless Chrome drivers.
+* Saves screenshots to a directory you configure, and can purge it at the start of each run.
+* Adds the URL, feature, step and time to the HTML screenshot.
 * Records an animated GIF of a scenario from its per-step screenshots.
 
 ## Installation
+
+To add the extension to your project, run:
 
 ```shell
 composer require --dev drevops/behat-screenshot
 ```
 
-| Behat        | PHP     | Configuration file              |
-|--------------|---------|---------------------------------|
-| `^3.33.0`    | `>=8.3` | `behat.php` or `behat.dist.php` |
-| `^4.0@alpha` | `>=8.3` | `behat.php` or `behat.dist.php` |
+The extension supports both Behat majors:
 
-Behat 4 is still an alpha, so Composer keeps installing Behat 3 until your project opts in. To opt in, require Behat 4 together with the Mink extension release that supports it:
+| Behat     | PHP     | Configuration file              |
+|-----------|---------|---------------------------------|
+| `^3.34.0` | `>=8.3` | `behat.php` or `behat.dist.php` |
+| `^4.0`    | `>=8.3` | `behat.php` or `behat.dist.php` |
+
+Composer installs Behat 3 by default, because the only Mink extension release that supports Behat 4 is `friends-of-behat/mink-extension` 3.0 alpha. To use Behat 4, require it together with that release:
 
 ```shell
 composer require --dev \
-  behat/behat:^4.0@alpha \
+  behat/behat:^4.0 \
   friends-of-behat/mink-extension:^3.0@alpha \
   drevops/behat-screenshot
 ```
 
 ## Usage
 
-Behat reads `behat.php`, or `behat.dist.php` when there is no `behat.php`.
-
-Example `behat.php` with default parameters:
+Behat 4 reads `behat.php`, or `behat.dist.php` when there is no `behat.php`. Behat 3 reads the same files, but a YAML configuration in the project root, such as `behat.yml`, takes precedence over them. On a Behat 3 project that keeps a root YAML configuration, add the same settings to its profile. `ScreenshotContext` captures through Mink, so add these settings to a profile that already registers `MinkExtension` with a driver session. To use the default options, add `ScreenshotContext` to your suite and register the extension:
 
 ```php
 <?php
@@ -82,7 +85,7 @@ $profile = (new Profile('default'))
 return (new Config())->withProfile($profile);
 ```
 
-or with parameters:
+To set options, pass them to the extension:
 
 ```php
 <?php
@@ -113,33 +116,33 @@ $profile = (new Profile('default'))
 return (new Config())->withProfile($profile);
 ```
 
-The extension is registered by its full class name. Behat 3 also accepts the short `DrevOps\BehatScreenshotExtension` key, but Behat 4 doesn't, so the full name works on both.
+Register the extension by its full class name, which both Behat majors accept. Behat 3 also reads the short `DrevOps\BehatScreenshotExtension` name, but Behat 4 rejects it.
 
-The [options](#options) table below describes every option, and [`behat.dist.php`](behat.dist.php) sets all of them.
+The [options](#options) table describes every option, and [`behat.dist.php`](behat.dist.php) sets all of them.
 
-In your feature:
+To capture a screenshot, add the `I save screenshot` step to a scenario:
 
 ```gherkin
 Given I am on "http://google.com"
 Then I save screenshot
 ```
 
-You can capture fullscreen screenshots:
+To capture the whole page, use the `I save fullscreen screenshot` step:
 
 ```gherkin
 Given I am on "http://google.com"
 Then I save fullscreen screenshot
 ```
 
-Fullscreen screenshots work by temporarily resizing the browser window to the full height of the page to capture everything in one screenshot.
+The extension resizes the browser window to the page's full height for that capture, then restores the window.
 
-You may optionally specify the size of the browser window in the screenshot step:
+To capture at a set window size, give the width and height in pixels. The window keeps that size for the rest of the scenario:
 
 ```gherkin
 Then I save 1440 x 900 screenshot
 ```
 
-or a filename. The `.html` or `.png` extension is appended to the name, which can contain [filename tokens](#filename-tokens):
+To name the file, pass the name to the step. The name can contain [filename tokens](#filename-tokens), and the extension appends `.html` or `.png` to it:
 
 ```gherkin
 Then I save screenshot with name "my_screenshot"
@@ -147,7 +150,9 @@ Then I save screenshot with name "my_screenshot"
 Then I save fullscreen screenshot with name "my_screenshot"
 ```
 
-To always capture fullscreen screenshots, even without explicitly using the `fullscreen` keyword, set the `always_fullscreen` configuration option to `true`:
+Each step also matches without the leading `I`, such as `Then save screenshot`.
+
+To make every screenshot fullscreen, including the ones `I save screenshot` captures, set `always_fullscreen` to `TRUE`:
 
 ```php
 $extension = new Extension(BehatScreenshotExtension::class, [
@@ -157,68 +162,68 @@ $extension = new Extension(BehatScreenshotExtension::class, [
 
 ### Capturing screenshots after every step
 
-To automatically capture a screenshot after every step, you can either:
+To capture a screenshot after every passed step, turn capture on in either of these places:
 
-1. **Enable globally** in configuration:
+- For every scenario, set `on_every_step` to `TRUE`:
 
-```php
-$extension = new Extension(BehatScreenshotExtension::class, [
-  'on_every_step' => TRUE,
-]);
-```
+  ```php
+  $extension = new Extension(BehatScreenshotExtension::class, [
+    'on_every_step' => TRUE,
+  ]);
+  ```
 
-2. **Enable per-scenario** using the `@screenshots` tag:
+- For 1 scenario or feature, tag it with `@screenshots`:
 
-```gherkin
-@screenshots
-Scenario: My scenario with automatic screenshots
-  Given I am on "http://example.com"
-  When I click "Login"
-  Then I should see "Welcome"
-  # Screenshots will be captured after each of these steps
-```
+  ```gherkin
+  @screenshots
+  Scenario: My scenario with automatic screenshots
+    Given I am on "http://example.com"
+    When I click "Login"
+    Then I should see "Welcome"
+    # Screenshots will be captured after each of these steps
+  ```
 
-The `@screenshots` tag is read at both the scenario and feature level. It enables per-step screenshots even when `on_every_step` is disabled, but it cannot disable them when `on_every_step` is enabled.
+The `@screenshots` tag can turn capture on but not off, so it has no effect when `on_every_step` is `TRUE`.
 
-**Note**: When both `on_every_step` and `on_failed` are enabled, only one screenshot is captured for failed steps (the failed screenshot) to avoid duplicates.
+Per-step capture covers passed steps only. A failed step gets only the `on_failed` screenshot.
 
 ### Recording an animated GIF
 
-To record an animated GIF of a scenario from its per-step screenshots, you can either:
+To record an animated GIF of a scenario, turn animation on in either of these places:
 
-1. **Enable globally** in configuration:
+- For every scenario, set `animation.enabled` to `TRUE`:
 
-```php
-$extension = new Extension(BehatScreenshotExtension::class, [
-  'animation' => [
-    'enabled' => TRUE,
-    'frame_delay' => 500,
-  ],
-]);
-```
+  ```php
+  $extension = new Extension(BehatScreenshotExtension::class, [
+    'animation' => [
+      'enabled' => TRUE,
+      'frame_delay' => 500,
+    ],
+  ]);
+  ```
 
-2. **Enable per-scenario** using the `@screenshots:animated` tag:
+- For 1 scenario or feature, tag it with `@screenshots:animated`:
 
-```gherkin
-@javascript @screenshots:animated
-Scenario: My scenario recorded as an animated GIF
-  Given I am on "http://example.com"
-  When I click "Login"
-  Then I should see "Welcome"
-  # An animated GIF is written when the scenario finishes.
-```
+  ```gherkin
+  @javascript @screenshots:animated
+  Scenario: My scenario recorded as an animated GIF
+    Given I am on "http://example.com"
+    When I click "Login"
+    Then I should see "Welcome"
+    # An animated GIF is written when the scenario finishes.
+  ```
 
-When animation is enabled, a screenshot is captured after every passed step, and the frames are combined into a single GIF when the scenario finishes. `frame_delay` sets the delay between frames in milliseconds.
+The extension captures a screenshot after every passed step of an animated scenario. When the scenario finishes, the extension combines those screenshots into 1 GIF. `frame_delay` sets the delay between frames, in milliseconds.
 
-The GIF is named `{datetime:U}.{feature_file}.feature_<scenario line>.gif`, which is the default `filename_pattern` with the scenario line in place of `{step_line}`, so it lands beside the scenario's per-step screenshots. That name is fixed: a custom `filename_pattern` changes the per-step filenames only.
+The GIF is named `{datetime:U}.{feature_file}.feature_<scenario line>.gif`. That's the default `filename_pattern` with the scenario's line in place of `{step_line}`, so the GIF name follows the format of the per-step screenshot names. A custom `filename_pattern` leaves the GIF name unchanged.
 
-The `@screenshots:animated` tag is read at both the scenario and feature level. Animation requires the `gd` PHP extension and a driver that can capture screenshots (such as a real browser via `@javascript`); without GD, the animated GIF is skipped while the per-step screenshots are still written.
+Animation requires the `gd` PHP extension and a driver that captures PNG screenshots, such as the Selenium driver in a `@javascript` scenario. Without `gd`, the extension still writes the per-step screenshots and skips the GIF.
 
-Each frame keeps the size it was captured at. Frames smaller than the tallest or widest frame of the scenario are shown at the top-left of the animation against a white background, rather than being scaled up or stretched.
+Each frame keeps the size it was captured at. The GIF is as wide as the scenario's widest frame and as tall as its tallest frame. A smaller frame sits at the top-left on a white background.
 
 #### Skipping animation for a scenario
 
-Animation captures a screenshot after every passed step, so its cost grows with the number of steps in a scenario. To keep animation on across the suite while excluding individual scenarios, use the `@screenshots:animated:skip` tag:
+Animation adds a capture after every passed step, so its cost grows with the length of a scenario. To keep animation on for the suite and leave out 1 scenario, tag the scenario with `@screenshots:animated:skip`:
 
 ```gherkin
 @javascript @screenshots:animated:skip
@@ -227,15 +232,21 @@ Scenario: Long workflow that should not be recorded
   # No animated GIF is written, and no per-step screenshots are captured for it.
 ```
 
-To turn animation off for a whole run without editing feature files or configuration - on a CI job that only needs the per-step screenshots, for example - set the `BEHAT_SCREENSHOT_ANIMATION_SKIP` environment variable to a truthy value:
+To turn animation off for 1 run, such as a CI job that needs only the per-step screenshots, set `BEHAT_SCREENSHOT_ANIMATION_SKIP` to a truthy value:
 
 ```bash
 BEHAT_SCREENSHOT_ANIMATION_SKIP=1 vendor/bin/behat
 ```
 
-This overrides everything below it, including `@screenshots:animated` tags, so no scenario in the run is animated.
+The variable overrides every tag and `animation.enabled`, so no scenario in the run is animated.
 
-Tags are resolved from the most specific scope down, so a scenario tag decides on its own, a feature tag applies only when the scenario carries neither tag, and `animation.enabled` applies only when neither scope is tagged:
+Without the variable, the extension resolves animation starting from the most specific scope:
+
+- A scenario tag decides for its scenario.
+- A feature tag applies when the scenario carries neither tag.
+- `animation.enabled` applies when neither the scenario nor the feature is tagged.
+
+For example:
 
 | `BEHAT_SCREENSHOT_ANIMATION_SKIP` | Scenario tag                   | Feature tag                    | `animation.enabled` | Animated |
 |-----------------------------------|--------------------------------|--------------------------------|---------------------|----------|
@@ -246,13 +257,13 @@ Tags are resolved from the most specific scope down, so a scenario tag decides o
 | unset                             | -                              | `@screenshots:animated:skip`   | `true`              | No       |
 | unset                             | -                              | -                              | `true`              | Yes      |
 
-A scenario or feature carrying both tags at once is not animated - the skip tag wins within a scope.
+When the same scenario or the same feature has both tags, the skip tag wins for it.
 
-Skipping animation does not disable the per-step screenshots requested by `on_every_step` or the `@screenshots` tag; those are captured independently. It removes only the captures that animation itself requires.
+Skipping animation removes only the captures that animation adds. `on_every_step` and the `@screenshots` tag still capture their per-step screenshots.
 
 #### Limiting frame size
 
-With `always_fullscreen: true` every frame is as tall as the page it captured, so one long page - an admin listing, a search result set - produces very large frames and a correspondingly large GIF. Cap them with `max_width` and `max_height`:
+With `always_fullscreen` set to `TRUE`, every frame is as tall as its page. A long page, such as a search results listing, makes a large frame and a large GIF. To cap the frame size, set `max_width` and `max_height`:
 
 ```php
 $extension = new Extension(BehatScreenshotExtension::class, [
@@ -263,34 +274,36 @@ $extension = new Extension(BehatScreenshotExtension::class, [
 ]);
 ```
 
-Frames larger than the cap are cropped to it before being encoded, keeping the top-left of the page; frames already within it are untouched. Each axis is capped on its own, so a `max_height` alone never changes a frame's width - the retained area keeps its captured resolution and every frame in the animation still shares the same width. Both caps default to `0`, which leaves the frame size unbounded. The per-step PNG screenshots are always written at full size, so capping affects the animation only.
+The extension crops a frame larger than a cap to the top-left of the page, at its captured resolution. Each cap applies to its own axis, so `max_height` alone leaves every frame's width as captured. Both caps default to `0`, which leaves the size unbounded. The per-step PNG screenshots keep their full size, so the caps affect the GIF only.
 
 ## Options
 
-| Name                      | Default value                                                          | Description                                                                                                                                                                                                                                                                                     |
-|---------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `dir`                     | `%paths.base%/screenshots`                                             | Path to directory to save screenshots. Directory structure will be created if the directory does not exist. Override with `BEHAT_SCREENSHOT_DIR` env var.                                                                                                                                       |
-| `on_failed`               | `true`                                                                 | Capture screenshot on failed test.                                                                                                                                                                                                                                                              |
-| `on_every_step`           | `false`                                                                | Automatically capture screenshots after every step. Can be enabled globally via config or per-scenario using the `@screenshots` tag. Only captures on passed steps to avoid duplicates with `on_failed`.                                                                                        |
-| `animation.enabled`       | `false`                                                                | Build an animated GIF per scenario from the per-step screenshots, automatically enabling per-step capture. Can be enabled per-scenario with the `@screenshots:animated` tag and disabled per-scenario with the `@screenshots:animated:skip` tag (both read at scenario or feature level, and both taking precedence over this setting). Disable for the whole run with the `BEHAT_SCREENSHOT_ANIMATION_SKIP` env var, which overrides both the tags and this setting. Requires the `gd` PHP extension. |
-| `animation.frame_delay`   | `500`                                                                  | Delay between animated GIF frames, in milliseconds.                                                                                                                                                                                                                                             |
-| `animation.max_width`     | `0`                                                                    | Maximum animated GIF frame width, in pixels. Wider frames are cropped to it, keeping the left-hand side. `0` leaves the width unbounded.                                                                                                                                                        |
-| `animation.max_height`    | `0`                                                                    | Maximum animated GIF frame height, in pixels. Taller frames are cropped to it, keeping the top of the page at full resolution and full width. `0` leaves the height unbounded. Useful with `always_fullscreen`, where frame height follows the page height.                                      |
-| `purge`                   | `false`                                                                | Remove all files from the screenshots directory at the start of each test run. Override with `BEHAT_SCREENSHOT_PURGE` env var. Useful during debugging of tests.                                                                                                                                |
-| `always_fullscreen`       | `false`                                                                | Always use fullscreen screenshot capture for all screenshot steps, including regular screenshot steps. When enabled, all `I save screenshot` steps will behave like `I save fullscreen screenshot`.                                                                                             |
-| `info_types`              | none                                                                   | List of additional information types to show on screenshots: `url`, `feature`, `step`, `datetime`. Rendered in the order listed. No information is added unless this option is set.                                                                                                            |
-| `failed_prefix`           | `failed_`                                                              | Prefix failed screenshots with `failed_` string. Useful to distinguish failed and intended screenshots.                                                                                                                                                                                         |
-| `filename_pattern`        | `{datetime:U}.{feature_file}.feature_{step_line}.{ext}`                | Filename pattern for successful assertions.                                                                                                                                                                                                                                                     |
-| `filename_pattern_failed` | `{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | Filename pattern for failed assertions.                                                                                                                                                                                                                                                         |
+The extension accepts the following options. The `animation.*` options go in the `animation` array:
+
+| Name | Default value | Description |
+|---|---|---|
+| `dir` | `%paths.base%/screenshots` | Directory to save screenshots to, created when missing. A non-empty `BEHAT_SCREENSHOT_DIR` environment variable replaces this value. |
+| `on_failed` | `true` | If `true`, captures a screenshot when a step fails. |
+| `on_every_step` | `false` | If `true`, captures a screenshot after every passed step. The `@screenshots` tag turns it on for 1 scenario or feature. |
+| `animation.enabled` | `false` | If `true`, builds an animated GIF of each scenario from a screenshot after every passed step. The `@screenshots:animated` and `@screenshots:animated:skip` tags take precedence, and a truthy `BEHAT_SCREENSHOT_ANIMATION_SKIP` environment variable overrides the tags and this option. Requires the `gd` PHP extension. |
+| `animation.frame_delay` | `500` | Delay between GIF frames, in milliseconds. |
+| `animation.max_width` | `0` | Maximum GIF frame width, in pixels. Wider frames are cropped to their left-hand side. `0` leaves the width unbounded. |
+| `animation.max_height` | `0` | Maximum GIF frame height, in pixels. Taller frames are cropped to the top of the page at full resolution, and this cap leaves their width unchanged. `0` leaves the height unbounded. Useful with `always_fullscreen`, where the frame height follows the page height. |
+| `purge` | `false` | If `true`, removes every file in `dir` at the start of each run. A truthy `BEHAT_SCREENSHOT_PURGE` environment variable turns it on for 1 run. Useful while debugging tests. |
+| `always_fullscreen` | `false` | If `true`, captures every screenshot fullscreen, including the ones `I save screenshot` captures. |
+| `info_types` | None | Information to add to the HTML screenshot, in the order listed: any of `url`, `feature`, `step` and `datetime`. With no types listed, the extension adds none. |
+| `failed_prefix` | `failed_` | Value of the `{failed_prefix}` token, which the default `filename_pattern_failed` puts before the feature filename. Use it to tell failed screenshots apart from requested ones. |
+| `filename_pattern` | `{datetime:U}.{feature_file}.feature_{step_line}.{ext}` | Filename pattern for every screenshot except failed and named ones. |
+| `filename_pattern_failed` | `{datetime:U}.{failed_prefix}{feature_file}.feature_{step_line}.{ext}` | Filename pattern for screenshots of failed steps. |
 
 ### Filename tokens
 
-In the URL tokens, every character other than a letter, digit, underscore or hyphen is replaced with an underscore, and consecutive replacements collapse into one. The URL examples below are for a page at `http://example.com/mypath/subpath?myquery=1#somefragment`.
+Filename patterns and screenshot names accept the following tokens. In URL token values, the extension replaces every run of characters other than letters, digits, underscores and hyphens with 1 underscore. The URL examples are for a page at `http://example.com/mypath/subpath?myquery=1#somefragment`:
 
 | Token              | Substituted with                                                                | Example value(s)                                             |
 |--------------------|---------------------------------------------------------------------------------|--------------------------------------------------------------|
 | `{ext}`            | The extension of the file captured                                              | `html` or `png`                                              |
-| `{failed_prefix}`  | The value of failed_prefix from configuration                                   | `failed_`, `error_` (do include the `_` suffix, if required) |
+| `{failed_prefix}`  | The value of the `failed_prefix` option                                         | `failed_`, `error_` (include the `_` suffix if you want it)  |
 | `{url}`            | Full URL                                                                        | `http_example_com_mypath_subpath_myquery_1_somefragment`     |
 | `{url_origin}`     | Scheme with domain                                                              | `http_example_com`                                           |
 | `{url_relative}`   | Path + query + fragment                                                         | `mypath_subpath_myquery_1_somefragment`                      |
@@ -298,7 +311,7 @@ In the URL tokens, every character other than a letter, digit, underscore or hyp
 | `{url_path}`       | Path                                                                            | `mypath_subpath`                                             |
 | `{url_query}`      | Query                                                                           | `myquery_1`                                                  |
 | `{url_fragment}`   | Fragment                                                                        | `somefragment`                                               |
-| `{feature_file}`   | The filename of the `.feature` file currently being executed, without extension | `my_example.feature` -> `my_example`                         |
+| `{feature_file}`   | The filename of the running `.feature` file, without its extension              | `my_example.feature` -> `my_example`                         |
 | `{feature}`        | Alias of `{feature_file}`                                                       | `my_example.feature` -> `my_example`                         |
 | `{step_line}`      | Step line number                                                                | `1`, `10`, `100`                                             |
 | `{step_line:%03d}` | Step line number with leading zeros. Modifiers are from `sprintf()`.            | `001`, `010`, `100`                                          |
@@ -306,7 +319,7 @@ In the URL tokens, every character other than a letter, digit, underscore or hyp
 | `{datetime}`       | Current date and time. Defaults to the `Ymd_His` format.                        | `20010310_171618`                                            |
 | `{datetime:U}`     | Current date and time as a Unix timestamp. Modifiers are from `date()`.         | `1697490961`                                                 |
 
-Set the `BEHAT_SCREENSHOT_TOKEN_HOST` environment variable to substitute the host of the current URL before the URL tokens expand. Filenames then stay the same across environments that serve the site under different hosts, such as a local machine and CI.
+To keep the URL tokens the same across environments that serve the site under different hosts, such as a local machine and CI, set `BEHAT_SCREENSHOT_TOKEN_HOST`. The URL tokens then use its value in place of the current URL's host:
 
 ```shell
 BEHAT_SCREENSHOT_TOKEN_HOST=example.com vendor/bin/behat
@@ -314,9 +327,7 @@ BEHAT_SCREENSHOT_TOKEN_HOST=example.com vendor/bin/behat
 
 ## Auto-purge
 
-By default, the `purge` option is disabled, so screenshots from previous test runs stay in the directory. This is useful when you want to keep the screenshots for debugging purposes.
-
-To clear the directory at the start of each test run, enable the `purge` option in the configuration.
+Screenshots from earlier runs stay in the screenshot directory by default. To remove them at the start of every run, set `purge` to `TRUE`:
 
 ```php
 $extension = new Extension(BehatScreenshotExtension::class, [
@@ -324,7 +335,7 @@ $extension = new Extension(BehatScreenshotExtension::class, [
 ]);
 ```
 
-Alternatively, you can use the `BEHAT_SCREENSHOT_PURGE` environment variable to enable the auto-purge feature for a specific test run.
+To purge for 1 run, set the `BEHAT_SCREENSHOT_PURGE` environment variable to a truthy value:
 
 ```shell
 BEHAT_SCREENSHOT_PURGE=1 vendor/bin/behat
@@ -332,7 +343,7 @@ BEHAT_SCREENSHOT_PURGE=1 vendor/bin/behat
 
 ## Additional information on screenshots
 
-The `info_types` option controls which built-in information is added to screenshots, and nothing is added unless it is set. The order of the types is the order of the information displayed on the screenshot.
+To add the page's URL, feature, step and time to every HTML screenshot, list them in `info_types`. The information appears in the order listed, and the PNG image is unchanged:
 
 ```php
 $extension = new Extension(BehatScreenshotExtension::class, [
@@ -340,7 +351,7 @@ $extension = new Extension(BehatScreenshotExtension::class, [
 ]);
 ```
 
-With all four types enabled, the information is prepended to the captured HTML:
+With all 4 types listed, the extension adds this text to the top of the captured HTML:
 
 ```html
 Current URL: http://example.com<br />
@@ -353,7 +364,7 @@ Datetime: 2025-01-19 00:01:10<hr/>
 </html>
 ```
 
-Custom entries can be added from your own context class with `appendInfo()`. They are rendered alongside the entries produced by `info_types`, and are rendered whether or not `info_types` is set.
+To add an entry of your own, call `appendInfo()` on `ScreenshotContext` from your context class. Your entries appear even when `info_types` is empty:
 
 ```php
 #[\Behat\Hook\BeforeScenario]
@@ -371,7 +382,7 @@ public function beforeScenarioAddInfo(BeforeScenarioScope $scope): void {
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, linting, unit and BDD tests, running the suites on Behat 4, the animated GIF assembly profiler, and adding a configuration option.
+[CONTRIBUTING.md](CONTRIBUTING.md) covers local setup, linting, the tests, running the suites on Behat 4, the animated GIF profiler and adding a configuration option.
 
 ---
 _This repository was created using the [Scaffold](https://getscaffold.dev/) project template_
