@@ -1,14 +1,18 @@
 # Contributing
 
-Thank you for considering a contribution to this project. This guide covers setting up a local environment, running the linting and tests, and adding a configuration option.
+Follow this guide to set up the project, run its checks and tests and add a configuration option.
 
 ## Setup
+
+To install the dependencies:
 
 ```shell
 composer install
 ```
 
 ## Linting
+
+To check or fix the code, run:
 
 ```shell
 composer lint      # Check standards, run static analysis, lint feature files.
@@ -17,6 +21,8 @@ composer lint-fix  # Apply the fixes Rector and PHPCBF can make automatically.
 
 ## Tests
 
+To run the unit tests, run:
+
 ```shell
 composer test           # Run unit tests without coverage.
 composer test-coverage  # Run unit tests with coverage.
@@ -24,11 +30,11 @@ composer test-coverage  # Run unit tests with coverage.
 
 ### BDD tests
 
-There are tests for Selenium and Headless drivers. Selenium requires a Docker container and headless requires a Chromium browser.
+The Selenium tests need a Selenium Docker container, and the headless tests need a local Chromium with remote debugging on port 9222. To start both on macOS:
 
 ```shell
 # Start Chromium in container for Selenium-based tests.
-docker run -d -p 4444:4444 -p 9222:9222 selenium/standalone-chromium
+docker run -d -p 4444:4444 selenium/standalone-chromium
 
 # Install Chromium with brew.
 brew install --cask chromium
@@ -38,7 +44,9 @@ brew install --cask chromium
   --remote-debugging-port=9222
 ```
 
-Selenium reaches the test server at `http://host.docker.internal:8888`. Where that host does not resolve, such as Docker on Linux, set `BEHAT_JAVASCRIPT_BASE_URL`, for example to `http://172.17.0.1:8888`.
+Selenium reaches the test server at `http://host.docker.internal:8888`. On Linux, where that host doesn't resolve, set `BEHAT_JAVASCRIPT_BASE_URL` to your host's address, such as `http://172.17.0.1:8888`.
+
+To run the BDD tests, run:
 
 ```shell
 composer test-bdd  # Run BDD tests.
@@ -53,32 +61,35 @@ The suite runs in strict mode, so a step without a matching definition fails the
 
 ### Behat 4
 
-The suite is configured in `behat.php`, which both Behat majors read, so a change to the suite goes in that one file. The `@behatcli` scenarios write a `behat.php` of their own for each inner run.
+Both Behat majors read the suite configuration from `behat.php`, so suite changes go there. The `@behatcli` scenarios start a second Behat process with a `behat.php` that their steps write.
 
-`dmore/behat-chrome-extension` 1.x requires Behat 3, so remove it before switching and skip the `@headless` scenarios:
+To run the suites on Behat 4:
 
 ```shell
-composer remove --dev --no-update dmore/behat-chrome-extension
 composer update --with=behat/behat:^4
 composer test
-composer test-bdd -- --tags=~@headless
+composer test-bdd
 ```
 
-To switch back, restore `dmore/behat-chrome-extension` in `composer.json` and run `composer update --with=behat/behat:^3`.
+To switch back, run `composer update --with=behat/behat:^3`.
 
-Behat 4 doesn't read docblock annotations, so hooks and step definitions are declared with PHP attributes such as `#[BeforeScenario]` and `#[When('I save screenshot')]`. It also reports tag names with their leading `@`, so tags are read through `ScreenshotContext::isTagged()` or a hook filter such as `#[BeforeScenario('@javascript')]` rather than `hasTag()`.
+Behat 4 ignores docblock annotations, so declare hooks and step definitions with PHP attributes such as `#[BeforeScenario]` and `#[When('I save screenshot')]`. Behat 4 also reports tag names with their leading `@`, so read tags through `ScreenshotContext::isTagged()` or a hook filter such as `#[BeforeScenario('@javascript')]`. Avoid `hasTag()`, which misses a tag reported with its `@`.
 
 ### Continuous integration
 
-CI runs PHP 8.3, 8.4 and 8.5 against Behat 3 and Behat 4, with `normal` and `lowest` dependencies. Each job picks its Behat major with `composer update --with="behat/behat:^3"` or `^4`. Composer combines that temporary constraint with the one in `composer.json` rather than replacing it, so the `lowest` jobs still start from the `composer.json` floors.
+CI runs PHP 8.3, 8.4 and 8.5 against Behat 3 and Behat 4, with `normal` and `lowest` dependencies. Each job installs its Behat major with `composer update --with="behat/behat:^3"` or `--with="behat/behat:^4"`. Composer combines that `--with` constraint with the one in `composer.json`, so the `lowest` jobs still start from the `composer.json` minimums.
 
-Jobs are named `PHP <version>, Behat <major>, Deps <dependencies>`, for example `PHP 8.4, Behat 4, Deps lowest`. The `main` branch ruleset requires every job by that name, so a change to the matrix or to the job name needs the same change to the ruleset's required status checks.
+Jobs are named `PHP <version>, Behat <major>, Deps <dependencies>`, for example `PHP 8.4, Behat 4, Deps lowest`. The `main` branch ruleset requires a status check named after every job. A change to the matrix or a job name needs the same change to the ruleset's required status checks.
 
 ### Profiling animated GIF assembly
 
-Building a scenario's animated GIF happens in the `AfterScenario` handler, so its cost lands as a pause after the scenario's last step rather than as slower steps. The profiler replays a scenario of a given length through the real hooks and reports how long each phase took, how much memory peaked, and how many pixels were encoded compared to how many were captured.
+The extension builds a scenario's GIF in the `AfterScenario` handler, so the build shows up as a pause after the last step. The profiler runs scenarios through the `ScreenshotContext` hooks and reports:
 
-It is excluded from `composer test` because it takes minutes to run.
+- How long each phase took
+- How much memory peaked
+- How many pixels were encoded, compared to how many were captured
+
+The profiler takes minutes, so `composer test` excludes it. To run it:
 
 ```shell
 composer profile  # Profile 25, 50 and 100-step scenarios.
@@ -86,14 +97,24 @@ composer profile  # Profile 25, 50 and 100-step scenarios.
 BEHAT_SCREENSHOT_PROFILE_STEPS=10,20 composer profile  # Profile other lengths.
 ```
 
-The report is printed and written to `.logs/profile/animation-assembly.txt`.
+The profiler prints the report and writes it to `.logs/profile/animation-assembly.txt`.
 
 ## Adding a configuration option
 
-1. Add the node to `BehatScreenshotExtension::configure()`. The node holds the option's default, written as a literal, and the values it accepts.
-2. Add a promoted property to `ScreenshotConfig` and map the key to it in `ScreenshotConfig::fromArray()`.
-3. Read the property through `getScreenshotConfig()` where `ScreenshotContext` uses it.
-4. Document the option in the options table in `README.md` and add it to `behat.dist.php`.
-5. If an environment variable overrides the option, declare a public `ENV_*` constant for it on `ScreenshotContextInitializer`, named after the variable without its `BEHAT_SCREENSHOT_` prefix, apply it in `applyEnvironmentOverrides()`, and mention the variable in the option's row in `README.md`.
+To add an option:
 
-`ScreenshotConfigTest` fails until the new key and property have a dataset in `dataProviderFromArrayMapsKeyToProperty()`, and that dataset fails unless `fromArray()` maps the key to the property. A new top-level option also changes the option count that `BehatScreenshotExtensionTest` asserts. `BehatDistConfigTest` fails until `behat.dist.php` sets the new option. `EnvironmentVariableNamingTest` fails when a class passes `getenv()` anything other than one of its own `ENV_*` constants, and until the class's dataset lists the new variable.
+1. Add the node to `BehatScreenshotExtension::configure()`. Write the default as a literal in the node, and declare the values the option accepts.
+2. Add a promoted property to `ScreenshotConfig` and map the key to it in `ScreenshotConfig::fromArray()`.
+3. In `ScreenshotContext`, read the property through `getScreenshotConfig()`.
+4. Document the option in the options table in `README.md` and add it to `behat.dist.php`.
+5. If an environment variable overrides the option:
+   1. Declare a public `ENV_*` constant for the variable on `ScreenshotContextInitializer`, named after the variable without its `BEHAT_SCREENSHOT_` prefix.
+   2. Apply the variable in `ScreenshotContextInitializer::applyEnvironmentOverrides()`.
+   3. Mention the variable in the option's row in `README.md`.
+
+These tests fail until the option is wired through:
+
+- `ScreenshotConfigTest` fails until `dataProviderFromArrayMapsKeyToProperty()` has a dataset for the new key and `fromArray()` maps the key.
+- `BehatScreenshotExtensionTest` asserts the count of top-level options, so update it for a new one.
+- `BehatDistConfigTest` fails until `behat.dist.php` sets the new option.
+- `EnvironmentVariableNamingTest` fails when a class passes `getenv()` anything other than 1 of its own `ENV_*` constants. Add the new variable to that class's dataset.
