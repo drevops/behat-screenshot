@@ -61,7 +61,7 @@ composer require --dev \
 
 ## Usage
 
-Behat reads `behat.php`, or `behat.dist.php` when there is no `behat.php`. To use the default options, add `ScreenshotContext` to your suite and register the extension:
+Behat reads `behat.php`, or `behat.dist.php` when there is no `behat.php`. `ScreenshotContext` captures through Mink, so add these settings to a profile that already registers `MinkExtension` with a driver session. To use the default options, add `ScreenshotContext` to your suite and register the extension:
 
 ```php
 <?php
