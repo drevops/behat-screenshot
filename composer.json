@@ -40,9 +40,9 @@
         "ergebnis/composer-normalize": "^2.57.0",
         "lullabot/mink-selenium2-driver": "^1.7.4",
         "lullabot/php-webdriver": "^2.0.7",
-        "phpstan/phpstan": "^2.3.5",
-        "phpunit/phpunit": "^12.5.43",
-        "rector/rector": "^2.8.4",
+        "phpstan/phpstan": "^2.3.6",
+        "phpunit/phpunit": "^12.5.44",
+        "rector/rector": "^2.8.5",
         "symfony/process": "^7.4.18 || ^8.0"
     },
     "suggest": {
