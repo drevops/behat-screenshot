@@ -20,7 +20,7 @@ use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Cast\RecastingRemovalRector;
 use Rector\DeadCode\Rector\If_\RemoveAlwaysTrueIfConditionRector;
 use Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector;
-use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 
 return RectorConfig::configure()
   ->withPaths([
@@ -35,7 +35,7 @@ return RectorConfig::configure()
     instanceOf: TRUE,
   )
   ->withRules([
-    DeclareStrictTypesRector::class,
+    SafeDeclareStrictTypesRector::class,
   ])
   ->withSkip([
     // Rules added by Rector's rule sets.
