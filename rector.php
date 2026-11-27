@@ -10,7 +10,6 @@
 
 declare(strict_types=1);
 
-use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\CodeQuality\Rector\ClassMethod\InlineArrayReturnAssignRector;
 use Rector\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRector;
 use Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector;
@@ -21,7 +20,7 @@ use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Cast\RecastingRemovalRector;
 use Rector\DeadCode\Rector\If_\RemoveAlwaysTrueIfConditionRector;
 use Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector;
-use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 
 return RectorConfig::configure()
   ->withPaths([
@@ -36,13 +35,12 @@ return RectorConfig::configure()
     instanceOf: TRUE,
   )
   ->withRules([
-    DeclareStrictTypesRector::class,
+    SafeDeclareStrictTypesRector::class,
   ])
   ->withSkip([
     // Rules added by Rector's rule sets.
     CatchExceptionNameMatchingTypeRector::class,
     ChangeSwitchToMatchRector::class,
-    CompleteDynamicPropertiesRector::class,
     InlineArrayReturnAssignRector::class,
     NewlineAfterStatementRector::class,
     NewlineBeforeNewAssignSetRector::class,
