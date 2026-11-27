@@ -10,7 +10,6 @@
 
 declare(strict_types=1);
 
-use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\CodeQuality\Rector\ClassMethod\InlineArrayReturnAssignRector;
 use Rector\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRector;
 use Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector;
@@ -42,7 +41,6 @@ return RectorConfig::configure()
     // Rules added by Rector's rule sets.
     CatchExceptionNameMatchingTypeRector::class,
     ChangeSwitchToMatchRector::class,
-    CompleteDynamicPropertiesRector::class,
     InlineArrayReturnAssignRector::class,
     NewlineAfterStatementRector::class,
     NewlineBeforeNewAssignSetRector::class,
